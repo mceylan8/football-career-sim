@@ -1,0 +1,49 @@
+.node-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 5.5rem;
+  padding: 0.75rem 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(12, 28, 22, 0.85);
+  color: #d8ebe2;
+  cursor: default;
+  opacity: 0.45;
+  transition: transform 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.node-card.available {
+  opacity: 1;
+  cursor: pointer;
+  border-color: #3ecf8e;
+  box-shadow: 0 0 0 1px rgba(62, 207, 142, 0.25);
+}
+
+.node-card.available:hover {
+  transform: translateY(-2px);
+  border-color: #6ef0b0;
+}
+
+.node-card.visited {
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.node-card.current {
+  outline: 2px solid #f0c14b;
+  opacity: 1;
+}
+
+.node-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.node-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+}

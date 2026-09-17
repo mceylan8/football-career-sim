@@ -1,0 +1,38 @@
+.season-map {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.season-map h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.map-hint {
+  margin: 0;
+  color: #9bb5a8;
+  font-size: 0.9rem;
+}
+
+.map-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1rem 0;
+}
+
+.map-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.season-map.empty {
+  color: #9bb5a8;
+  padding: 2rem;
+  text-align: center;
+}

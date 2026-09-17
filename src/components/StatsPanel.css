@@ -1,0 +1,52 @@
+.stats-panel {
+  padding: 1.25rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 18, 14, 0.9);
+}
+
+.stats-panel h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+
+.stats-panel dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.stats-panel dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.88rem;
+}
+
+.stats-panel dt {
+  color: #8fa89c;
+}
+
+.stats-panel dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+
+.flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 1rem;
+}
+
+.flag {
+  font-size: 0.65rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  background: rgba(240, 193, 75, 0.15);
+  color: #f0c14b;
+}

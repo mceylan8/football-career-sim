@@ -1,0 +1,17 @@
+# Football Career Sim
+
+Lies und beachte `PROJECT.md` im Repo-Root als verbindlichen Projektkontext.
+
+## Architektur-Leitplanken
+
+- Roguelike Node-Map pro Saison (Slay-the-Spire-ähnlich), keine lineare Wochenmenü-Schleife.
+- Event-Engine datengetrieben (`conditions` / `weight` / `choices`), keine wachsende Hardcode-Liste.
+- Match-Simulation stat-basiert (MVP-Formel in PROJECT.md §7), nicht pure RNG.
+- Vereine nur als statischer Pool in `src/data/clubs.json` (94 Klubs, 5 Tiers) — keine Live-API.
+- UTF-8-Klubnamen (bes. türkische Sonderzeichen) in der Anzeige unverändert lassen; ASCII nur für IDs/Suche.
+- State: Zustand (`careerStore.ts`); Save initial via localStorage.
+- Hosting: GitHub Pages mit `base: '/football-career-sim/'`.
+
+## Scope
+
+MVP zuerst laut PROJECT.md §9 Must-Haves und §10 Reihenfolge. Nice-to-Haves nicht vorziehen, solange Must-Haves fehlen.

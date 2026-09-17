@@ -1,0 +1,754 @@
+[
+  {
+    "id": "fc-augsburg",
+    "name": "FC Augsburg",
+    "country": "DE",
+    "league": "Bundesliga",
+    "tier": 1,
+    "rating": 1830
+  },
+  {
+    "id": "union-berlin",
+    "name": "Union Berlin",
+    "country": "DE",
+    "league": "Bundesliga",
+    "tier": 1,
+    "rating": 1909
+  },
+  {
+    "id": "werder-bremen",
+    "name": "Werder Bremen",
+    "country": "DE",
+    "league": "Bundesliga",
+    "tier": 1,
+    "rating": 1948
+  },
+  {
+    "id": "borussia-dortmund",
+    "name": "Borussia Dortmund",
+    "country": "DE",
+    "league": "Bundesliga",
+    "tier": 1,
+    "rating": 1781
+  },
+  {
+    "id": "sv-elversberg",
+    "name": "SV Elversberg",
+    "country": "DE",
+    "league": "Bundesliga",
+    "tier": 1,
+    "rating": 1917
+  },
+  {
+    "id": "eintracht-frankfurt",
+    "name": "Eintracht Frankfurt",
+    "country": "DE",
+    "league": "Bundesliga",
+    "tier": 1,
+    "rating": 1902
+  },
+  {
+    "id": "sc-freiburg",
+    "name": "SC Freiburg",
+    "country": "DE",
+    "league": "Bundesliga",
+    "tier": 1,
+    "rating": 1906
+  },
+  {
+    "id": "hamburger-sv",
+    "name": "Hamburger SV",
+    "country": "DE",
+    "league": "Bundesliga",
+    "tier": 1,
+    "rating": 1855
+  },
+  {
+    "id": "tsg-hoffenheim",
+    "name": "TSG Hoffenheim",
+    "country": "DE",
+    "league": "Bundesliga",
+    "tier": 1,
+    "rating": 1842
+  },
+  {
+    "id": "1-fc-koln",
+    "name": "1. FC Köln",
+    "country": "DE",
+    "league": "Bundesliga",
+    "tier": 1,
+    "rating": 1754
+  },
+  {
+    "id": "rb-leipzig",
+    "name": "RB Leipzig",
+    "country": "DE",
+    "league": "Bundesliga",
+    "tier": 1,
+    "rating": 1863
+  },
+  {
+    "id": "bayer-leverkusen",
+    "name": "Bayer Leverkusen",
+    "country": "DE",
+    "league": "Bundesliga",
+    "tier": 1,
+    "rating": 1798
+  },
+  {
+    "id": "mainz-05",
+    "name": "Mainz 05",
+    "country": "DE",
+    "league": "Bundesliga",
+    "tier": 1,
+    "rating": 1887
+  },
+  {
+    "id": "borussia-monchengladbach",
+    "name": "Borussia Mönchengladbach",
+    "country": "DE",
+    "league": "Bundesliga",
+    "tier": 1,
+    "rating": 1894
+  },
+  {
+    "id": "bayern-munich",
+    "name": "Bayern Munich",
+    "country": "DE",
+    "league": "Bundesliga",
+    "tier": 1,
+    "rating": 1942
+  },
+  {
+    "id": "sc-paderborn",
+    "name": "SC Paderborn",
+    "country": "DE",
+    "league": "Bundesliga",
+    "tier": 1,
+    "rating": 1773
+  },
+  {
+    "id": "schalke-04",
+    "name": "Schalke 04",
+    "country": "DE",
+    "league": "Bundesliga",
+    "tier": 1,
+    "rating": 1815
+  },
+  {
+    "id": "vfb-stuttgart",
+    "name": "VfB Stuttgart",
+    "country": "DE",
+    "league": "Bundesliga",
+    "tier": 1,
+    "rating": 1895
+  },
+  {
+    "id": "arsenal",
+    "name": "Arsenal",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1920
+  },
+  {
+    "id": "aston-villa",
+    "name": "Aston Villa",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1809
+  },
+  {
+    "id": "bournemouth",
+    "name": "Bournemouth",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1925
+  },
+  {
+    "id": "brentford",
+    "name": "Brentford",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1896
+  },
+  {
+    "id": "brighton-hove-albion",
+    "name": "Brighton & Hove Albion",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1956
+  },
+  {
+    "id": "chelsea",
+    "name": "Chelsea",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1981
+  },
+  {
+    "id": "crystal-palace",
+    "name": "Crystal Palace",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1918
+  },
+  {
+    "id": "everton",
+    "name": "Everton",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1972
+  },
+  {
+    "id": "fulham",
+    "name": "Fulham",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1878
+  },
+  {
+    "id": "liverpool",
+    "name": "Liverpool",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1916
+  },
+  {
+    "id": "manchester-city",
+    "name": "Manchester City",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1898
+  },
+  {
+    "id": "manchester-united",
+    "name": "Manchester United",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1929
+  },
+  {
+    "id": "newcastle-united",
+    "name": "Newcastle United",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1901
+  },
+  {
+    "id": "nottingham-forest",
+    "name": "Nottingham Forest",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1870
+  },
+  {
+    "id": "sunderland",
+    "name": "Sunderland",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1854
+  },
+  {
+    "id": "tottenham-hotspur",
+    "name": "Tottenham Hotspur",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1841
+  },
+  {
+    "id": "leeds-united",
+    "name": "Leeds United",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1847
+  },
+  {
+    "id": "coventry-city",
+    "name": "Coventry City",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1954
+  },
+  {
+    "id": "ipswich-town",
+    "name": "Ipswich Town",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1984
+  },
+  {
+    "id": "hull-city",
+    "name": "Hull City",
+    "country": "EN",
+    "league": "Premier League",
+    "tier": 2,
+    "rating": 1926
+  },
+  {
+    "id": "atalanta",
+    "name": "Atalanta",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1796
+  },
+  {
+    "id": "bologna",
+    "name": "Bologna",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1812
+  },
+  {
+    "id": "cagliari",
+    "name": "Cagliari",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1723
+  },
+  {
+    "id": "como",
+    "name": "Como",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1897
+  },
+  {
+    "id": "fiorentina",
+    "name": "Fiorentina",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1751
+  },
+  {
+    "id": "frosinone",
+    "name": "Frosinone",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1893
+  },
+  {
+    "id": "genoa",
+    "name": "Genoa",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1791
+  },
+  {
+    "id": "inter-milan",
+    "name": "Inter Milan",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1752
+  },
+  {
+    "id": "juventus",
+    "name": "Juventus",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1886
+  },
+  {
+    "id": "lazio",
+    "name": "Lazio",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1704
+  },
+  {
+    "id": "lecce",
+    "name": "Lecce",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1701
+  },
+  {
+    "id": "ac-milan",
+    "name": "AC Milan",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1772
+  },
+  {
+    "id": "monza",
+    "name": "Monza",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1777
+  },
+  {
+    "id": "napoli",
+    "name": "Napoli",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1840
+  },
+  {
+    "id": "parma",
+    "name": "Parma",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1842
+  },
+  {
+    "id": "roma",
+    "name": "Roma",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1780
+  },
+  {
+    "id": "sassuolo",
+    "name": "Sassuolo",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1717
+  },
+  {
+    "id": "torino",
+    "name": "Torino",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1853
+  },
+  {
+    "id": "udinese",
+    "name": "Udinese",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1763
+  },
+  {
+    "id": "venezia",
+    "name": "Venezia",
+    "country": "IT",
+    "league": "Serie A",
+    "tier": 3,
+    "rating": 1749
+  },
+  {
+    "id": "galatasaray",
+    "name": "Galatasaray",
+    "country": "TR",
+    "league": "Süper Lig",
+    "tier": 4,
+    "rating": 1694
+  },
+  {
+    "id": "fenerbahce",
+    "name": "Fenerbahçe",
+    "country": "TR",
+    "league": "Süper Lig",
+    "tier": 4,
+    "rating": 1628
+  },
+  {
+    "id": "besiktas",
+    "name": "Beşiktaş",
+    "country": "TR",
+    "league": "Süper Lig",
+    "tier": 4,
+    "rating": 1704
+  },
+  {
+    "id": "basaksehir",
+    "name": "Başakşehir",
+    "country": "TR",
+    "league": "Süper Lig",
+    "tier": 4,
+    "rating": 1720
+  },
+  {
+    "id": "kas-mpasa",
+    "name": "Kasımpaşa",
+    "country": "TR",
+    "league": "Süper Lig",
+    "tier": 4,
+    "rating": 1678
+  },
+  {
+    "id": "eyupspor",
+    "name": "Eyüpspor",
+    "country": "TR",
+    "league": "Süper Lig",
+    "tier": 4,
+    "rating": 1681
+  },
+  {
+    "id": "trabzonspor",
+    "name": "Trabzonspor",
+    "country": "TR",
+    "league": "Süper Lig",
+    "tier": 4,
+    "rating": 1715
+  },
+  {
+    "id": "goztepe",
+    "name": "Göztepe",
+    "country": "TR",
+    "league": "Süper Lig",
+    "tier": 4,
+    "rating": 1612
+  },
+  {
+    "id": "samsunspor",
+    "name": "Samsunspor",
+    "country": "TR",
+    "league": "Süper Lig",
+    "tier": 4,
+    "rating": 1616
+  },
+  {
+    "id": "caykur-rizespor",
+    "name": "Çaykur Rizespor",
+    "country": "TR",
+    "league": "Süper Lig",
+    "tier": 4,
+    "rating": 1710
+  },
+  {
+    "id": "konyaspor",
+    "name": "Konyaspor",
+    "country": "TR",
+    "league": "Süper Lig",
+    "tier": 4,
+    "rating": 1550
+  },
+  {
+    "id": "kocaelispor",
+    "name": "Kocaelispor",
+    "country": "TR",
+    "league": "Süper Lig",
+    "tier": 4,
+    "rating": 1621
+  },
+  {
+    "id": "alanyaspor",
+    "name": "Alanyaspor",
+    "country": "TR",
+    "league": "Süper Lig",
+    "tier": 4,
+    "rating": 1532
+  },
+  {
+    "id": "gaziantep-fk",
+    "name": "Gaziantep FK",
+    "country": "TR",
+    "league": "Süper Lig",
+    "tier": 4,
+    "rating": 1695
+  },
+  {
+    "id": "genclerbirligi",
+    "name": "Gençlerbirliği",
+    "country": "TR",
+    "league": "Süper Lig",
+    "tier": 4,
+    "rating": 1604
+  },
+  {
+    "id": "erzurumspor-fk",
+    "name": "Erzurumspor FK",
+    "country": "TR",
+    "league": "Süper Lig",
+    "tier": 4,
+    "rating": 1691
+  },
+  {
+    "id": "amed-sportif-faaliyetler",
+    "name": "Amed Sportif Faaliyetler",
+    "country": "TR",
+    "league": "Süper Lig",
+    "tier": 4,
+    "rating": 1560
+  },
+  {
+    "id": "corum-fk",
+    "name": "Çorum FK",
+    "country": "TR",
+    "league": "Süper Lig",
+    "tier": 4,
+    "rating": 1632
+  },
+  {
+    "id": "hertha-bsc",
+    "name": "Hertha BSC",
+    "country": "DE",
+    "league": "2. Bundesliga",
+    "tier": 5,
+    "rating": 1523
+  },
+  {
+    "id": "arminia-bielefeld",
+    "name": "Arminia Bielefeld",
+    "country": "DE",
+    "league": "2. Bundesliga",
+    "tier": 5,
+    "rating": 1517
+  },
+  {
+    "id": "vfl-bochum",
+    "name": "VfL Bochum",
+    "country": "DE",
+    "league": "2. Bundesliga",
+    "tier": 5,
+    "rating": 1485
+  },
+  {
+    "id": "eintracht-braunschweig",
+    "name": "Eintracht Braunschweig",
+    "country": "DE",
+    "league": "2. Bundesliga",
+    "tier": 5,
+    "rating": 1572
+  },
+  {
+    "id": "energie-cottbus",
+    "name": "Energie Cottbus",
+    "country": "DE",
+    "league": "2. Bundesliga",
+    "tier": 5,
+    "rating": 1517
+  },
+  {
+    "id": "darmstadt-98",
+    "name": "Darmstadt 98",
+    "country": "DE",
+    "league": "2. Bundesliga",
+    "tier": 5,
+    "rating": 1659
+  },
+  {
+    "id": "dynamo-dresden",
+    "name": "Dynamo Dresden",
+    "country": "DE",
+    "league": "2. Bundesliga",
+    "tier": 5,
+    "rating": 1649
+  },
+  {
+    "id": "greuther-furth",
+    "name": "Greuther Fürth",
+    "country": "DE",
+    "league": "2. Bundesliga",
+    "tier": 5,
+    "rating": 1491
+  },
+  {
+    "id": "hannover-96",
+    "name": "Hannover 96",
+    "country": "DE",
+    "league": "2. Bundesliga",
+    "tier": 5,
+    "rating": 1637
+  },
+  {
+    "id": "1-fc-heidenheim",
+    "name": "1. FC Heidenheim",
+    "country": "DE",
+    "league": "2. Bundesliga",
+    "tier": 5,
+    "rating": 1614
+  },
+  {
+    "id": "1-fc-kaiserslautern",
+    "name": "1. FC Kaiserslautern",
+    "country": "DE",
+    "league": "2. Bundesliga",
+    "tier": 5,
+    "rating": 1669
+  },
+  {
+    "id": "karlsruher-sc",
+    "name": "Karlsruher SC",
+    "country": "DE",
+    "league": "2. Bundesliga",
+    "tier": 5,
+    "rating": 1522
+  },
+  {
+    "id": "holstein-kiel",
+    "name": "Holstein Kiel",
+    "country": "DE",
+    "league": "2. Bundesliga",
+    "tier": 5,
+    "rating": 1518
+  },
+  {
+    "id": "1-fc-magdeburg",
+    "name": "1. FC Magdeburg",
+    "country": "DE",
+    "league": "2. Bundesliga",
+    "tier": 5,
+    "rating": 1653
+  },
+  {
+    "id": "1-fc-nurnberg",
+    "name": "1. FC Nürnberg",
+    "country": "DE",
+    "league": "2. Bundesliga",
+    "tier": 5,
+    "rating": 1593
+  },
+  {
+    "id": "vfl-osnabruck",
+    "name": "VfL Osnabrück",
+    "country": "DE",
+    "league": "2. Bundesliga",
+    "tier": 5,
+    "rating": 1640
+  },
+  {
+    "id": "fc-st-pauli",
+    "name": "FC St. Pauli",
+    "country": "DE",
+    "league": "2. Bundesliga",
+    "tier": 5,
+    "rating": 1491
+  },
+  {
+    "id": "vfl-wolfsburg",
+    "name": "VfL Wolfsburg",
+    "country": "DE",
+    "league": "2. Bundesliga",
+    "tier": 5,
+    "rating": 1487
+  }
+]

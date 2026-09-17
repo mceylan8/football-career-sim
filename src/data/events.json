@@ -1,0 +1,12 @@
+[
+  {
+    "id": "sponsor_local",
+    "title": "Lokaler Sponsor",
+    "nodeTypes": ["SPONSOR"],
+    "weight": 10
+  },
+  {
+    "id": "note",
+    "description": "Event-Logik lebt in eventEngine.ts (conditions/effects als Code). Diese Datei dokumentiert den Content-Pool fürs MVP."
+  }
+]
