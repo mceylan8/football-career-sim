@@ -7,11 +7,16 @@ import {
   randomOpponent,
 } from '../engine/eventEngine';
 import { findNode, generateSeasonMap } from '../engine/mapGenerator';
+import { marketValue, ovrOf } from '../engine/marketValue';
 import { simulateMatch } from '../engine/matchSim';
 import type { Club } from '../types/club';
 import type { ActiveEvent, PendingFollowUp } from '../types/event';
 import type { SeasonMap } from '../types/node';
-import type { PartialPlayerUpdate, PlayerState } from '../types/player';
+import type {
+  PartialPlayerUpdate,
+  PlayerState,
+  Position,
+} from '../types/player';
 
 const clubs = clubsData as Club[];
 const SAVE_KEY = 'football-career-sim';
@@ -19,6 +24,8 @@ const SAVE_KEY = 'football-career-sim';
 function clamp(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n));
 }
+
+const POSITIONS: Position[] = ['ST', 'OM', 'ZM', 'LV', 'IV'];
 
 function startingClub(): Club {
   const pool = clubs.filter((c) => c.tier >= 4);
@@ -28,6 +35,9 @@ function startingClub(): Club {
 export function createInitialPlayer(): PlayerState {
   const club = startingClub();
   return {
+    position: POSITIONS[Math.floor(Math.random() * POSITIONS.length)],
+    seasonGames: 0,
+    history: [],
     age: 17,
     week: 1,
     season: 1,
@@ -110,8 +120,17 @@ function advanceWeek(player: PlayerState): PlayerState {
   let next = applyWage({ ...player, week: player.week + 1 });
 
   if (next.week > 12) {
+    const record = {
+      age: player.age,
+      clubName: player.club?.name ?? 'ohne Verein',
+      ovr: ovrOf(player),
+      games: player.seasonGames,
+      value: marketValue(player),
+    };
     next = {
       ...next,
+      history: [...player.history, record].slice(-25),
+      seasonGames: 0,
       week: 1,
       season: next.season + 1,
       age: next.age + 1,
@@ -195,6 +214,7 @@ export const useCareerStore = create<CareerStore>()(
           const result = simulateMatch(nextPlayer, opponent);
           nextPlayer = {
             ...nextPlayer,
+            seasonGames: nextPlayer.seasonGames + 1,
             form: clamp(nextPlayer.form + result.formDelta, 0, 100),
             reputation: clamp(
               nextPlayer.reputation + result.reputationDelta,
@@ -333,6 +353,15 @@ export const useCareerStore = create<CareerStore>()(
     }),
     {
       name: SAVE_KEY,
+      // Old saves lack position/history/seasonGames: fill from defaults.
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<CareerStore>;
+        return {
+          ...current,
+          ...p,
+          player: { ...current.player, ...p.player } as PlayerState,
+        };
+      },
       partialize: (s) => ({
         player: s.player,
         seasonMap: s.seasonMap,

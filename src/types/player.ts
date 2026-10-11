@@ -17,7 +17,22 @@ export interface PlayerStats {
   mental: number;
 }
 
+export type Position = 'ST' | 'OM' | 'ZM' | 'LV' | 'IV';
+
+export interface SeasonRecord {
+  age: number;
+  clubName: string;
+  ovr: number;
+  games: number;
+  value: number;
+}
+
 export interface PlayerState {
+  position: Position;
+  /** Matches played in the running season. */
+  seasonGames: number;
+  /** One entry per finished season (oldest first). */
+  history: SeasonRecord[];
   age: number;
   week: number;
   season: number;

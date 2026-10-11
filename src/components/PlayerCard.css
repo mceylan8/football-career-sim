@@ -1,0 +1,176 @@
+.pcard-wrap {
+  background: var(--red);
+  padding: 16px;
+  border-bottom: 4px solid var(--ink);
+}
+
+.pcard {
+  background: var(--cream);
+  border: 4px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.pc-club {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border-bottom: 3px dashed var(--ink);
+}
+
+.pc-clubtxt {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pc-clubname {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.pc-league {
+  font-size: 9px;
+  color: var(--mute);
+}
+
+.pc-main {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 12px;
+  padding: 12px;
+}
+
+.pc-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border-right: 3px dashed var(--ink);
+  padding-right: 12px;
+}
+
+.pc-ovr {
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.pc-lbl {
+  font-size: 9px;
+  color: var(--mute);
+}
+
+.pc-pos {
+  font-size: 11px;
+  background: var(--ink);
+  color: var(--yellow);
+  padding: 4px 9px;
+  margin-top: 4px;
+}
+
+.pc-right {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pc-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  font-size: 9px;
+  padding: 3px 6px;
+  border: 2px solid var(--ink);
+  background: var(--blue);
+  color: #fff;
+}
+
+.tag.y {
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+.pc-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pc-bar {
+  display: grid;
+  grid-template-columns: 30px 1fr 24px;
+  gap: 6px;
+  align-items: center;
+  font-size: 9px;
+}
+
+.pc-bar .track {
+  height: 10px;
+  background: var(--track);
+  border: 2px solid var(--ink);
+  position: relative;
+}
+
+.pc-bar .track i {
+  position: absolute;
+  inset: 0 auto 0 0;
+}
+
+.pc-bar b {
+  text-align: right;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-foot {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 0.8fr;
+  border-top: 4px solid var(--ink);
+}
+
+.pc-foot > div {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pc-foot > div + div {
+  border-left: 3px solid var(--ink);
+}
+
+.pc-foot small {
+  font-size: 8px;
+  color: var(--mute);
+}
+
+.pc-foot strong {
+  font-size: 14px;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.pc-foot .mv {
+  background: var(--yellow);
+}
+
+.pc-foot .mv small {
+  color: var(--ink);
+}
+
+.pc-foot .mv strong {
+  font-size: 17px;
+}
+
+.trend {
+  font-size: 8px;
+}

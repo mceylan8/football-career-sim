@@ -1,0 +1,57 @@
+.ctable {
+  padding: 14px 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cr {
+  display: grid;
+  grid-template-columns: 36px 1fr 36px 48px 62px;
+  gap: 4px;
+  align-items: center;
+  padding: 6px 8px;
+  font-size: 14px;
+  border: 3px solid transparent;
+  font-variant-numeric: tabular-nums;
+}
+
+.cr > :nth-child(n + 3) {
+  text-align: right;
+}
+
+.cr b {
+  font-size: 18px;
+}
+
+.cr .club {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cr .v {
+  font-size: 12px;
+}
+
+.cr.h {
+  font-size: 8px;
+  color: var(--mute);
+  padding-block: 0;
+}
+
+.cr.done {
+  background: var(--white);
+  border-color: var(--ink);
+}
+
+.cr.now {
+  background: var(--yellow);
+  border-color: var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.cr.future {
+  opacity: 0.35;
+}
