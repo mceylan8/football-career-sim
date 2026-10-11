@@ -8,14 +8,14 @@
 }
 
 .panel h2 {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
   color: var(--yellow);
   letter-spacing: 0.08em;
 }
 
 .last {
-  font-size: 9px;
+  font-size: 12px;
   line-height: 1.5;
   color: var(--cream);
   opacity: 0.8;
@@ -31,18 +31,18 @@
 }
 
 .event b {
-  font-size: 22px;
+  font-size: 26px;
   line-height: 1.1;
 }
 
 .event p {
-  font-size: 15px;
+  font-size: 17px;
   color: var(--ink);
 }
 
 .event .ctx {
   font-family: var(--f-u);
-  font-size: 9px;
+  font-size: 12px;
   background: var(--yellow);
   padding: 5px 7px;
   border: 2px solid var(--ink);
@@ -79,7 +79,7 @@
 }
 
 .choice.plain .t b {
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.2;
 }
 
@@ -100,17 +100,17 @@
 
 .choice .t b {
   display: block;
-  font-size: 19px;
+  font-size: 22px;
   line-height: 1.1;
 }
 
 .choice .t span {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--mute);
 }
 
 .choice .chip {
-  font-size: 9px;
+  font-size: 12px;
   padding: 4px 6px;
   border: 2px solid var(--ink);
   background: var(--k);

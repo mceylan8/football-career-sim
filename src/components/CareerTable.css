@@ -7,11 +7,11 @@
 
 .cr {
   display: grid;
-  grid-template-columns: 36px 1fr 36px 48px 62px;
-  gap: 4px;
+  grid-template-columns: 38px 1fr 40px 60px 76px;
+  gap: 6px;
   align-items: center;
   padding: 6px 8px;
-  font-size: 14px;
+  font-size: 17px;
   border: 3px solid transparent;
   font-variant-numeric: tabular-nums;
 }
@@ -21,7 +21,7 @@
 }
 
 .cr b {
-  font-size: 18px;
+  font-size: 21px;
 }
 
 .cr .club {
@@ -32,11 +32,11 @@
 }
 
 .cr .v {
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .cr.h {
-  font-size: 8px;
+  font-size: 12px;
   color: var(--mute);
   padding-block: 0;
 }
