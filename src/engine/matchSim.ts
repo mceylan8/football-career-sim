@@ -1,6 +1,9 @@
 import type { Club } from '../types/club';
 import type { PlayerState } from '../types/player';
 
+/** Reserve teams are this much weaker than the first team (player scale). */
+export const RESERVE_OFFSET = 18;
+
 export interface MatchResult {
   opponentName: string;
   /** Match rating 1.0–10.0, derived from performance. */
@@ -49,7 +52,7 @@ export function simulateMatch(
   const performance =
     playerRating * 0.6 +
     state.form * 0.4 -
-    opponentStrength(opponent.rating) +
+    (opponentStrength(opponent.rating) - (state.squad === 'reserve' ? RESERVE_OFFSET : 0)) +
     noise(-NOISE, NOISE);
 
   let outcome: MatchResult['outcome'];

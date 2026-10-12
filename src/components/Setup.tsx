@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { POSITION_LIST, RANDOM_NAMES } from '../data/positions';
-import type { CareerSetup } from '../state/careerStore';
-import type { Position } from '../types/player';
+import { rollTalent } from '../engine/squad';
+import { STARTER_CLUBS, type CareerSetup } from '../state/careerStore';
+import type { Position, Talent } from '../types/player';
+import { Digits } from './Digits';
 import { ClubPicker } from './ClubPicker';
 import './Setup.css';
 
-type Step = 'name' | 'position' | 'club';
-const STEPS: Step[] = ['name', 'position', 'club'];
+type Step = 'name' | 'position' | 'club' | 'talent';
+const STEPS: Step[] = ['name', 'position', 'club', 'talent'];
 const STEP_LABEL: Record<Step, string> = {
   name: 'Name',
   position: 'Position',
   club: 'Verein',
+  talent: 'Talent',
 };
 const NAME_KEY = 'fcs-last-name';
 
@@ -37,13 +40,32 @@ export function Setup({ onDone, onCancel }: Props) {
 
   const back = () => (idx === 0 ? onCancel() : setStep(STEPS[idx - 1]));
 
-  const finish = (clubId?: string) => {
+  const [clubId, setClubId] = useState<string | null>(null);
+  const [talent, setTalent] = useState<Talent | null>(null);
+  const [revealed, setRevealed] = useState(false);
+  const club = STARTER_CLUBS.find((c) => c.id === clubId);
+
+  const pickClub = (id?: string) => {
+    const chosen =
+      id ?? STARTER_CLUBS[Math.floor(Math.random() * STARTER_CLUBS.length)].id;
+    setClubId(chosen);
+    setTalent(rollTalent());
+    setRevealed(false);
+    setStep('talent');
+  };
+
+  const finish = () => {
     try {
       localStorage.setItem(NAME_KEY, cleanName);
     } catch {
       /* ignore */
     }
-    onDone({ name: cleanName, position: position ?? undefined, clubId });
+    onDone({
+      name: cleanName,
+      position: position ?? undefined,
+      clubId: clubId ?? undefined,
+      talent: talent ?? undefined,
+    });
   };
 
   return (
@@ -156,7 +178,47 @@ export function Setup({ onDone, onCancel }: Props) {
         </div>
       ) : null}
 
-      {step === 'club' ? <ClubPicker onPick={finish} onBack={back} /> : null}
+      {step === 'club' ? <ClubPicker onPick={pickClub} onBack={back} /> : null}
+
+      {step === 'talent' && talent && club ? (
+        <div className="step">
+          <div className="step-head">
+            <h2>SCOUTING-BERICHT</h2>
+            <p>
+              <Digits>{`Du startest in der Zweiten von ${club.name} (U19). Dein Talent wird jetzt ausgewürfelt.`}</Digits>
+            </p>
+          </div>
+          <div className="step-body">
+            {revealed ? (
+              <div className="reveal">
+                <div className="reveal-label">{talent.label.toUpperCase()}</div>
+                <p>{talent.desc}</p>
+                <div className="reveal-chips">
+                  <span className="bias">
+                    <span className="t-num">+{talent.boost}</span>{' '}
+                    <span className="t-label">alle Werte</span>
+                  </span>
+                  <span className="bias">
+                    <span className="t-num">×{talent.growth.toFixed(2)}</span>{' '}
+                    <span className="t-label">Wachstum</span>
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <button type="button" className="pbtn" onClick={() => setRevealed(true)}>
+                Bericht öffnen
+              </button>
+            )}
+          </div>
+          <div className="step-foot">
+            {revealed ? (
+              <button type="button" className="pbtn" onClick={finish}>
+                Karriere starten
+              </button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

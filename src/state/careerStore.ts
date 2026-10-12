@@ -18,10 +18,17 @@ import type {
 } from '../types/event';
 import type { SeasonMap } from '../types/node';
 import { POSITION_LIST, positionLabel, positionMeta } from '../data/positions';
+import {
+  seasonGrowth,
+  shouldPromote,
+  simulateAutoWeek,
+  teamName,
+} from '../engine/squad';
 import type {
   PartialPlayerUpdate,
   PlayerState,
   Position,
+  Talent,
 } from '../types/player';
 
 const clubs = clubsData as Club[];
@@ -59,18 +66,23 @@ export interface CareerSetup {
   name?: string;
   position?: Position;
   clubId?: string;
+  talent?: Talent;
 }
 
 export function createInitialPlayer(
   chosen?: Club,
-  setup: { name?: string; position?: Position } = {},
+  setup: { name?: string; position?: Position; talent?: Talent } = {},
 ): PlayerState {
   const club = chosen ?? startingClub();
   const position =
     setup.position ??
     POSITION_LIST[Math.floor(Math.random() * POSITION_LIST.length)].id;
   const bias = positionMeta(position)?.bias ?? {};
+  const boost = setup.talent?.boost ?? 0;
   return {
+    squad: 'reserve',
+    trust: 50,
+    talent: setup.talent ?? null,
     name: setup.name?.trim() || 'Spieler',
     position,
     seasonGames: 0,
@@ -79,9 +91,9 @@ export function createInitialPlayer(
     week: 1,
     season: 1,
     stats: {
-      tech: 42 + (bias.tech ?? 0),
-      phys: 45 + (bias.phys ?? 0),
-      mental: 40 + (bias.mental ?? 0),
+      tech: 42 + boost + (bias.tech ?? 0),
+      phys: 45 + boost + (bias.phys ?? 0),
+      mental: 40 + boost + (bias.mental ?? 0),
     },
     form: 55,
     reputation: 20,
@@ -192,6 +204,9 @@ function seasonEntries(before: PlayerState, after: PlayerState): LogEntry[] {
         : undefined,
     ),
   ];
+  if (before.squad === 'reserve' && after.squad === 'first' && after.club?.id === before.club?.id) {
+    out.push(entry(after, 'Beförderung', `Aufstieg in den Profikader von ${after.club?.name}`, 'win', 'Ab jetzt zählt der Vergleich mit dem echten Kader.'));
+  }
   if (!after.careerEnded && after.club && after.club.id !== before.club?.id) {
     out.push(
       entry(after, 'Vertrag', `Neuer Klub: ${after.club.name}`, 'neutral', `${after.contract?.yearsLeft ?? 0} Jahre · ${after.contract?.wage ?? 0} €/Woche`),
@@ -206,13 +221,19 @@ function advanceWeek(player: PlayerState): PlayerState {
   if (next.week > 12) {
     const record = {
       age: player.age,
-      clubName: player.club?.name ?? 'ohne Verein',
+      clubName: teamName(player),
       ovr: ovrOf(player),
       games: player.seasonGames,
       value: marketValue(player),
     };
+    const g = seasonGrowth(player);
+    const stat = (k: 'tech' | 'phys' | 'mental') =>
+      Math.max(1, Math.min(99, next.stats[k] + (g[k] ?? 0)));
     next = {
       ...next,
+      stats: { tech: stat('tech'), phys: stat('phys'), mental: stat('mental') },
+      squad: shouldPromote(player) ? 'first' : player.squad,
+      trust: 50 + Math.round((player.trust - 50) / 2),
       history: [...player.history, record].slice(-25),
       seasonGames: 0,
       week: 1,
@@ -241,6 +262,8 @@ function advanceWeek(player: PlayerState): PlayerState {
       next = {
         ...next,
         club,
+        squad: 'first',
+        trust: 50,
         contract: {
           yearsLeft: 2,
           wage: Math.round(2000 + next.reputation * 60),
@@ -256,6 +279,19 @@ function advanceWeek(player: PlayerState): PlayerState {
   }
 
   return checkCareerEnd(next);
+}
+
+/** Auto-plays the non-key matchdays, then advances the week. */
+function playWeek(
+  player: PlayerState,
+  keyMatch: boolean,
+): { player: PlayerState; entries: LogEntry[] } {
+  const auto = simulateAutoWeek(player, keyMatch, randomOpponent);
+  const base = auto ? auto.player : player;
+  const entries = auto
+    ? [entry(player, 'Spieltag', auto.title, auto.tone, auto.text)]
+    : [];
+  return { player: advanceWeek(base), entries };
 }
 
 export const useCareerStore = create<CareerStore>()(
@@ -283,9 +319,9 @@ export const useCareerStore = create<CareerStore>()(
             entry(
               player,
               'Start',
-              `${player.name} beginnt bei ${player.club?.name ?? 'einem Klub'}`,
+              `${player.name} beginnt bei ${teamName(player)}`,
               'neutral',
-              `Alter ${player.age} · OVR ${ovrOf(player)} · Position ${positionLabel(player.position)}`,
+              `Alter ${player.age} · OVR ${ovrOf(player)} · ${positionLabel(player.position)}${player.talent ? ` · ${player.talent.label}` : ''}`,
             ),
           ],
           hasSave: true,
@@ -311,6 +347,11 @@ export const useCareerStore = create<CareerStore>()(
           nextPlayer = {
             ...nextPlayer,
             seasonGames: nextPlayer.seasonGames + 1,
+            trust: clamp(
+              nextPlayer.trust + (result.rating >= 7 ? 6 : result.rating < 5 ? -4 : 1),
+              0,
+              100,
+            ),
             form: clamp(nextPlayer.form + result.formDelta, 0, 100),
             reputation: clamp(
               nextPlayer.reputation + result.reputationDelta,
@@ -360,7 +401,8 @@ export const useCareerStore = create<CareerStore>()(
         const isSeasonEnd = node.connections.length === 0;
 
         if (!event) {
-          let advanced = advanceWeek(nextPlayer);
+          const week = playWeek(nextPlayer, node.type === 'MATCH');
+          const advanced = week.player;
           let newMap = updatedMap;
           if (isSeasonEnd && !advanced.careerEnded) {
             newMap = generateSeasonMap(advanced.season);
@@ -373,6 +415,7 @@ export const useCareerStore = create<CareerStore>()(
             log: pushLog(
               get().log,
               ...newEntries,
+              ...week.entries,
               ...seasonEntries(player, advanced),
             ),
             pendingFollowUps: pendingFollowUps.filter(
@@ -441,7 +484,8 @@ export const useCareerStore = create<CareerStore>()(
           'neutral',
           `Deine Wahl: ${choice.label}${describeChange(player, before)}`,
         );
-        nextPlayer = advanceWeek(nextPlayer);
+        const week = playWeek(nextPlayer, node?.type === 'MATCH');
+        nextPlayer = week.player;
 
         let newMap = seasonMap;
         if (isSeasonEnd && !nextPlayer.careerEnded) {
@@ -455,6 +499,7 @@ export const useCareerStore = create<CareerStore>()(
           log: pushLog(
             get().log,
             eventEntry,
+            ...week.entries,
             ...seasonEntries(before, nextPlayer),
           ),
           pendingFollowUps: newFollowUps,

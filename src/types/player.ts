@@ -19,6 +19,16 @@ export interface PlayerStats {
 
 export type Position = 'TW' | 'IV' | 'AV' | 'ZM' | 'OM' | 'FL' | 'ST';
 
+export interface Talent {
+  id: string;
+  label: string;
+  desc: string;
+  /** Flat bonus on every stat at career start. */
+  boost: number;
+  /** Multiplier on yearly growth while young. */
+  growth: number;
+}
+
 export interface SeasonRecord {
   age: number;
   clubName: string;
@@ -30,6 +40,11 @@ export interface SeasonRecord {
 export interface PlayerState {
   name: string;
   position: Position;
+  /** Start in the second team; promoted to the first team later. */
+  squad: 'reserve' | 'first';
+  /** Coach trust 0-100 (key matches move it); feeds playtime. */
+  trust: number;
+  talent: Talent | null;
   /** Matches played in the running season. */
   seasonGames: number;
   /** One entry per finished season (oldest first). */

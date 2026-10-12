@@ -181,3 +181,27 @@
 .bias .t-num {
   font-size: var(--fn-s);
 }
+
+.reveal {
+  border: var(--bw) solid var(--ink);
+  background: var(--yellow);
+  box-shadow: var(--sh-m);
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.reveal-label {
+  font-family: var(--f-u);
+  font-size: var(--fs-title);
+  color: var(--ink);
+}
+.reveal p {
+  margin: 0;
+  font-size: var(--fs-body);
+}
+.reveal-chips {
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}

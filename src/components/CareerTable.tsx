@@ -1,4 +1,5 @@
 import { formatValue, marketValue, ovrOf } from '../engine/marketValue';
+import { teamName } from '../engine/squad';
 import type { PlayerState } from '../types/player';
 import { Digits } from './Digits';
 import './CareerTable.css';
@@ -34,7 +35,7 @@ export function CareerTable({ player }: Props) {
       <div className="cr now">
         <b className="t-num">{player.age}</b>
         <span className="club">
-          <Digits>{player.club?.name ?? 'vereinslos'}</Digits>
+          <Digits>{teamName(player)}</Digits>
         </span>
         <span className="t-num">{ovrOf(player)}</span>
         <span className="t-num">{player.seasonGames}</span>

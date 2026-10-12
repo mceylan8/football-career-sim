@@ -5,6 +5,7 @@ import {
   ovrOf,
 } from '../engine/marketValue';
 import { positionLabel } from '../data/positions';
+import { playtimeShare, roleLabel, teamName } from '../engine/squad';
 import { useLocalPref } from '../state/useLocalPref';
 import type { PlayerState } from '../types/player';
 import { ClubCrest } from './ClubCrest';
@@ -36,7 +37,7 @@ export function PlayerCard({ player }: Props) {
             <b>{player.name || 'Spieler'}</b>
             <span className="mc-sub">
               <Digits>
-                {`${player.club?.name ?? 'Vereinslos'} · ${positionLabel(player.position)} · ${player.age} J. · ${formatValue(value)}`}
+                {`${teamName(player)} · ${positionLabel(player.position)} · ${player.age} J. · ${formatValue(value)}`}
               </Digits>
             </span>
           </span>
@@ -68,7 +69,7 @@ export function PlayerCard({ player }: Props) {
           <div className="pc-clubtxt">
             <div className="pc-clubname">{player.name || 'Spieler'}</div>
             <div className="pc-club-line">
-              <Digits>{player.club?.name ?? 'Vereinslos'}</Digits>
+              <Digits>{teamName(player)}</Digits>
             </div>
             <div className="pc-meta">
               {player.club ? (
@@ -105,6 +106,11 @@ export function PlayerCard({ player }: Props) {
                 <span className="t-num">{player.age}</span>
               </span>
               <span className="tag y t-num">{formatMoney(player.finances)}</span>
+              {player.club ? (
+                <span className="tag r t-label">
+                  {roleLabel(playtimeShare(player))}
+                </span>
+              ) : null}
             </div>
             <div className="pc-bars">
               {bars.map((b) => (
