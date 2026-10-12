@@ -48,6 +48,18 @@ export function CareerTable({ player }: Props) {
           {player.seasonGames ? (player.seasonRatingSum / player.seasonGames).toFixed(1) : '–'}
         </span>
       </div>
+      <div className="bilanz" aria-label="Saisonbilanz">
+        <span className="t-label">Bilanz</span>
+        <span className="b w">
+          <span className="t-num">{player.seasonWins}</span> <span className="t-label">S</span>
+        </span>
+        <span className="b d">
+          <span className="t-num">{player.seasonDraws}</span> <span className="t-label">U</span>
+        </span>
+        <span className="b l">
+          <span className="t-num">{player.seasonLosses}</span> <span className="t-label">N</span>
+        </span>
+      </div>
       <div className="cr future">
         <b className="t-num">{player.age + 1}</b>
         <span />

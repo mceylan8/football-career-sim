@@ -2,7 +2,7 @@ import type { Club } from '../types/club';
 import type { PlayerState } from '../types/player';
 
 /** Reserve teams are this much weaker than the first team (player scale). */
-export const RESERVE_OFFSET = 18;
+export const RESERVE_OFFSET = 8;
 
 export interface MatchResult {
   opponentName: string;

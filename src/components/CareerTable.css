@@ -59,3 +59,29 @@
 .cr.future {
   opacity: 0.35;
 }
+
+.bilanz {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-2);
+  color: var(--mute);
+}
+
+.bilanz .b {
+  border: 2px solid var(--ink);
+  background: var(--white);
+  color: var(--ink);
+  padding: 2px 8px;
+  font-size: var(--fn-s);
+}
+
+.bilanz .b.w {
+  background: var(--grass);
+  color: var(--white);
+}
+
+.bilanz .b.l {
+  background: var(--red);
+  color: var(--white);
+}

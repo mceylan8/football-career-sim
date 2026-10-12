@@ -34,6 +34,9 @@ export interface SeasonRecord {
   clubName: string;
   ovr: number;
   games: number;
+  wins?: number;
+  draws?: number;
+  losses?: number;
   goals?: number;
   assists?: number;
   /** Average match rating of the season, 0 if no games. */
@@ -51,6 +54,9 @@ export interface PlayerState {
   talent: Talent | null;
   /** Matches played in the running season. */
   seasonGames: number;
+  seasonWins: number;
+  seasonDraws: number;
+  seasonLosses: number;
   seasonGoals: number;
   seasonAssists: number;
   /** Sum of match ratings (avg = sum / seasonGames). */

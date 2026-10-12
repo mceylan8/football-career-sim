@@ -73,21 +73,18 @@ export function simulateAutoWeek(
   let w = 0;
   let d = 0;
   let l = 0;
-  let ratings = 0;
-  let goals = 0;
-  let assists = 0;
   for (let i = 0; i < count; i++) {
     if (Math.random() >= share) continue;
     const r = simulateMatch(cur, pickOpponent(cur));
     if (r.outcome === 'win') w++;
     else if (r.outcome === 'draw') d++;
     else l++;
-    ratings += r.rating;
-    goals += r.playerGoals;
-    assists += r.playerAssists;
     cur = {
       ...cur,
       seasonGames: cur.seasonGames + 1,
+      seasonWins: cur.seasonWins + (r.outcome === 'win' ? 1 : 0),
+      seasonDraws: cur.seasonDraws + (r.outcome === 'draw' ? 1 : 0),
+      seasonLosses: cur.seasonLosses + (r.outcome === 'loss' ? 1 : 0),
       seasonGoals: cur.seasonGoals + r.playerGoals,
       seasonAssists: cur.seasonAssists + r.playerAssists,
       seasonRatingSum: cur.seasonRatingSum + r.rating,
@@ -109,7 +106,7 @@ export function simulateAutoWeek(
   return {
     player: cur,
     title,
-    text: `${apps} ${apps === 1 ? 'Einsatz' : 'Einsätze'}: ${w} S · ${d} U · ${l} N · Note ${(ratings / apps).toFixed(1)}${goals || assists ? ` · ${goals} Tore, ${assists} Assists` : ''}`,
+    text: `${apps} ${apps === 1 ? 'Einsatz' : 'Einsätze'} · ${roleLabel(share)}`,
     tone: w > l ? 'win' : l > w ? 'loss' : 'draw',
   };
 }
@@ -127,7 +124,7 @@ export function seasonGrowth(p: PlayerState): Partial<PlayerStats> {
 /** Reserve player moves up when good enough (or too old for the reserves). */
 export function shouldPromote(p: PlayerState): boolean {
   if (p.squad !== 'reserve' || !p.club) return false;
-  return ovrOf(p) >= squadLevel(p.club, false) - 8 || p.age >= 19;
+  return ovrOf(p) >= squadLevel(p.club, false) - 3 || p.age >= 19;
 }
 
 export const TALENTS: Talent[] = [

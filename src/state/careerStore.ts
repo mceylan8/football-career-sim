@@ -88,6 +88,9 @@ export function createInitialPlayer(
     name: setup.name?.trim() || 'Spieler',
     position,
     seasonGames: 0,
+    seasonWins: 0,
+    seasonDraws: 0,
+    seasonLosses: 0,
     seasonGoals: 0,
     seasonAssists: 0,
     seasonRatingSum: 0,
@@ -205,7 +208,7 @@ function seasonEntries(before: PlayerState, after: PlayerState): LogEntry[] {
       `Saison ${before.season} beendet`,
       'neutral',
       r
-        ? `${r.games} Spiele · ${r.goals ?? 0} Tore · ${r.assists ?? 0} Assists · Ø ${(r.avgRating ?? 0).toFixed(1)} · OVR ${r.ovr} · Marktwert ${Math.round(r.value / 1000)} T€ · jetzt ${after.age} Jahre`
+        ? `Marktwert ${Math.round(r.value / 1000)} T€ · jetzt ${after.age} Jahre`
         : undefined,
     ),
   ];
@@ -231,6 +234,9 @@ function advanceWeek(player: PlayerState): PlayerState {
       clubName: teamName(player),
       ovr: ovrOf(player),
       games: player.seasonGames,
+      wins: player.seasonWins,
+      draws: player.seasonDraws,
+      losses: player.seasonLosses,
       goals: player.seasonGoals,
       assists: player.seasonAssists,
       avgRating: player.seasonGames ? Math.round((player.seasonRatingSum / player.seasonGames) * 10) / 10 : 0,
@@ -246,6 +252,9 @@ function advanceWeek(player: PlayerState): PlayerState {
       trust: 50 + Math.round((player.trust - 50) / 2),
       history: [...player.history, record].slice(-25),
       seasonGames: 0,
+      seasonWins: 0,
+      seasonDraws: 0,
+      seasonLosses: 0,
       seasonGoals: 0,
       seasonAssists: 0,
       seasonRatingSum: 0,
@@ -304,6 +313,9 @@ function runMatch(
     ...base,
     flags: base.flags.filter((f) => f !== 'aggressive_match'),
     seasonGames: base.seasonGames + 1,
+    seasonWins: base.seasonWins + (result.outcome === 'win' ? 1 : 0),
+    seasonDraws: base.seasonDraws + (result.outcome === 'draw' ? 1 : 0),
+    seasonLosses: base.seasonLosses + (result.outcome === 'loss' ? 1 : 0),
     seasonGoals: base.seasonGoals + result.playerGoals,
     seasonAssists: base.seasonAssists + result.playerAssists,
     seasonRatingSum: base.seasonRatingSum + result.rating,
@@ -320,10 +332,6 @@ function runMatch(
   };
   const word =
     result.outcome === 'win' ? 'Sieg' : result.outcome === 'draw' ? 'Remis' : 'Niederlage';
-  const extra =
-    result.playerGoals || result.playerAssists
-      ? ` · ${result.playerGoals} Tore, ${result.playerAssists} Assists`
-      : '';
   return {
     player,
     summary: result.summary,
@@ -333,7 +341,7 @@ function runMatch(
         'Match',
         `${result.goalsFor}:${result.goalsAgainst} gegen ${result.opponentName}`,
         result.outcome,
-        `${word} · Note ${result.rating.toFixed(1)}${extra} · Form ${result.formDelta >= 0 ? '+' : ''}${result.formDelta}, Ruf ${result.reputationDelta >= 0 ? '+' : ''}${result.reputationDelta}`,
+        `${word} · Form ${result.formDelta >= 0 ? '+' : ''}${result.formDelta}, Ruf ${result.reputationDelta >= 0 ? '+' : ''}${result.reputationDelta}`,
       ),
     ],
   };
@@ -498,7 +506,7 @@ export const useCareerStore = create<CareerStore>()(
           const level = squadLevel(nextPlayer.club, false);
           nextPlayer = {
             ...nextPlayer,
-            squad: ovrOf(nextPlayer) >= level - 8 ? 'first' : 'reserve',
+            squad: ovrOf(nextPlayer) >= level - 3 ? 'first' : 'reserve',
             trust: 50,
           };
         }
