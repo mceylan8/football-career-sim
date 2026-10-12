@@ -254,21 +254,11 @@ export const GAME_EVENTS: GameEvent[] = [
     choices: [
       {
         label: 'Angebot prüfen & annehmen',
-        effects: (s) => {
-          const currentTier = s.club?.tier ?? 5;
-          const target = pickClub(
-            (c) =>
-              c.id !== s.club?.id &&
-              c.tier >= Math.max(1, currentTier - 1) &&
-              c.tier <= Math.min(5, currentTier + 1),
-          );
-          const years = 2 + Math.floor(Math.random() * 3);
-          const wage = Math.round(
-            4000 + (6 - target.tier) * 3000 + s.reputation * 80,
-          );
+        effects: (s, ctx) => {
+          const o = ctx?.offer ?? generateOffer(s);
           return {
-            club: target,
-            contract: { yearsLeft: years, wage },
+            club: o.club,
+            contract: { yearsLeft: o.years, wage: o.wage },
             reputation: clamp(s.reputation + 5, 0, 100),
             form: clamp(s.form - 4, 0, 100),
             flags: removeFlag(s.flags, 'transfer_rumor'),
@@ -276,7 +266,7 @@ export const GAME_EVENTS: GameEvent[] = [
         },
       },
       {
-        label: 'Ablehnen',
+                label: 'Ablehnen',
         effects: (s) => ({
           reputation: clamp(s.reputation + 1, 0, 100),
           form: clamp(s.form + 2, 0, 100),
@@ -489,9 +479,27 @@ export function getEventById(id: string): GameEvent | undefined {
   return GAME_EVENTS.find((e) => e.id === id);
 }
 
+/** Opponent from the player's own league (never the own club). */
 export function randomOpponent(state: PlayerState): Club {
-  const tier = state.club?.tier ?? 5;
-  return pickClub(
-    (c) => c.id !== state.club?.id && Math.abs(c.tier - tier) <= 1,
+  const league = state.club?.league;
+  return pickClub((c) => c.id !== state.club?.id && c.league === league);
+}
+
+export interface TransferOffer {
+  club: Club;
+  years: number;
+  wage: number;
+}
+
+/** Offer from a club in the same league or one tier away. */
+export function generateOffer(s: PlayerState): TransferOffer {
+  const tier = s.club?.tier ?? 5;
+  const club = pickClub(
+    (c) => c.id !== s.club?.id && Math.abs(c.tier - tier) <= 1,
   );
+  return {
+    club,
+    years: 2 + Math.floor(Math.random() * 3),
+    wage: Math.round(4000 + (6 - club.tier) * 3000 + s.reputation * 80),
+  };
 }

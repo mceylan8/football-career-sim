@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import clubsData from '../data/clubs.json';
 import {
+  generateOffer,
   getEventById,
   pickEventForNode,
   randomOpponent,
@@ -22,6 +23,7 @@ import {
   seasonGrowth,
   shouldPromote,
   simulateAutoWeek,
+  squadLevel,
   teamName,
 } from '../engine/squad';
 import type {
@@ -219,7 +221,9 @@ function seasonEntries(before: PlayerState, after: PlayerState): LogEntry[] {
 }
 
 function advanceWeek(player: PlayerState): PlayerState {
-  let next = applyWage({ ...player, week: player.week + 1 });
+  // Form drifts back towards 55 every week.
+  const form = Math.round(player.form - (player.form - 55) * 0.15);
+  let next = applyWage({ ...player, form, week: player.week + 1 });
 
   if (next.week > 12) {
     const record = {
@@ -290,6 +294,51 @@ function advanceWeek(player: PlayerState): PlayerState {
   return checkCareerEnd(next);
 }
 
+/** Plays one key match: stats, trust, money and the log entry. */
+function runMatch(
+  base: PlayerState,
+  opponent: Club,
+): { player: PlayerState; summary: string; entries: LogEntry[] } {
+  const result = simulateMatch(base, opponent);
+  const player: PlayerState = {
+    ...base,
+    flags: base.flags.filter((f) => f !== 'aggressive_match'),
+    seasonGames: base.seasonGames + 1,
+    seasonGoals: base.seasonGoals + result.playerGoals,
+    seasonAssists: base.seasonAssists + result.playerAssists,
+    seasonRatingSum: base.seasonRatingSum + result.rating,
+    trust: clamp(
+      base.trust + (result.rating >= 7 ? 6 : result.rating < 5 ? -4 : 1),
+      0,
+      100,
+    ),
+    form: clamp(base.form + result.formDelta, 0, 100),
+    reputation: clamp(base.reputation + result.reputationDelta, 0, 100),
+    finances:
+      base.finances +
+      (result.outcome === 'win' ? 2000 : result.outcome === 'draw' ? 800 : 200),
+  };
+  const word =
+    result.outcome === 'win' ? 'Sieg' : result.outcome === 'draw' ? 'Remis' : 'Niederlage';
+  const extra =
+    result.playerGoals || result.playerAssists
+      ? ` · ${result.playerGoals} Tore, ${result.playerAssists} Assists`
+      : '';
+  return {
+    player,
+    summary: result.summary,
+    entries: [
+      entry(
+        base,
+        'Match',
+        `${result.goalsFor}:${result.goalsAgainst} gegen ${result.opponentName}`,
+        result.outcome,
+        `${word} · Note ${result.rating.toFixed(1)}${extra} · Form ${result.formDelta >= 0 ? '+' : ''}${result.formDelta}, Ruf ${result.reputationDelta >= 0 ? '+' : ''}${result.reputationDelta}`,
+      ),
+    ],
+  };
+}
+
 /** Auto-plays the non-key matchdays, then advances the week. */
 function playWeek(
   player: PlayerState,
@@ -350,44 +399,10 @@ export const useCareerStore = create<CareerStore>()(
         let newEntries: LogEntry[] = [];
         let event = pickEventForNode(nextPlayer, node.type);
 
+        // With a pre-match choice the match is played after it (see resolveChoice).
+        let matchOpponent: Club | null = null;
         if (node.type === 'MATCH' && nextPlayer.club) {
-          const opponent = randomOpponent(nextPlayer);
-          const result = simulateMatch(nextPlayer, opponent);
-          nextPlayer = {
-            ...nextPlayer,
-            seasonGames: nextPlayer.seasonGames + 1,
-            seasonGoals: nextPlayer.seasonGoals + result.playerGoals,
-            seasonAssists: nextPlayer.seasonAssists + result.playerAssists,
-            seasonRatingSum: nextPlayer.seasonRatingSum + result.rating,
-            trust: clamp(
-              nextPlayer.trust + (result.rating >= 7 ? 6 : result.rating < 5 ? -4 : 1),
-              0,
-              100,
-            ),
-            form: clamp(nextPlayer.form + result.formDelta, 0, 100),
-            reputation: clamp(
-              nextPlayer.reputation + result.reputationDelta,
-              0,
-              100,
-            ),
-            finances:
-              nextPlayer.finances +
-              (result.outcome === 'win'
-                ? 2000
-                : result.outcome === 'draw'
-                  ? 800
-                  : 200),
-          };
-          matchSummary = result.summary;
-          newEntries = [
-            entry(
-              player,
-              'Match',
-              `${result.goalsFor}:${result.goalsAgainst} gegen ${result.opponentName}`,
-              result.outcome,
-              `${result.outcome === 'win' ? 'Sieg' : result.outcome === 'draw' ? 'Remis' : 'Niederlage'} · Note ${result.rating.toFixed(1)}${result.playerGoals || result.playerAssists ? ` · ${result.playerGoals} Tore, ${result.playerAssists} Assists` : ''} · Form ${result.formDelta >= 0 ? '+' : ''}${result.formDelta}, Ruf ${result.reputationDelta >= 0 ? '+' : ''}${result.reputationDelta}`,
-            ),
-          ];
+          matchOpponent = randomOpponent(nextPlayer);
         }
 
         const due = pendingFollowUps.find((f) => f.triggerWeek <= nextPlayer.week);
@@ -397,6 +412,20 @@ export const useCareerStore = create<CareerStore>()(
             event = followEvent;
           }
         }
+
+        const offer =
+          event?.id === 'transfer_offer' ? generateOffer(nextPlayer) : undefined;
+        if (matchOpponent && !event) {
+          const m = runMatch(nextPlayer, matchOpponent);
+          nextPlayer = m.player;
+          matchSummary = m.summary;
+          newEntries = m.entries;
+        }
+        const context = offer
+          ? `${offer.club.name} (${offer.club.league}) · ${offer.years} J. · ${offer.wage.toLocaleString('de-DE')} €/Woche`
+          : matchOpponent && event
+            ? `${teamName(nextPlayer)} gegen ${matchOpponent.name}${nextPlayer.squad === 'reserve' ? ' II' : ''}`
+            : undefined;
 
         const markedRows = seasonMap.rows.map((row) =>
           row.map((n) =>
@@ -442,7 +471,9 @@ export const useCareerStore = create<CareerStore>()(
           seasonMap: updatedMap,
           activeEvent: {
             event,
-            context: matchSummary ?? undefined,
+            context,
+            offer,
+            matchOpponentId: matchOpponent && event ? matchOpponent.id : undefined,
           },
           lastMatchSummary: matchSummary,
           log: pushLog(get().log, ...newEntries),
@@ -459,7 +490,18 @@ export const useCareerStore = create<CareerStore>()(
         const choice = activeEvent.event.choices[choiceIndex];
         if (!choice) return;
 
-        let nextPlayer = mergePlayer(player, choice.effects(player));
+        let nextPlayer = mergePlayer(
+          player,
+          choice.effects(player, { offer: activeEvent.offer }),
+        );
+        if (nextPlayer.club && nextPlayer.club.id !== player.club?.id) {
+          const level = squadLevel(nextPlayer.club, false);
+          nextPlayer = {
+            ...nextPlayer,
+            squad: ovrOf(nextPlayer) >= level - 8 ? 'first' : 'reserve',
+            trust: 50,
+          };
+        }
 
         // Stabilize injury career-end flag
         if (
@@ -494,8 +536,16 @@ export const useCareerStore = create<CareerStore>()(
           'Event',
           activeEvent.event.title,
           'neutral',
-          `Deine Wahl: ${choice.label}${describeChange(player, before)}`,
+          `Deine Wahl: ${choice.label}${before.club && before.club.id !== player.club?.id ? ` · Neuer Klub: ${teamName(before)}` : ''}${describeChange(player, before)}`,
         );
+        let matchEntries: LogEntry[] = [];
+        const opp = clubs.find((c) => c.id === activeEvent.matchOpponentId);
+        if (opp && nextPlayer.club) {
+          const m = runMatch(nextPlayer, opp);
+          nextPlayer = m.player;
+          matchEntries = m.entries;
+          set({ lastMatchSummary: m.summary });
+        }
         const week = playWeek(nextPlayer, node?.type === 'MATCH');
         nextPlayer = week.player;
 
@@ -511,6 +561,7 @@ export const useCareerStore = create<CareerStore>()(
           log: pushLog(
             get().log,
             eventEntry,
+            ...matchEntries,
             ...week.entries,
             ...seasonEntries(before, nextPlayer),
           ),

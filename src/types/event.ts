@@ -1,8 +1,12 @@
+import type { Club } from './club';
 import type { PartialPlayerUpdate, PlayerState } from './player';
 
 export interface EventChoice {
   label: string;
-  effects: (state: PlayerState) => PartialPlayerUpdate;
+  effects: (
+    state: PlayerState,
+    ctx?: { offer?: { club: Club; years: number; wage: number } },
+  ) => PartialPlayerUpdate;
   followUps?: { eventId: string; delayWeeks: number }[];
 }
 
@@ -25,6 +29,10 @@ export interface ActiveEvent {
   event: GameEvent;
   /** Extra context shown in the modal (e.g. match result text). */
   context?: string;
+  /** Concrete transfer offer shown to the player. */
+  offer?: { club: Club; years: number; wage: number };
+  /** MATCH node: opponent is known, the match is played after the choice. */
+  matchOpponentId?: string;
 }
 
 export type LogTone = 'win' | 'draw' | 'loss' | 'neutral';

@@ -68,6 +68,7 @@ export function simulateMatch(
     playerRating * 0.6 +
     state.form * 0.4 -
     (opponentStrength(opponent.rating) - (state.squad === 'reserve' ? RESERVE_OFFSET : 0)) +
+    (state.flags.includes('aggressive_match') ? 2 : 0) +
     noise(-NOISE, NOISE);
 
   let outcome: MatchResult['outcome'];
@@ -95,7 +96,9 @@ export function simulateMatch(
 
   const rating = Math.round(clamp(6 + performance / 6, 1, 10) * 10) / 10;
   const label = outcome === 'win' ? 'Sieg' : outcome === 'draw' ? 'Remis' : 'Niederlage';
-  const summary = `${state.club?.name ?? 'Du'} ${goalsFor}:${goalsAgainst} ${opponent.name} — ${label}`;
+  const oppName = state.squad === 'reserve' ? `${opponent.name} II` : opponent.name;
+  const ownName = state.club ? (state.squad === 'reserve' ? `${state.club.name} II` : state.club.name) : 'Du';
+  const summary = `${ownName} ${goalsFor}:${goalsAgainst} ${oppName} — ${label}`;
 
   const playerGoals = contribution(goalsFor, GOAL_SHARE, state.position, rating);
   const playerAssists = contribution(goalsFor - playerGoals, ASSIST_SHARE, state.position, rating);
@@ -103,7 +106,7 @@ export function simulateMatch(
   return {
     playerGoals,
     playerAssists,
-    opponentName: opponent.name,
+    opponentName: oppName,
     rating,
     performance: clamp(performance, -30, 40),
     outcome,
