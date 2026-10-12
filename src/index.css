@@ -10,6 +10,7 @@
   --white: #fff;
   --track: #e3d9b8;
   --f-d: 'Pixelify Sans', 'Courier New', monospace;
+  --f-n: 'Jersey 10', 'Pixelify Sans', monospace;
   --f-u: 'Silkscreen', 'Courier New', monospace;
 
   font-family: var(--f-d);

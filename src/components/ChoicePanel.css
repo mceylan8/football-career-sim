@@ -15,12 +15,12 @@
 }
 
 .last {
-  font-size: 12px;
+  font-size: 19px;
   line-height: 1.5;
   color: var(--cream);
   opacity: 0.8;
-  font-family: var(--f-d);
-  font-size: 15px;
+  font-family: var(--f-n);
+  font-size: 19px;
   text-transform: none;
 }
 
@@ -45,13 +45,13 @@
 
 .event .ctx {
   font-family: var(--f-u);
-  font-size: 12px;
+  font-size: 19px;
   background: var(--yellow);
   padding: 5px 7px;
   border: 2px solid var(--ink);
   line-height: 1.4;
-  font-family: var(--f-d);
-  font-size: 15px;
+  font-family: var(--f-n);
+  font-size: 19px;
   text-transform: none;
 }
 
@@ -116,15 +116,15 @@
 }
 
 .choice .chip {
-  font-size: 12px;
+  font-size: 18px;
   padding: 4px 6px;
   border: 2px solid var(--ink);
   background: var(--k);
   color: #fff;
   white-space: nowrap;
-  font-family: var(--f-d);
-  font-size: 14px;
-  font-weight: 700;
+  font-family: var(--f-n);
+  font-size: 18px;
+  font-weight: 400;
   text-transform: none;
 }
 

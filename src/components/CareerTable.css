@@ -57,3 +57,24 @@
 .cr.future {
   opacity: 0.35;
 }
+
+.cr b,
+.cr .v,
+.cr:not(.h) > :nth-child(3),
+.cr:not(.h) > :nth-child(4) {
+  font-family: var(--f-n);
+  font-weight: 400;
+}
+
+.cr b {
+  font-size: 26px;
+}
+
+.cr:not(.h) > :nth-child(3),
+.cr:not(.h) > :nth-child(4) {
+  font-size: 20px;
+}
+
+.cr .v {
+  font-size: 20px;
+}

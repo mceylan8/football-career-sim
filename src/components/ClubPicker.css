@@ -75,10 +75,10 @@
 }
 
 .pick .r {
-  font-size: 12px;
+  font-size: 20px;
   color: var(--mute);
-  font-family: var(--f-d);
-  font-size: 15px;
+  font-family: var(--f-n);
+  font-size: 20px;
 }
 
 .pick:hover {
