@@ -38,6 +38,12 @@
   overflow-wrap: anywhere;
 }
 
+.pc-club-line {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  line-height: 1.1;
+}
+
 .pc-meta {
   font-size: var(--fs-sm);
   color: var(--mute);
@@ -214,8 +220,8 @@
   white-space: nowrap;
 }
 
-.mc-name .t-num {
-  font-size: var(--fn-s);
+.mc-sub {
+  font-size: var(--fs-sm);
   color: var(--mute);
   overflow: hidden;
   text-overflow: ellipsis;

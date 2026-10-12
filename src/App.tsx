@@ -3,9 +3,9 @@ import { Digits } from './components/Digits';
 import { CareerTable } from './components/CareerTable';
 import { ChoicePanel } from './components/ChoicePanel';
 import { Feed } from './components/Feed';
-import { ClubPicker } from './components/ClubPicker';
 import { PlayerCard } from './components/PlayerCard';
-import { useCareerStore } from './state/careerStore';
+import { Setup } from './components/Setup';
+import { useCareerStore, type CareerSetup } from './state/careerStore';
 import { formatMoney, formatValue, marketValue } from './engine/marketValue';
 import './App.css';
 
@@ -18,9 +18,9 @@ function App() {
 
   const [picking, setPicking] = useState(false);
   const showMenu = !seasonMap && !player.careerEnded && !picking;
-  const startPick = (clubId?: string) => {
+  const startCareer = (setup: CareerSetup) => {
     setPicking(false);
-    newCareer(clubId);
+    newCareer(setup);
   };
 
   return (
@@ -58,7 +58,7 @@ function App() {
       ) : null}
 
       {picking ? (
-        <ClubPicker onPick={startPick} onBack={() => setPicking(false)} />
+        <Setup onDone={startCareer} onCancel={() => setPicking(false)} />
       ) : null}
 
       {player.careerEnded && !picking ? (

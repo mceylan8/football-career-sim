@@ -4,6 +4,7 @@ import {
   marketValue,
   ovrOf,
 } from '../engine/marketValue';
+import { positionLabel } from '../data/positions';
 import { useLocalPref } from '../state/useLocalPref';
 import type { PlayerState } from '../types/player';
 import { ClubCrest } from './ClubCrest';
@@ -32,11 +33,11 @@ export function PlayerCard({ player }: Props) {
         >
           <ClubCrest club={player.club} size={36} />
           <span className="mc-name">
-            <b>
-              <Digits>{player.club?.name ?? 'Vereinslos'}</Digits>
-            </b>
-            <span className="t-num">
-              {player.position} · {player.age} J. · {formatValue(value)}
+            <b>{player.name || 'Spieler'}</b>
+            <span className="mc-sub">
+              <Digits>
+                {`${player.club?.name ?? 'Vereinslos'} · ${positionLabel(player.position)} · ${player.age} J. · ${formatValue(value)}`}
+              </Digits>
             </span>
           </span>
           <span className="mc-ovr">
@@ -65,7 +66,8 @@ export function PlayerCard({ player }: Props) {
         <div className="pc-club">
           <ClubCrest club={player.club} size={84} />
           <div className="pc-clubtxt">
-            <div className="pc-clubname">
+            <div className="pc-clubname">{player.name || 'Spieler'}</div>
+            <div className="pc-club-line">
               <Digits>{player.club?.name ?? 'Vereinslos'}</Digits>
             </div>
             <div className="pc-meta">
@@ -94,7 +96,7 @@ export function PlayerCard({ player }: Props) {
           <div className="pc-left">
             <div className="pc-ovr t-num">{ovr}</div>
             <div className="t-label muted">OVR</div>
-            <div className="pc-pos t-label">{player.position}</div>
+            <div className="pc-pos t-label">{positionLabel(player.position)}</div>
           </div>
           <div className="pc-right">
             <div className="pc-tags">

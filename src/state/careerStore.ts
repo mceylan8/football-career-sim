@@ -17,6 +17,7 @@ import type {
   PendingFollowUp,
 } from '../types/event';
 import type { SeasonMap } from '../types/node';
+import { POSITION_LIST, positionLabel, positionMeta } from '../data/positions';
 import type {
   PartialPlayerUpdate,
   PlayerState,
@@ -46,8 +47,6 @@ function clamp(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n));
 }
 
-const POSITIONS: Position[] = ['ST', 'OM', 'ZM', 'LV', 'IV'];
-
 function startingClub(): Club {
   const pool = clubs.filter((c) => c.tier >= 4);
   return pool[Math.floor(Math.random() * pool.length)];
@@ -56,16 +55,34 @@ function startingClub(): Club {
 /** Clubs a 16-year-old can start at (lower two tiers). */
 export const STARTER_CLUBS = clubs.filter((c) => c.tier >= 4);
 
-export function createInitialPlayer(chosen?: Club): PlayerState {
+export interface CareerSetup {
+  name?: string;
+  position?: Position;
+  clubId?: string;
+}
+
+export function createInitialPlayer(
+  chosen?: Club,
+  setup: { name?: string; position?: Position } = {},
+): PlayerState {
   const club = chosen ?? startingClub();
+  const position =
+    setup.position ??
+    POSITION_LIST[Math.floor(Math.random() * POSITION_LIST.length)].id;
+  const bias = positionMeta(position)?.bias ?? {};
   return {
-    position: POSITIONS[Math.floor(Math.random() * POSITIONS.length)],
+    name: setup.name?.trim() || 'Spieler',
+    position,
     seasonGames: 0,
     history: [],
     age: 16,
     week: 1,
     season: 1,
-    stats: { tech: 42, phys: 45, mental: 40 },
+    stats: {
+      tech: 42 + (bias.tech ?? 0),
+      phys: 45 + (bias.phys ?? 0),
+      mental: 40 + (bias.mental ?? 0),
+    },
     form: 55,
     reputation: 20,
     finances: 5000,
@@ -126,7 +143,7 @@ interface CareerStore {
   log: LogEntry[];
   hasSave: boolean;
 
-  newCareer: (clubId?: string) => void;
+  newCareer: (setup?: CareerSetup) => void;
   selectNode: (nodeId: string) => void;
   resolveChoice: (choiceIndex: number) => void;
   dismissEvent: () => void;
@@ -252,9 +269,9 @@ export const useCareerStore = create<CareerStore>()(
       log: [],
       hasSave: false,
 
-      newCareer: (clubId?: string) => {
-        const chosen = STARTER_CLUBS.find((c) => c.id === clubId);
-        const player = createInitialPlayer(chosen);
+      newCareer: (setup: CareerSetup = {}) => {
+        const chosen = STARTER_CLUBS.find((c) => c.id === setup.clubId);
+        const player = createInitialPlayer(chosen, setup);
         const seasonMap = generateSeasonMap(player.season);
         set({
           player,
@@ -266,9 +283,9 @@ export const useCareerStore = create<CareerStore>()(
             entry(
               player,
               'Start',
-              `Karriere beginnt bei ${player.club?.name ?? 'einem Klub'}`,
+              `${player.name} beginnt bei ${player.club?.name ?? 'einem Klub'}`,
               'neutral',
-              `Alter ${player.age} · OVR ${ovrOf(player)} · Position ${player.position}`,
+              `Alter ${player.age} · OVR ${ovrOf(player)} · Position ${positionLabel(player.position)}`,
             ),
           ],
           hasSave: true,

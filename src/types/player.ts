@@ -17,7 +17,7 @@ export interface PlayerStats {
   mental: number;
 }
 
-export type Position = 'ST' | 'OM' | 'ZM' | 'LV' | 'IV';
+export type Position = 'TW' | 'IV' | 'AV' | 'ZM' | 'OM' | 'FL' | 'ST';
 
 export interface SeasonRecord {
   age: number;
@@ -28,6 +28,7 @@ export interface SeasonRecord {
 }
 
 export interface PlayerState {
+  name: string;
   position: Position;
   /** Matches played in the running season. */
   seasonGames: number;

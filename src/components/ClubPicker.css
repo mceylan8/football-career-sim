@@ -113,5 +113,6 @@
 }
 
 .mini.dark {
+  color: var(--cream);
   flex: 1;
 }
