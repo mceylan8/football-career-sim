@@ -44,7 +44,7 @@ export function NodeCard({ type, disabled, onClick }: Props) {
         <b>{m.label}</b>
         <span>{m.desc}</span>
       </span>
-      <span className={`chip u${m.dark ? ' dk' : ''}`}>{m.chip}</span>
+      <span className={`chip${m.dark ? ' dk' : ''}`}>{m.chip}</span>
     </button>
   );
 }

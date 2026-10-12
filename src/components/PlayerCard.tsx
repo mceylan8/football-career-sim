@@ -29,12 +29,12 @@ export function PlayerCard({ player }: Props) {
             <div className="pc-clubname">
               {player.club?.name ?? 'VEREINSLOS'}
             </div>
-            <div className="pc-league u">
+            <div className="pc-league">
               {player.club
                 ? `${player.club.league} · Tier ${player.club.tier}`
                 : 'Auf Angebote warten'}
             </div>
-            <div className="pc-league u">
+            <div className="pc-league">
               Saison {player.season} · Woche {player.week}/12
             </div>
           </div>
@@ -48,8 +48,8 @@ export function PlayerCard({ player }: Props) {
           </div>
           <div className="pc-right">
             <div className="pc-tags">
-              <span className="tag u">Alter {player.age}</span>
-              <span className="tag y u">{formatMoney(player.finances)}</span>
+              <span className="tag">Alter {player.age}</span>
+              <span className="tag y">{formatMoney(player.finances)}</span>
             </div>
             <div className="pc-bars">
               {bars.map((b) => (
@@ -75,7 +75,7 @@ export function PlayerCard({ player }: Props) {
             <small className="u">Marktwert</small>
             <strong className="u">{formatValue(value)}</strong>
             {diff !== null ? (
-              <span className="trend u">
+              <span className="trend">
                 {diff >= 0 ? '▲' : '▼'} {formatValue(Math.abs(diff))}
               </span>
             ) : null}
