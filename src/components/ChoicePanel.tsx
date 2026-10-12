@@ -6,7 +6,8 @@ import './ChoicePanel.css';
 
 /** Bottom panel: next-step cards, or the active event with its choices. */
 export function ChoicePanel() {
-  const seasonMap = useCareerStore((s) => s.seasonMap);
+  const weekPlan = useCareerStore((s) => s.weekPlan);
+  const player = useCareerStore((s) => s.player);
   const activeEvent = useCareerStore((s) => s.activeEvent);
   const selectNode = useCareerStore((s) => s.selectNode);
   const resolveChoice = useCareerStore((s) => s.resolveChoice);
@@ -15,20 +16,21 @@ export function ChoicePanel() {
   // An open event always shows, even if the panel was collapsed.
   const collapsed = collapsedPref && !activeEvent;
 
-  if (!seasonMap && !activeEvent) return null;
+  if (!weekPlan && !activeEvent) return null;
 
-  const nodes = seasonMap
-    ? seasonMap.rows.flat().filter((n) => seasonMap.availableNodeIds.includes(n.id))
-    : [];
-
-  const title = activeEvent ? 'Ereignis' : 'Nächster Schritt';
+  const nodes = weekPlan?.options ?? [];
+  const title = activeEvent
+    ? activeEvent.matchOpponentId
+      ? 'Spieltag'
+      : 'Ereignis'
+    : 'Diese Woche';
 
   return (
     <section className="panel" aria-live="polite">
       <div className="panel-head">
         <h2 className="t-label">
           {title}
-          {!activeEvent ? <span className="t-num"> · {nodes.length}</span> : null}
+          {!activeEvent ? <span className="t-num"> · {player.week}/12</span> : null}
         </h2>
         {!activeEvent ? (
           <button
@@ -75,9 +77,25 @@ export function ChoicePanel() {
         </>
       ) : null}
 
+      {!collapsed && !activeEvent && weekPlan?.keyMatch && weekPlan.opponent ? (
+        <p className="keymatch">
+          <span className="t-label">Spieltag</span>{' '}
+          <Digits>{`Danach wartet ein Schlüsselspiel gegen ${weekPlan.opponent.name}${player.squad === 'reserve' ? ' II' : ''}.`}</Digits>
+        </p>
+      ) : null}
+
       {!collapsed && !activeEvent
         ? nodes.map((n) => (
-            <NodeCard key={n.id} type={n.type} onClick={() => selectNode(n.id)} />
+            <NodeCard
+              key={n.id}
+              type={n.type}
+              desc={
+                n.offer
+                  ? `${n.offer.club.name} · ${n.offer.wage.toLocaleString('de-DE')} €/Wo`
+                  : undefined
+              }
+              onClick={() => selectNode(n.id)}
+            />
           ))
         : null}
     </section>

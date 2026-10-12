@@ -2,12 +2,11 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import clubsData from '../data/clubs.json';
 import {
-  generateOffer,
   getEventById,
   pickEventForNode,
   randomOpponent,
 } from '../engine/eventEngine';
-import { findNode, generateSeasonMap } from '../engine/mapGenerator';
+import { generateWeekPlan, type WeekPlan } from '../engine/weekPlan';
 import { marketValue, ovrOf } from '../engine/marketValue';
 import { simulateMatch } from '../engine/matchSim';
 import type { Club } from '../types/club';
@@ -17,7 +16,6 @@ import type {
   LogTone,
   PendingFollowUp,
 } from '../types/event';
-import type { SeasonMap } from '../types/node';
 import { POSITION_LIST, positionLabel, positionMeta } from '../data/positions';
 import {
   seasonGrowth,
@@ -156,7 +154,7 @@ function checkCareerEnd(player: PlayerState): PlayerState {
 
 interface CareerStore {
   player: PlayerState;
-  seasonMap: SeasonMap | null;
+  weekPlan: WeekPlan | null;
   activeEvent: ActiveEvent | null;
   lastMatchSummary: string | null;
   pendingFollowUps: PendingFollowUp[];
@@ -164,7 +162,7 @@ interface CareerStore {
   hasSave: boolean;
 
   newCareer: (setup?: CareerSetup) => void;
-  selectNode: (nodeId: string) => void;
+  selectNode: (optionId: string) => void;
   resolveChoice: (choiceIndex: number) => void;
   dismissEvent: () => void;
   clearSave: () => void;
@@ -360,11 +358,60 @@ function playWeek(
   return { player: advanceWeek(base), entries };
 }
 
+/** Ends the week: auto matchdays, wage, season rollover, next week's options. */
+function finishWeek(
+  before: PlayerState,
+  p: PlayerState,
+  plan: WeekPlan,
+  entries: LogEntry[],
+  follow: PendingFollowUp[],
+) {
+  const week = playWeek(p, plan.keyMatch);
+  const adv = week.player;
+  useCareerStore.setState({
+    player: adv,
+    weekPlan: adv.careerEnded ? plan : generateWeekPlan(adv),
+    activeEvent: null,
+    log: pushLog(
+      useCareerStore.getState().log,
+      ...entries,
+      ...week.entries,
+      ...seasonEntries(before, adv),
+    ),
+    pendingFollowUps: follow,
+  });
+}
+
+/** After the chosen activity: key week -> match prep first, else the week ends. */
+function afterActivity(
+  before: PlayerState,
+  p: PlayerState,
+  plan: WeekPlan,
+  entries: LogEntry[],
+  follow: PendingFollowUp[],
+) {
+  const prep = getEventById('match_prep');
+  if (plan.keyMatch && plan.opponent && prep && !p.careerEnded && p.club) {
+    useCareerStore.setState({
+      player: p,
+      activeEvent: {
+        event: prep,
+        context: `${teamName(p)} gegen ${plan.opponent.name}${p.squad === 'reserve' ? ' II' : ''} · ${plan.opponent.league}`,
+        matchOpponentId: plan.opponent.id,
+      },
+      log: pushLog(useCareerStore.getState().log, ...entries),
+      pendingFollowUps: follow,
+    });
+    return;
+  }
+  finishWeek(before, p, plan, entries, follow);
+}
+
 export const useCareerStore = create<CareerStore>()(
   persist(
     (set, get) => ({
       player: createInitialPlayer(),
-      seasonMap: null,
+      weekPlan: null,
       activeEvent: null,
       lastMatchSummary: null,
       pendingFollowUps: [],
@@ -374,10 +421,10 @@ export const useCareerStore = create<CareerStore>()(
       newCareer: (setup: CareerSetup = {}) => {
         const chosen = STARTER_CLUBS.find((c) => c.id === setup.clubId);
         const player = createInitialPlayer(chosen, setup);
-        const seasonMap = generateSeasonMap(player.season);
+        const weekPlan = generateWeekPlan(player);
         set({
           player,
-          seasonMap,
+          weekPlan,
           activeEvent: null,
           lastMatchSummary: null,
           pendingFollowUps: [],
@@ -394,106 +441,42 @@ export const useCareerStore = create<CareerStore>()(
         });
       },
 
-      selectNode: (nodeId: string) => {
-        const { player, seasonMap, pendingFollowUps } = get();
-        if (!seasonMap || player.careerEnded || get().activeEvent) return;
-        if (!seasonMap.availableNodeIds.includes(nodeId)) return;
+      selectNode: (optionId: string) => {
+        const { player, weekPlan, pendingFollowUps } = get();
+        if (!weekPlan || player.careerEnded || get().activeEvent) return;
+        const option = weekPlan.options.find((o) => o.id === optionId);
+        if (!option) return;
 
-        const node = findNode(seasonMap, nodeId);
-        if (!node) return;
-
-        let nextPlayer = { ...player };
-        let matchSummary: string | null = null;
-        let newEntries: LogEntry[] = [];
-        let event = pickEventForNode(nextPlayer, node.type);
-
-        // With a pre-match choice the match is played after it (see resolveChoice).
-        let matchOpponent: Club | null = null;
-        if (node.type === 'MATCH' && nextPlayer.club) {
-          matchOpponent = randomOpponent(nextPlayer);
-        }
-
-        const due = pendingFollowUps.find((f) => f.triggerWeek <= nextPlayer.week);
+        let event = pickEventForNode(player, option.type);
+        const due = pendingFollowUps.find((f) => f.triggerWeek <= player.week);
         if (due) {
           const followEvent = getEventById(due.eventId);
-          if (followEvent && followEvent.conditions(nextPlayer)) {
-            event = followEvent;
-          }
+          if (followEvent && followEvent.conditions(player)) event = followEvent;
         }
-
-        const offer =
-          event?.id === 'transfer_offer' ? generateOffer(nextPlayer) : undefined;
-        if (matchOpponent && !event) {
-          const m = runMatch(nextPlayer, matchOpponent);
-          nextPlayer = m.player;
-          matchSummary = m.summary;
-          newEntries = m.entries;
-        }
-        const context = offer
-          ? `${offer.club.name} (${offer.club.league}) · ${offer.years} J. · ${offer.wage.toLocaleString('de-DE')} €/Woche`
-          : matchOpponent && event
-            ? `${teamName(nextPlayer)} gegen ${matchOpponent.name}${nextPlayer.squad === 'reserve' ? ' II' : ''}`
-            : undefined;
-
-        const markedRows = seasonMap.rows.map((row) =>
-          row.map((n) =>
-            n.id === nodeId ? { ...n, visited: true } : n,
-          ),
+        const follow = pendingFollowUps.filter(
+          (f) => !(due && f.eventId === due.eventId && f.triggerWeek === due.triggerWeek),
         );
-
-        const updatedMap: SeasonMap = {
-          rows: markedRows,
-          currentNodeId: nodeId,
-          availableNodeIds: node.connections.slice(),
-        };
-
-        const isSeasonEnd = node.connections.length === 0;
+        const offer = event?.id === 'transfer_offer' ? option.offer : undefined;
 
         if (!event) {
-          const week = playWeek(nextPlayer, node.type === 'MATCH');
-          const advanced = week.player;
-          let newMap = updatedMap;
-          if (isSeasonEnd && !advanced.careerEnded) {
-            newMap = generateSeasonMap(advanced.season);
-          }
-          set({
-            player: advanced,
-            seasonMap: newMap,
-            activeEvent: null,
-            lastMatchSummary: matchSummary,
-            log: pushLog(
-              get().log,
-              ...newEntries,
-              ...week.entries,
-              ...seasonEntries(player, advanced),
-            ),
-            pendingFollowUps: pendingFollowUps.filter(
-              (f) => !(due && f.eventId === due.eventId && f.triggerWeek === due.triggerWeek),
-            ),
-          });
+          afterActivity(player, player, weekPlan, [], follow);
           return;
         }
-
         set({
-          player: nextPlayer,
-          seasonMap: updatedMap,
           activeEvent: {
             event,
-            context,
             offer,
-            matchOpponentId: matchOpponent && event ? matchOpponent.id : undefined,
+            context: offer
+              ? `${offer.club.name} (${offer.club.league}) · ${offer.years} J. · ${offer.wage.toLocaleString('de-DE')} €/Woche`
+              : undefined,
           },
-          lastMatchSummary: matchSummary,
-          log: pushLog(get().log, ...newEntries),
-          pendingFollowUps: pendingFollowUps.filter(
-            (f) => !(due && f.eventId === due.eventId && f.triggerWeek === due.triggerWeek),
-          ),
+          pendingFollowUps: follow,
         });
       },
 
       resolveChoice: (choiceIndex: number) => {
-        const { player, seasonMap, activeEvent, pendingFollowUps } = get();
-        if (!activeEvent || !seasonMap) return;
+        const { player, weekPlan, activeEvent, pendingFollowUps } = get();
+        if (!activeEvent || !weekPlan) return;
 
         const choice = activeEvent.event.choices[choiceIndex];
         if (!choice) return;
@@ -511,7 +494,6 @@ export const useCareerStore = create<CareerStore>()(
           };
         }
 
-        // Stabilize injury career-end flag
         if (
           nextPlayer.flags.includes('injured') &&
           nextPlayer.age >= 34 &&
@@ -522,59 +504,38 @@ export const useCareerStore = create<CareerStore>()(
             flags: [...nextPlayer.flags, 'career_ending_injury'],
           };
         }
-
         nextPlayer = checkCareerEnd(nextPlayer);
 
-        const newFollowUps = [...pendingFollowUps];
+        const follow = [...pendingFollowUps];
         for (const fu of choice.followUps ?? []) {
-          newFollowUps.push({
+          follow.push({
             eventId: fu.eventId,
             triggerWeek: nextPlayer.week + fu.delayWeeks,
           });
         }
 
-        const node = seasonMap.currentNodeId
-          ? findNode(seasonMap, seasonMap.currentNodeId)
-          : undefined;
-        const isSeasonEnd = !!node && node.connections.length === 0;
-
-        const before = nextPlayer;
         const eventEntry = entry(
           player,
           'Event',
           activeEvent.event.title,
           'neutral',
-          `Deine Wahl: ${choice.label}${before.club && before.club.id !== player.club?.id ? ` · Neuer Klub: ${teamName(before)}` : ''}${describeChange(player, before)}`,
+          `Deine Wahl: ${choice.label}${nextPlayer.club && nextPlayer.club.id !== player.club?.id ? ` · Neuer Klub: ${teamName(nextPlayer)}` : ''}${describeChange(player, nextPlayer)}`,
         );
-        let matchEntries: LogEntry[] = [];
-        const opp = clubs.find((c) => c.id === activeEvent.matchOpponentId);
-        if (opp && nextPlayer.club) {
-          const m = runMatch(nextPlayer, opp);
-          nextPlayer = m.player;
-          matchEntries = m.entries;
-          set({ lastMatchSummary: m.summary });
-        }
-        const week = playWeek(nextPlayer, node?.type === 'MATCH');
-        nextPlayer = week.player;
 
-        let newMap = seasonMap;
-        if (isSeasonEnd && !nextPlayer.careerEnded) {
-          newMap = generateSeasonMap(nextPlayer.season);
+        // Second stage of a key week: the prep choice is made, now play the match.
+        if (activeEvent.matchOpponentId) {
+          const opp = clubs.find((c) => c.id === activeEvent.matchOpponentId);
+          let entries = [eventEntry];
+          if (opp && nextPlayer.club) {
+            const m = runMatch(nextPlayer, opp);
+            nextPlayer = m.player;
+            entries = [eventEntry, ...m.entries];
+            set({ lastMatchSummary: m.summary });
+          }
+          finishWeek(player, nextPlayer, weekPlan, entries, follow);
+          return;
         }
-
-        set({
-          player: nextPlayer,
-          seasonMap: newMap,
-          activeEvent: null,
-          log: pushLog(
-            get().log,
-            eventEntry,
-            ...matchEntries,
-            ...week.entries,
-            ...seasonEntries(before, nextPlayer),
-          ),
-          pendingFollowUps: newFollowUps,
-        });
+        afterActivity(player, nextPlayer, weekPlan, [eventEntry], follow);
       },
 
       dismissEvent: () => set({ activeEvent: null }),
@@ -583,7 +544,7 @@ export const useCareerStore = create<CareerStore>()(
         localStorage.removeItem(SAVE_KEY);
         set({
           player: createInitialPlayer(),
-          seasonMap: null,
+          weekPlan: null,
           activeEvent: null,
           lastMatchSummary: null,
           pendingFollowUps: [],
@@ -596,16 +557,17 @@ export const useCareerStore = create<CareerStore>()(
       name: SAVE_KEY,
       // Old saves lack position/history/seasonGames: fill from defaults.
       merge: (persisted, current) => {
-        const p = (persisted ?? {}) as Partial<CareerStore>;
-        return {
-          ...current,
-          ...p,
-          player: { ...current.player, ...p.player } as PlayerState,
-        };
+        const p = (persisted ?? {}) as Partial<CareerStore> & { seasonMap?: unknown };
+        const player = { ...current.player, ...p.player } as PlayerState;
+        // Saves from before the weekly plan: build the first plan from the player.
+        const weekPlan =
+          p.weekPlan ??
+          (p.seasonMap && !player.careerEnded ? generateWeekPlan(player) : null);
+        return { ...current, ...p, player, weekPlan };
       },
       partialize: (s) => ({
         player: s.player,
-        seasonMap: s.seasonMap,
+        weekPlan: s.weekPlan,
         pendingFollowUps: s.pendingFollowUps,
         log: s.log,
         lastMatchSummary: s.lastMatchSummary,

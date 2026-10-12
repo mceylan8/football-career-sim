@@ -11,13 +11,13 @@ import './App.css';
 
 function App() {
   const player = useCareerStore((s) => s.player);
-  const seasonMap = useCareerStore((s) => s.seasonMap);
+  const weekPlan = useCareerStore((s) => s.weekPlan);
   const hasSave = useCareerStore((s) => s.hasSave);
   const newCareer = useCareerStore((s) => s.newCareer);
   const clearSave = useCareerStore((s) => s.clearSave);
 
   const [picking, setPicking] = useState(false);
-  const showMenu = !seasonMap && !player.careerEnded && !picking;
+  const showMenu = !weekPlan && !player.careerEnded && !picking;
   const startCareer = (setup: CareerSetup) => {
     setPicking(false);
     newCareer(setup);
@@ -28,7 +28,7 @@ function App() {
       <header className="topbar">
         <h1 className="t-label">Football Career Sim</h1>
         <div className="topbar-actions">
-          {(hasSave || seasonMap) && !showMenu ? (
+          {(hasSave || weekPlan) && !showMenu ? (
             <button type="button" className="mini" onClick={clearSave}>
               RESET
             </button>

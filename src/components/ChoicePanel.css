@@ -129,3 +129,12 @@
 .choice .chip.dk {
   color: var(--ink);
 }
+
+.keymatch {
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--yellow);
+  color: var(--ink);
+  border: var(--bw) solid var(--cream);
+  font-size: var(--fs-sm);
+}

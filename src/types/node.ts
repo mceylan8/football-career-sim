@@ -8,18 +8,3 @@ export type NodeType =
   | 'AGENT_MEETING'
   | 'RIVAL_CHALLENGE'
   | 'REST';
-
-export interface SeasonNode {
-  id: string;
-  type: NodeType;
-  row: number;
-  connections: string[];
-  data?: Record<string, unknown>;
-  visited?: boolean;
-}
-
-export interface SeasonMap {
-  rows: SeasonNode[][];
-  currentNodeId: string | null;
-  availableNodeIds: string[];
-}
