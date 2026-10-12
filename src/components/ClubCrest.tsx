@@ -1,3 +1,5 @@
+import { useId } from 'react';
+import { CREST_COLORS } from '../data/crestColors';
 import type { Club } from '../types/club';
 
 interface Props {
@@ -28,12 +30,22 @@ function initials(name: string): string {
 const SHIELD =
   'M1 0h14v10h-1v2h-1v2h-2v1h-2v1h-2v-1h-2v-1h-2v-2h-1v-2h-1z';
 
-/** Pixel crest generated from the club id: stable colours + initials. */
+type Pattern = 'band' | 'halves' | 'stripes' | 'top';
+const PATTERNS: Pattern[] = ['band', 'halves', 'stripes', 'top'];
+
+/** Real club colours if known, otherwise a stable colour pair from the id. */
+function colorsFor(club: Club): [string, string] {
+  const known = CREST_COLORS[club.id];
+  if (known) return known;
+  const h = hash(club.id) % 360;
+  return [`hsl(${h} 70% 45%)`, `hsl(${(h + 160) % 360} 85% 60%)`];
+}
+
+/** Pixel crest: club colours + pattern (picked per club) + initials. */
 export function ClubCrest({ club, size = 72 }: Props) {
-  const h = club ? hash(club.id) : 0;
-  const hue = h % 360;
-  const main = club ? `hsl(${hue} 70% 45%)` : '#bbb';
-  const band = club ? `hsl(${(hue + 160) % 360} 85% 60%)` : '#ddd';
+  const clipId = useId();
+  const [main, band] = club ? colorsFor(club) : ['#bbbbbb', '#dddddd'];
+  const pattern = club ? PATTERNS[hash(club.id) % PATTERNS.length] : 'band';
   const text = club ? initials(club.name) : '?';
   const fs = text.length >= 3 ? 4.6 : 6.4;
 
@@ -47,10 +59,23 @@ export function ClubCrest({ club, size = 72 }: Props) {
       shapeRendering="crispEdges"
       style={{ flex: 'none' }}
     >
+      <defs>
+        <clipPath id={clipId}>
+          <path d={SHIELD} transform="translate(2 1.8) scale(.75)" />
+        </clipPath>
+      </defs>
       <path d={SHIELD} fill="var(--ink)" />
-      <g transform="translate(2 1.8) scale(.75)">
-        <path d={SHIELD} fill={main} />
-        <rect x="1" y="5" width="14" height="3" fill={band} opacity=".9" />
+      <g clipPath={`url(#${clipId})`}>
+        <rect x="0" y="0" width="16" height="18" fill={main} />
+        {pattern === 'band' ? <rect x="0" y="6.5" width="16" height="4" fill={band} /> : null}
+        {pattern === 'top' ? <rect x="0" y="0" width="16" height="6" fill={band} /> : null}
+        {pattern === 'halves' ? <rect x="8" y="0" width="8" height="18" fill={band} /> : null}
+        {pattern === 'stripes' ? (
+          <>
+            <rect x="3.5" y="0" width="3" height="18" fill={band} />
+            <rect x="9.5" y="0" width="3" height="18" fill={band} />
+          </>
+        ) : null}
       </g>
       <text
         x="8"
@@ -59,7 +84,10 @@ export function ClubCrest({ club, size = 72 }: Props) {
         fontFamily="var(--f-u)"
         fontSize={fs}
         fontWeight="700"
-        fill="var(--ink)"
+        fill="#fff6dc"
+        stroke="#1d1b3a"
+        strokeWidth="0.9"
+        paintOrder="stroke"
       >
         {text}
       </text>
