@@ -32,13 +32,16 @@ function startingClub(): Club {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-export function createInitialPlayer(): PlayerState {
-  const club = startingClub();
+/** Clubs a 16-year-old can start at (lower two tiers). */
+export const STARTER_CLUBS = clubs.filter((c) => c.tier >= 4);
+
+export function createInitialPlayer(chosen?: Club): PlayerState {
+  const club = chosen ?? startingClub();
   return {
     position: POSITIONS[Math.floor(Math.random() * POSITIONS.length)],
     seasonGames: 0,
     history: [],
-    age: 17,
+    age: 16,
     week: 1,
     season: 1,
     stats: { tech: 42, phys: 45, mental: 40 },
@@ -101,7 +104,7 @@ interface CareerStore {
   pendingFollowUps: PendingFollowUp[];
   hasSave: boolean;
 
-  newCareer: () => void;
+  newCareer: (clubId?: string) => void;
   selectNode: (nodeId: string) => void;
   resolveChoice: (choiceIndex: number) => void;
   dismissEvent: () => void;
@@ -184,8 +187,9 @@ export const useCareerStore = create<CareerStore>()(
       pendingFollowUps: [],
       hasSave: false,
 
-      newCareer: () => {
-        const player = createInitialPlayer();
+      newCareer: (clubId?: string) => {
+        const chosen = STARTER_CLUBS.find((c) => c.id === clubId);
+        const player = createInitialPlayer(chosen);
         const seasonMap = generateSeasonMap(player.season);
         set({
           player,

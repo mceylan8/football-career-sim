@@ -35,7 +35,7 @@ export function ClubCrest({ club, size = 72 }: Props) {
   const main = club ? `hsl(${hue} 70% 45%)` : '#bbb';
   const band = club ? `hsl(${(hue + 160) % 360} 85% 60%)` : '#ddd';
   const text = club ? initials(club.name) : '?';
-  const fs = text.length >= 3 ? 5.4 : 6.6;
+  const fs = text.length >= 3 ? 4.6 : 6.4;
 
   return (
     <svg

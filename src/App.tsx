@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { CareerTable } from './components/CareerTable';
 import { ChoicePanel } from './components/ChoicePanel';
+import { ClubPicker } from './components/ClubPicker';
 import { PlayerCard } from './components/PlayerCard';
 import { useCareerStore } from './state/careerStore';
 import { formatMoney, formatValue, marketValue } from './engine/marketValue';
@@ -12,7 +14,12 @@ function App() {
   const newCareer = useCareerStore((s) => s.newCareer);
   const clearSave = useCareerStore((s) => s.clearSave);
 
-  const showMenu = !seasonMap && !player.careerEnded;
+  const [picking, setPicking] = useState(false);
+  const showMenu = !seasonMap && !player.careerEnded && !picking;
+  const startPick = (clubId?: string) => {
+    setPicking(false);
+    newCareer(clubId);
+  };
 
   return (
     <div className="app">
@@ -24,8 +31,8 @@ function App() {
               RESET
             </button>
           ) : null}
-          {!showMenu ? (
-            <button type="button" className="mini" onClick={newCareer}>
+          {!showMenu && !picking ? (
+            <button type="button" className="mini" onClick={() => setPicking(true)}>
               NEU
             </button>
           ) : null}
@@ -40,13 +47,17 @@ function App() {
             <li>Wähle jede Woche deinen nächsten Schritt</li>
             <li>Speicherstand automatisch im Browser</li>
           </ul>
-          <button type="button" className="pbtn" onClick={newCareer}>
+          <button type="button" className="pbtn" onClick={() => setPicking(true)}>
             Karriere starten
           </button>
         </section>
       ) : null}
 
-      {player.careerEnded ? (
+      {picking ? (
+        <ClubPicker onPick={startPick} onBack={() => setPicking(false)} />
+      ) : null}
+
+      {player.careerEnded && !picking ? (
         <section className="screen">
           <h2>KARRIERE BEENDET</h2>
           <p>{player.endReason}</p>
@@ -55,13 +66,13 @@ function App() {
             {' · '}
             {formatMoney(player.finances)} · WERT {formatValue(marketValue(player))}
           </p>
-          <button type="button" className="pbtn" onClick={newCareer}>
+          <button type="button" className="pbtn" onClick={() => setPicking(true)}>
             Nochmal versuchen
           </button>
         </section>
       ) : null}
 
-      {!showMenu && !player.careerEnded ? (
+      {!showMenu && !picking && !player.careerEnded ? (
         <>
           <PlayerCard player={player} />
           <CareerTable player={player} />
