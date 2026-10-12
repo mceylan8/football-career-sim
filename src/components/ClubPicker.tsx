@@ -30,7 +30,7 @@ export function ClubPicker({ onPick, onBack }: Props) {
               type="button"
               role="tab"
               aria-selected={l === league}
-              className={`tab u${l === league ? ' on' : ''}`}
+              className={`tab t-label${l === league ? ' on' : ''}`}
               onClick={() => setLeague(l)}
             >
               {l}
@@ -49,7 +49,7 @@ export function ClubPicker({ onPick, onBack }: Props) {
           >
             <ClubCrest club={c} size={40} />
             <span className="nm">{c.name}</span>
-            <span className="u r">{c.rating}</span>
+            <span className="t-num r">{c.rating}</span>
           </button>
         ))}
       </div>

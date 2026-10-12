@@ -12,7 +12,7 @@ export function CareerTable({ player }: Props) {
 
   return (
     <section className="ctable" aria-label="Karriere">
-      <div className="cr h u">
+      <div className="cr h t-label">
         <span>Alter</span>
         <span>Klub</span>
         <span>OVR</span>
@@ -21,22 +21,22 @@ export function CareerTable({ player }: Props) {
       </div>
       {past.map((r) => (
         <div className="cr done" key={r.age}>
-          <b>{r.age}</b>
+          <b className="t-num">{r.age}</b>
           <span className="club">{r.clubName}</span>
-          <span>{r.ovr}</span>
-          <span>{r.games}</span>
-          <span className="v">{formatValue(r.value)}</span>
+          <span className="t-num">{r.ovr}</span>
+          <span className="t-num">{r.games}</span>
+          <span className="v t-num">{formatValue(r.value)}</span>
         </div>
       ))}
       <div className="cr now">
-        <b>{player.age}</b>
+        <b className="t-num">{player.age}</b>
         <span className="club">{player.club?.name ?? 'vereinslos'}</span>
-        <span>{ovrOf(player)}</span>
-        <span>{player.seasonGames}</span>
-        <span className="v">{formatValue(value)}</span>
+        <span className="t-num">{ovrOf(player)}</span>
+        <span className="t-num">{player.seasonGames}</span>
+        <span className="v t-num">{formatValue(value)}</span>
       </div>
       <div className="cr future">
-        <b>{player.age + 1}</b>
+        <b className="t-num">{player.age + 1}</b>
         <span />
         <span />
         <span />

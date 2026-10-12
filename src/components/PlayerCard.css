@@ -1,20 +1,26 @@
 .pcard-wrap {
   background: var(--red);
-  padding: 16px;
+  padding: var(--sp-4);
   border-bottom: 4px solid var(--ink);
 }
 
 .pcard {
   background: var(--cream);
   border: 4px solid var(--ink);
-  box-shadow: 6px 6px 0 var(--ink);
+  box-shadow: var(--sh-l);
 }
 
+.muted {
+  color: var(--mute);
+}
+
+/* header: crest + club */
 .pc-club {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 12px;
+  padding: var(--sp-3);
   border-bottom: 3px dashed var(--ink);
 }
 
@@ -22,58 +28,58 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--sp-1);
 }
 
 .pc-clubname {
-  font-size: 30px;
+  font-size: var(--fs-title);
   font-weight: 700;
   line-height: 1;
   overflow-wrap: anywhere;
 }
 
-.pc-league {
-  font-size: 12px;
+.pc-meta {
+  font-size: var(--fs-sm);
   color: var(--mute);
-  font-family: var(--f-d);
-  font-size: 15px;
-  text-transform: none;
 }
 
+.pc-meta.t-num {
+  font-size: var(--fn-s);
+}
+
+.pc-toggle {
+  position: absolute;
+  top: var(--sp-2);
+  right: var(--sp-2);
+}
+
+/* body: OVR + bars */
 .pc-main {
   display: grid;
   grid-template-columns: 92px 1fr;
-  gap: 12px;
-  padding: 12px;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
 }
 
 .pc-left {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--sp-1);
   border-right: 3px dashed var(--ink);
-  padding-right: 12px;
+  padding-right: var(--sp-3);
 }
 
 .pc-ovr {
-  font-size: 52px;
-  font-weight: 400;
-  line-height: 1;
-  font-family: var(--f-n);
-}
-
-.pc-lbl {
-  font-size: 12px;
-  color: var(--mute);
+  font-size: var(--fn-xl);
+  line-height: 0.9;
 }
 
 .pc-pos {
-  font-size: 13px;
   background: var(--ink);
   color: var(--yellow);
   padding: 4px 9px;
-  margin-top: 4px;
+  margin-top: var(--sp-1);
 }
 
 .pc-right {
@@ -90,15 +96,12 @@
 }
 
 .tag {
-  font-size: 19px;
-  padding: 3px 6px;
+  font-size: var(--fn-s);
+  line-height: 1.1;
+  padding: 3px 7px;
   border: 2px solid var(--ink);
   background: var(--blue);
   color: #fff;
-  font-family: var(--f-n);
-  font-size: 19px;
-  font-weight: 400;
-  text-transform: none;
 }
 
 .tag.y {
@@ -117,30 +120,27 @@
   grid-template-columns: 38px 1fr 36px;
   gap: 6px;
   align-items: center;
-  font-size: 12px;
 }
 
-.pc-bar .track {
+.pc-bar b {
+  text-align: right;
+  font-size: var(--fn-s);
+  line-height: 1;
+}
+
+.track {
   height: 10px;
   background: var(--track);
   border: 2px solid var(--ink);
   position: relative;
 }
 
-.pc-bar .track i {
+.track i {
   position: absolute;
   inset: 0 auto 0 0;
 }
 
-.pc-bar b {
-  text-align: right;
-  font-size: 22px;
-  font-variant-numeric: tabular-nums;
-  font-family: var(--f-n);
-  font-size: 22px;
-  font-weight: 400;
-}
-
+/* footer: value / wage / contract */
 .pc-foot {
   display: grid;
   grid-template-columns: 1.4fr 1.2fr 0.8fr;
@@ -148,7 +148,7 @@
 }
 
 .pc-foot > div {
-  padding: 8px 10px;
+  padding: var(--sp-2) 10px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -160,17 +160,12 @@
 }
 
 .pc-foot small {
-  font-size: 12px;
   color: var(--mute);
 }
 
 .pc-foot strong {
-  font-size: 22px;
+  font-size: var(--fn-s);
   line-height: 1.1;
-  overflow-wrap: anywhere;
-  font-family: var(--f-n);
-  font-weight: 400;
-  text-transform: none;
 }
 
 .pc-foot .mv {
@@ -182,13 +177,65 @@
 }
 
 .pc-foot .mv strong {
-  font-size: 28px;
+  font-size: var(--fn-l);
 }
 
 .trend {
-  font-size: 18px;
-  font-family: var(--f-n);
-  font-size: 18px;
-  font-weight: 400;
-  text-transform: none;
+  font-size: var(--fn-s);
+}
+
+/* compact variant: one tappable strip */
+.pcard-wrap.compact {
+  padding: var(--sp-2) var(--sp-3);
+}
+
+.mini-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 6px var(--sp-3);
+  background: var(--cream);
+  border: var(--bw) solid var(--ink);
+  box-shadow: var(--sh-s);
+  cursor: pointer;
+  text-align: left;
+  color: var(--ink);
+}
+
+.mc-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mc-name b {
+  font-size: var(--fs-body);
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mc-name .t-num {
+  font-size: var(--fn-s);
+  color: var(--mute);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mc-ovr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--yellow);
+  border: 2px solid var(--ink);
+  padding: 2px 10px;
+}
+
+.mc-ovr .t-num {
+  font-size: var(--fn-m);
+  line-height: 1;
 }

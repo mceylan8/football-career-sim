@@ -1,4 +1,5 @@
 import { useCareerStore } from '../state/careerStore';
+import { useLocalPref } from '../state/useLocalPref';
 import { NodeCard } from './NodeCard';
 import './ChoicePanel.css';
 
@@ -6,51 +7,70 @@ import './ChoicePanel.css';
 export function ChoicePanel() {
   const seasonMap = useCareerStore((s) => s.seasonMap);
   const activeEvent = useCareerStore((s) => s.activeEvent);
-  const lastMatchSummary = useCareerStore((s) => s.lastMatchSummary);
   const selectNode = useCareerStore((s) => s.selectNode);
   const resolveChoice = useCareerStore((s) => s.resolveChoice);
+  const [collapsedPref, setCollapsed] = useLocalPref('panel-collapsed', false);
 
-  if (activeEvent) {
-    const { event, context } = activeEvent;
-    return (
-      <section className="panel" aria-live="polite">
-        <h2 className="u">Ereignis</h2>
-        <div className="event">
-          <b>{event.title}</b>
-          {context ? <p className="ctx">{context}</p> : null}
-          <p>{event.description}</p>
-        </div>
-        {event.choices.map((choice, i) => (
-          <button
-            key={i}
-            type="button"
-            className="choice plain"
-            onClick={() => resolveChoice(i)}
-          >
-            <span className="t">
-              <b>{choice.label}</b>
-            </span>
-          </button>
-        ))}
-      </section>
-    );
-  }
+  // An open event always shows, even if the panel was collapsed.
+  const collapsed = collapsedPref && !activeEvent;
 
-  if (!seasonMap) return null;
+  if (!seasonMap && !activeEvent) return null;
 
-  const nodes = seasonMap.rows
-    .flat()
-    .filter((n) => seasonMap.availableNodeIds.includes(n.id));
+  const nodes = seasonMap
+    ? seasonMap.rows.flat().filter((n) => seasonMap.availableNodeIds.includes(n.id))
+    : [];
+
+  const title = activeEvent ? 'Ereignis' : 'Nächster Schritt';
 
   return (
-    <section className="panel">
-      <h2 className="u">Nächster Schritt</h2>
-      {lastMatchSummary ? (
-        <p className="last u">Letztes Spiel: {lastMatchSummary}</p>
+    <section className="panel" aria-live="polite">
+      <div className="panel-head">
+        <h2 className="t-label">
+          {title}
+          {!activeEvent ? <span className="t-num"> · {nodes.length}</span> : null}
+        </h2>
+        {!activeEvent ? (
+          <button
+            type="button"
+            className="chev"
+            aria-expanded={!collapsed}
+            aria-label={collapsed ? 'Auswahl ausklappen' : 'Auswahl einklappen'}
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            {collapsed ? '▴' : '▾'}
+          </button>
+        ) : null}
+      </div>
+
+      {!collapsed && activeEvent ? (
+        <>
+          <div className="event">
+            <b>{activeEvent.event.title}</b>
+            {activeEvent.context ? (
+              <p className="ctx t-num">{activeEvent.context}</p>
+            ) : null}
+            <p>{activeEvent.event.description}</p>
+          </div>
+          {activeEvent.event.choices.map((choice, i) => (
+            <button
+              key={i}
+              type="button"
+              className="choice plain"
+              onClick={() => resolveChoice(i)}
+            >
+              <span className="t">
+                <b>{choice.label}</b>
+              </span>
+            </button>
+          ))}
+        </>
       ) : null}
-      {nodes.map((n) => (
-        <NodeCard key={n.id} type={n.type} onClick={() => selectNode(n.id)} />
-      ))}
+
+      {!collapsed && !activeEvent
+        ? nodes.map((n) => (
+            <NodeCard key={n.id} type={n.type} onClick={() => selectNode(n.id)} />
+          ))
+        : null}
     </section>
   );
 }

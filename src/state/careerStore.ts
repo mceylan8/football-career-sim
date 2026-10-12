@@ -10,7 +10,12 @@ import { findNode, generateSeasonMap } from '../engine/mapGenerator';
 import { marketValue, ovrOf } from '../engine/marketValue';
 import { simulateMatch } from '../engine/matchSim';
 import type { Club } from '../types/club';
-import type { ActiveEvent, PendingFollowUp } from '../types/event';
+import type {
+  ActiveEvent,
+  LogEntry,
+  LogTone,
+  PendingFollowUp,
+} from '../types/event';
 import type { SeasonMap } from '../types/node';
 import type {
   PartialPlayerUpdate,
@@ -20,6 +25,22 @@ import type {
 
 const clubs = clubsData as Club[];
 const SAVE_KEY = 'football-career-sim';
+
+let logCounter = Date.now();
+
+function entry(
+  p: { season: number; week: number },
+  tag: string,
+  title: string,
+  tone: LogTone = 'neutral',
+  text?: string,
+): LogEntry {
+  return { id: logCounter++, season: p.season, week: p.week, tag, title, text, tone };
+}
+
+function pushLog(log: LogEntry[], ...e: LogEntry[]): LogEntry[] {
+  return [...log, ...e].slice(-80);
+}
 
 function clamp(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n));
@@ -102,6 +123,7 @@ interface CareerStore {
   activeEvent: ActiveEvent | null;
   lastMatchSummary: string | null;
   pendingFollowUps: PendingFollowUp[];
+  log: LogEntry[];
   hasSave: boolean;
 
   newCareer: (clubId?: string) => void;
@@ -117,6 +139,48 @@ function applyWage(player: PlayerState): PlayerState {
     ...player,
     finances: player.finances + player.contract.wage,
   };
+}
+
+/** " · Physis +5, Geld -2.000 €" for the visible stat changes of one event. */
+function describeChange(a: PlayerState, b: PlayerState): string {
+  const parts: string[] = [];
+  const d = (label: string, x: number, y: number, money = false) => {
+    const diff = y - x;
+    if (diff === 0) return;
+    const abs = Math.abs(diff);
+    const num = money ? `${abs.toLocaleString('de-DE')} €` : String(abs);
+    parts.push(`${label} ${diff > 0 ? '+' : '−'}${num}`);
+  };
+  d('Technik', a.stats.tech, b.stats.tech);
+  d('Physis', a.stats.phys, b.stats.phys);
+  d('Mental', a.stats.mental, b.stats.mental);
+  d('Form', a.form, b.form);
+  d('Ruf', a.reputation, b.reputation);
+  d('Geld', a.finances, b.finances, true);
+  return parts.length ? ` · ${parts.join(', ')}` : '';
+}
+
+/** Season-end log entry when advanceWeek rolled the season over. */
+function seasonEntries(before: PlayerState, after: PlayerState): LogEntry[] {
+  if (after.season <= before.season) return [];
+  const r = after.history[after.history.length - 1];
+  const out = [
+    entry(
+      before,
+      'Saison',
+      `Saison ${before.season} beendet`,
+      'neutral',
+      r
+        ? `${r.games} Spiele · OVR ${r.ovr} · Marktwert ${Math.round(r.value / 1000)} T€ · jetzt ${after.age} Jahre`
+        : undefined,
+    ),
+  ];
+  if (!after.careerEnded && after.club && after.club.id !== before.club?.id) {
+    out.push(
+      entry(after, 'Vertrag', `Neuer Klub: ${after.club.name}`, 'neutral', `${after.contract?.yearsLeft ?? 0} Jahre · ${after.contract?.wage ?? 0} €/Woche`),
+    );
+  }
+  return out;
 }
 
 function advanceWeek(player: PlayerState): PlayerState {
@@ -185,6 +249,7 @@ export const useCareerStore = create<CareerStore>()(
       activeEvent: null,
       lastMatchSummary: null,
       pendingFollowUps: [],
+      log: [],
       hasSave: false,
 
       newCareer: (clubId?: string) => {
@@ -197,6 +262,15 @@ export const useCareerStore = create<CareerStore>()(
           activeEvent: null,
           lastMatchSummary: null,
           pendingFollowUps: [],
+          log: [
+            entry(
+              player,
+              'Start',
+              `Karriere beginnt bei ${player.club?.name ?? 'einem Klub'}`,
+              'neutral',
+              `Alter ${player.age} · OVR ${ovrOf(player)} · Position ${player.position}`,
+            ),
+          ],
           hasSave: true,
         });
       },
@@ -211,6 +285,7 @@ export const useCareerStore = create<CareerStore>()(
 
         let nextPlayer = { ...player };
         let matchSummary: string | null = null;
+        let newEntries: LogEntry[] = [];
         let event = pickEventForNode(nextPlayer, node.type);
 
         if (node.type === 'MATCH' && nextPlayer.club) {
@@ -234,6 +309,15 @@ export const useCareerStore = create<CareerStore>()(
                   : 200),
           };
           matchSummary = result.summary;
+          newEntries = [
+            entry(
+              player,
+              'Match',
+              `${result.goalsFor}:${result.goalsAgainst} gegen ${result.opponentName}`,
+              result.outcome,
+              `${result.outcome === 'win' ? 'Sieg' : result.outcome === 'draw' ? 'Remis' : 'Niederlage'} · Note ${result.rating.toFixed(1)} · Form ${result.formDelta >= 0 ? '+' : ''}${result.formDelta}, Ruf ${result.reputationDelta >= 0 ? '+' : ''}${result.reputationDelta}`,
+            ),
+          ];
         }
 
         const due = pendingFollowUps.find((f) => f.triggerWeek <= nextPlayer.week);
@@ -269,6 +353,11 @@ export const useCareerStore = create<CareerStore>()(
             seasonMap: newMap,
             activeEvent: null,
             lastMatchSummary: matchSummary,
+            log: pushLog(
+              get().log,
+              ...newEntries,
+              ...seasonEntries(player, advanced),
+            ),
             pendingFollowUps: pendingFollowUps.filter(
               (f) => !(due && f.eventId === due.eventId && f.triggerWeek === due.triggerWeek),
             ),
@@ -284,6 +373,7 @@ export const useCareerStore = create<CareerStore>()(
             context: matchSummary ?? undefined,
           },
           lastMatchSummary: matchSummary,
+          log: pushLog(get().log, ...newEntries),
           pendingFollowUps: pendingFollowUps.filter(
             (f) => !(due && f.eventId === due.eventId && f.triggerWeek === due.triggerWeek),
           ),
@@ -326,6 +416,14 @@ export const useCareerStore = create<CareerStore>()(
           : undefined;
         const isSeasonEnd = !!node && node.connections.length === 0;
 
+        const before = nextPlayer;
+        const eventEntry = entry(
+          player,
+          'Event',
+          activeEvent.event.title,
+          'neutral',
+          `Deine Wahl: ${choice.label}${describeChange(player, before)}`,
+        );
         nextPlayer = advanceWeek(nextPlayer);
 
         let newMap = seasonMap;
@@ -337,6 +435,11 @@ export const useCareerStore = create<CareerStore>()(
           player: nextPlayer,
           seasonMap: newMap,
           activeEvent: null,
+          log: pushLog(
+            get().log,
+            eventEntry,
+            ...seasonEntries(before, nextPlayer),
+          ),
           pendingFollowUps: newFollowUps,
         });
       },
@@ -351,6 +454,7 @@ export const useCareerStore = create<CareerStore>()(
           activeEvent: null,
           lastMatchSummary: null,
           pendingFollowUps: [],
+          log: [],
           hasSave: false,
         });
       },
@@ -370,6 +474,7 @@ export const useCareerStore = create<CareerStore>()(
         player: s.player,
         seasonMap: s.seasonMap,
         pendingFollowUps: s.pendingFollowUps,
+        log: s.log,
         lastMatchSummary: s.lastMatchSummary,
         hasSave: true,
       }),

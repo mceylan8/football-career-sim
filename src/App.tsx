@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CareerTable } from './components/CareerTable';
 import { ChoicePanel } from './components/ChoicePanel';
+import { Feed } from './components/Feed';
 import { ClubPicker } from './components/ClubPicker';
 import { PlayerCard } from './components/PlayerCard';
 import { useCareerStore } from './state/careerStore';
@@ -24,7 +25,7 @@ function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <h1>FOOTBALL CAREER SIM</h1>
+        <h1 className="t-label">Football Career Sim</h1>
         <div className="topbar-actions">
           {(hasSave || seasonMap) && !showMenu ? (
             <button type="button" className="mini" onClick={clearSave}>
@@ -61,7 +62,7 @@ function App() {
         <section className="screen">
           <h2>KARRIERE BEENDET</h2>
           <p>{player.endReason}</p>
-          <p className="meta">
+          <p className="meta t-num">
             ALTER {player.age} · SAISON {player.season} · REP {player.reputation}
             {' · '}
             {formatMoney(player.finances)} · WERT {formatValue(marketValue(player))}
@@ -76,6 +77,7 @@ function App() {
         <>
           <PlayerCard player={player} />
           <CareerTable player={player} />
+          <Feed />
           <ChoicePanel />
         </>
       ) : null}

@@ -26,3 +26,16 @@ export interface ActiveEvent {
   /** Extra context shown in the modal (e.g. match result text). */
   context?: string;
 }
+
+export type LogTone = 'win' | 'draw' | 'loss' | 'neutral';
+
+export interface LogEntry {
+  id: number;
+  season: number;
+  week: number;
+  /** Short heading, e.g. "Match" or "Event". */
+  tag: string;
+  title: string;
+  text?: string;
+  tone: LogTone;
+}
