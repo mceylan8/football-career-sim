@@ -86,6 +86,9 @@ export function createInitialPlayer(
     name: setup.name?.trim() || 'Spieler',
     position,
     seasonGames: 0,
+    seasonGoals: 0,
+    seasonAssists: 0,
+    seasonRatingSum: 0,
     history: [],
     age: 16,
     week: 1,
@@ -200,7 +203,7 @@ function seasonEntries(before: PlayerState, after: PlayerState): LogEntry[] {
       `Saison ${before.season} beendet`,
       'neutral',
       r
-        ? `${r.games} Spiele · OVR ${r.ovr} · Marktwert ${Math.round(r.value / 1000)} T€ · jetzt ${after.age} Jahre`
+        ? `${r.games} Spiele · ${r.goals ?? 0} Tore · ${r.assists ?? 0} Assists · Ø ${(r.avgRating ?? 0).toFixed(1)} · OVR ${r.ovr} · Marktwert ${Math.round(r.value / 1000)} T€ · jetzt ${after.age} Jahre`
         : undefined,
     ),
   ];
@@ -224,6 +227,9 @@ function advanceWeek(player: PlayerState): PlayerState {
       clubName: teamName(player),
       ovr: ovrOf(player),
       games: player.seasonGames,
+      goals: player.seasonGoals,
+      assists: player.seasonAssists,
+      avgRating: player.seasonGames ? Math.round((player.seasonRatingSum / player.seasonGames) * 10) / 10 : 0,
       value: marketValue(player),
     };
     const g = seasonGrowth(player);
@@ -236,6 +242,9 @@ function advanceWeek(player: PlayerState): PlayerState {
       trust: 50 + Math.round((player.trust - 50) / 2),
       history: [...player.history, record].slice(-25),
       seasonGames: 0,
+      seasonGoals: 0,
+      seasonAssists: 0,
+      seasonRatingSum: 0,
       week: 1,
       season: next.season + 1,
       age: next.age + 1,
@@ -347,6 +356,9 @@ export const useCareerStore = create<CareerStore>()(
           nextPlayer = {
             ...nextPlayer,
             seasonGames: nextPlayer.seasonGames + 1,
+            seasonGoals: nextPlayer.seasonGoals + result.playerGoals,
+            seasonAssists: nextPlayer.seasonAssists + result.playerAssists,
+            seasonRatingSum: nextPlayer.seasonRatingSum + result.rating,
             trust: clamp(
               nextPlayer.trust + (result.rating >= 7 ? 6 : result.rating < 5 ? -4 : 1),
               0,
@@ -373,7 +385,7 @@ export const useCareerStore = create<CareerStore>()(
               'Match',
               `${result.goalsFor}:${result.goalsAgainst} gegen ${result.opponentName}`,
               result.outcome,
-              `${result.outcome === 'win' ? 'Sieg' : result.outcome === 'draw' ? 'Remis' : 'Niederlage'} · Note ${result.rating.toFixed(1)} · Form ${result.formDelta >= 0 ? '+' : ''}${result.formDelta}, Ruf ${result.reputationDelta >= 0 ? '+' : ''}${result.reputationDelta}`,
+              `${result.outcome === 'win' ? 'Sieg' : result.outcome === 'draw' ? 'Remis' : 'Niederlage'} · Note ${result.rating.toFixed(1)}${result.playerGoals || result.playerAssists ? ` · ${result.playerGoals} Tore, ${result.playerAssists} Assists` : ''} · Form ${result.formDelta >= 0 ? '+' : ''}${result.formDelta}, Ruf ${result.reputationDelta >= 0 ? '+' : ''}${result.reputationDelta}`,
             ),
           ];
         }

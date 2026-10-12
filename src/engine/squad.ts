@@ -74,6 +74,8 @@ export function simulateAutoWeek(
   let d = 0;
   let l = 0;
   let ratings = 0;
+  let goals = 0;
+  let assists = 0;
   for (let i = 0; i < count; i++) {
     if (Math.random() >= share) continue;
     const r = simulateMatch(cur, pickOpponent(cur));
@@ -81,9 +83,14 @@ export function simulateAutoWeek(
     else if (r.outcome === 'draw') d++;
     else l++;
     ratings += r.rating;
+    goals += r.playerGoals;
+    assists += r.playerAssists;
     cur = {
       ...cur,
       seasonGames: cur.seasonGames + 1,
+      seasonGoals: cur.seasonGoals + r.playerGoals,
+      seasonAssists: cur.seasonAssists + r.playerAssists,
+      seasonRatingSum: cur.seasonRatingSum + r.rating,
       form: clamp(cur.form + (r.outcome === 'win' ? 1 : r.outcome === 'loss' ? -1 : 0), 0, 100),
       trust: clamp(cur.trust + (r.rating >= 7 ? 1 : r.rating < 5 ? -1 : 0), 0, 100),
     };
@@ -102,7 +109,7 @@ export function simulateAutoWeek(
   return {
     player: cur,
     title,
-    text: `${apps} ${apps === 1 ? 'Einsatz' : 'Einsätze'}: ${w} S · ${d} U · ${l} N · Note ${(ratings / apps).toFixed(1)}`,
+    text: `${apps} ${apps === 1 ? 'Einsatz' : 'Einsätze'}: ${w} S · ${d} U · ${l} N · Note ${(ratings / apps).toFixed(1)}${goals || assists ? ` · ${goals} Tore, ${assists} Assists` : ''}`,
     tone: w > l ? 'win' : l > w ? 'loss' : 'draw',
   };
 }

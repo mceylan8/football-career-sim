@@ -34,6 +34,10 @@ export interface SeasonRecord {
   clubName: string;
   ovr: number;
   games: number;
+  goals?: number;
+  assists?: number;
+  /** Average match rating of the season, 0 if no games. */
+  avgRating?: number;
   value: number;
 }
 
@@ -47,6 +51,10 @@ export interface PlayerState {
   talent: Talent | null;
   /** Matches played in the running season. */
   seasonGames: number;
+  seasonGoals: number;
+  seasonAssists: number;
+  /** Sum of match ratings (avg = sum / seasonGames). */
+  seasonRatingSum: number;
   /** One entry per finished season (oldest first). */
   history: SeasonRecord[];
   age: number;

@@ -1,4 +1,4 @@
-import { formatValue, marketValue, ovrOf } from '../engine/marketValue';
+import { ovrOf } from '../engine/marketValue';
 import { teamName } from '../engine/squad';
 import type { PlayerState } from '../types/player';
 import { Digits } from './Digits';
@@ -10,7 +10,6 @@ interface Props {
 
 export function CareerTable({ player }: Props) {
   const past = player.history.slice(-3);
-  const value = marketValue(player);
 
   return (
     <section className="ctable" aria-label="Karriere">
@@ -18,8 +17,10 @@ export function CareerTable({ player }: Props) {
         <span>Alter</span>
         <span>Klub</span>
         <span>OVR</span>
-        <span>Spiele</span>
-        <span>Wert</span>
+        <span>Sp</span>
+        <span>T</span>
+        <span>A</span>
+        <span>Ø</span>
       </div>
       {past.map((r) => (
         <div className="cr done" key={r.age}>
@@ -29,7 +30,9 @@ export function CareerTable({ player }: Props) {
           </span>
           <span className="t-num">{r.ovr}</span>
           <span className="t-num">{r.games}</span>
-          <span className="v t-num">{formatValue(r.value)}</span>
+          <span className="t-num">{r.goals ?? '–'}</span>
+          <span className="t-num">{r.assists ?? '–'}</span>
+          <span className="t-num">{r.avgRating ? r.avgRating.toFixed(1) : '–'}</span>
         </div>
       ))}
       <div className="cr now">
@@ -39,10 +42,16 @@ export function CareerTable({ player }: Props) {
         </span>
         <span className="t-num">{ovrOf(player)}</span>
         <span className="t-num">{player.seasonGames}</span>
-        <span className="v t-num">{formatValue(value)}</span>
+        <span className="t-num">{player.seasonGoals}</span>
+        <span className="t-num">{player.seasonAssists}</span>
+        <span className="t-num">
+          {player.seasonGames ? (player.seasonRatingSum / player.seasonGames).toFixed(1) : '–'}
+        </span>
       </div>
       <div className="cr future">
         <b className="t-num">{player.age + 1}</b>
+        <span />
+        <span />
         <span />
         <span />
         <span />
