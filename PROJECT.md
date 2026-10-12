@@ -16,7 +16,7 @@ Roguelike Fußball-Karriere-Simulator im Browser, inspiriert von Copero's "Simul
 
 - **Frontend**: React + Vite (TypeScript-Template)
 - **State**: Zustand (reicht, kein Redux nötig)
-- **Hosting**: GitHub Pages (reiner Static Build, `vite build` → `gh-pages` Branch, GitHub Actions Workflow)
+- **Hosting**: Vercel (Auto-Deploy von `main`, kein GitHub Pages)
 - **Save**: initial localStorage; optional später Supabase für Cross-Device-Save/Leaderboard
 
 ---
