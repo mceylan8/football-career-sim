@@ -7,6 +7,7 @@ import {
 import { useLocalPref } from '../state/useLocalPref';
 import type { PlayerState } from '../types/player';
 import { ClubCrest } from './ClubCrest';
+import { Digits } from './Digits';
 import './PlayerCard.css';
 
 interface Props {
@@ -31,7 +32,9 @@ export function PlayerCard({ player }: Props) {
         >
           <ClubCrest club={player.club} size={36} />
           <span className="mc-name">
-            <b>{player.club?.name ?? 'Vereinslos'}</b>
+            <b>
+              <Digits>{player.club?.name ?? 'Vereinslos'}</Digits>
+            </b>
             <span className="t-num">
               {player.position} · {player.age} J. · {formatValue(value)}
             </span>
@@ -62,14 +65,18 @@ export function PlayerCard({ player }: Props) {
         <div className="pc-club">
           <ClubCrest club={player.club} size={84} />
           <div className="pc-clubtxt">
-            <div className="pc-clubname">{player.club?.name ?? 'Vereinslos'}</div>
-            <div className="pc-meta">
-              {player.club
-                ? `${player.club.league} · Tier ${player.club.tier}`
-                : 'Auf Angebote warten'}
+            <div className="pc-clubname">
+              <Digits>{player.club?.name ?? 'Vereinslos'}</Digits>
             </div>
-            <div className="pc-meta t-num">
-              Saison {player.season} · Woche {player.week}/12
+            <div className="pc-meta">
+              {player.club ? (
+                <Digits>{`${player.club.league} · Tier ${player.club.tier}`}</Digits>
+              ) : (
+                'Auf Angebote warten'
+              )}
+            </div>
+            <div className="pc-meta">
+              <Digits>{`Saison ${player.season} · Woche ${player.week}/12`}</Digits>
             </div>
           </div>
           <button
@@ -91,7 +98,10 @@ export function PlayerCard({ player }: Props) {
           </div>
           <div className="pc-right">
             <div className="pc-tags">
-              <span className="tag t-num">Alter {player.age}</span>
+              <span className="tag">
+                <span className="t-label">Alter</span>{' '}
+                <span className="t-num">{player.age}</span>
+              </span>
               <span className="tag y t-num">{formatMoney(player.finances)}</span>
             </div>
             <div className="pc-bars">

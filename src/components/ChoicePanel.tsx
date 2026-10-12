@@ -1,5 +1,6 @@
 import { useCareerStore } from '../state/careerStore';
 import { useLocalPref } from '../state/useLocalPref';
+import { Digits } from './Digits';
 import { NodeCard } from './NodeCard';
 import './ChoicePanel.css';
 
@@ -45,11 +46,17 @@ export function ChoicePanel() {
       {!collapsed && activeEvent ? (
         <>
           <div className="event">
-            <b>{activeEvent.event.title}</b>
+            <b>
+              <Digits>{activeEvent.event.title}</Digits>
+            </b>
             {activeEvent.context ? (
-              <p className="ctx t-num">{activeEvent.context}</p>
+              <p className="ctx">
+                <Digits>{activeEvent.context}</Digits>
+              </p>
             ) : null}
-            <p>{activeEvent.event.description}</p>
+            <p>
+              <Digits>{activeEvent.event.description}</Digits>
+            </p>
           </div>
           {activeEvent.event.choices.map((choice, i) => (
             <button
@@ -59,7 +66,9 @@ export function ChoicePanel() {
               onClick={() => resolveChoice(i)}
             >
               <span className="t">
-                <b>{choice.label}</b>
+                <b>
+                  <Digits>{choice.label}</Digits>
+                </b>
               </span>
             </button>
           ))}

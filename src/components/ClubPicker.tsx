@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { STARTER_CLUBS } from '../state/careerStore';
 import { ClubCrest } from './ClubCrest';
+import { Digits } from './Digits';
 import './ClubPicker.css';
 
 interface Props {
@@ -48,7 +49,9 @@ export function ClubPicker({ onPick, onBack }: Props) {
             onClick={() => setSelected(c.id)}
           >
             <ClubCrest club={c} size={40} />
-            <span className="nm">{c.name}</span>
+            <span className="nm">
+              <Digits>{c.name}</Digits>
+            </span>
             <span className="t-num r">{c.rating}</span>
           </button>
         ))}

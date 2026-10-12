@@ -43,10 +43,6 @@
   color: var(--mute);
 }
 
-.pc-meta.t-num {
-  font-size: var(--fn-s);
-}
-
 .pc-toggle {
   position: absolute;
   top: var(--sp-2);

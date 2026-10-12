@@ -1,5 +1,6 @@
 import { formatValue, marketValue, ovrOf } from '../engine/marketValue';
 import type { PlayerState } from '../types/player';
+import { Digits } from './Digits';
 import './CareerTable.css';
 
 interface Props {
@@ -22,7 +23,9 @@ export function CareerTable({ player }: Props) {
       {past.map((r) => (
         <div className="cr done" key={r.age}>
           <b className="t-num">{r.age}</b>
-          <span className="club">{r.clubName}</span>
+          <span className="club">
+            <Digits>{r.clubName}</Digits>
+          </span>
           <span className="t-num">{r.ovr}</span>
           <span className="t-num">{r.games}</span>
           <span className="v t-num">{formatValue(r.value)}</span>
@@ -30,7 +33,9 @@ export function CareerTable({ player }: Props) {
       ))}
       <div className="cr now">
         <b className="t-num">{player.age}</b>
-        <span className="club">{player.club?.name ?? 'vereinslos'}</span>
+        <span className="club">
+          <Digits>{player.club?.name ?? 'vereinslos'}</Digits>
+        </span>
         <span className="t-num">{ovrOf(player)}</span>
         <span className="t-num">{player.seasonGames}</span>
         <span className="v t-num">{formatValue(value)}</span>

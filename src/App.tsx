@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Digits } from './components/Digits';
 import { CareerTable } from './components/CareerTable';
 import { ChoicePanel } from './components/ChoicePanel';
 import { Feed } from './components/Feed';
@@ -44,7 +45,9 @@ function App() {
         <section className="screen">
           <h2>DEINE KARRIERE BEGINNT</h2>
           <ul>
-            <li>94 Klubs · 5 Ligen</li>
+            <li>
+              <Digits>94 Klubs · 5 Ligen</Digits>
+            </li>
             <li>Wähle jede Woche deinen nächsten Schritt</li>
             <li>Speicherstand automatisch im Browser</li>
           </ul>

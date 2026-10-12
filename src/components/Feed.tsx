@@ -1,4 +1,5 @@
 import { useCareerStore } from '../state/careerStore';
+import { Digits } from './Digits';
 import './Feed.css';
 
 /** Scrollable match/event report, newest entry on top. */
@@ -19,8 +20,14 @@ export function Feed() {
                 S{e.season} · W{e.week}
               </span>
             </div>
-            <div className="fe-title">{e.title}</div>
-            {e.text ? <div className="fe-text">{e.text}</div> : null}
+            <div className="fe-title">
+              <Digits>{e.title}</Digits>
+            </div>
+            {e.text ? (
+              <div className="fe-text">
+                <Digits>{e.text}</Digits>
+              </div>
+            ) : null}
           </li>
         ))}
       </ol>
