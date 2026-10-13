@@ -1,103 +1,58 @@
+import { SPRITES, SPRITE_H, SPRITE_W } from './avatarSprites';
 import { colorsFor } from './crestUtil';
 import type { Club } from '../types/club';
 
 export type AvatarTalent = 'wunderkind' | 'top' | 'solid' | 'late' | string;
 
 /**
- * 14 x 18 pixel sprite. Letters:
- * s skin, e eyes, j shirt, k shorts, w socks, b boots, h hair, l laurel,
- * c cap, p pom-pom, z sleep "z", g glowing boots, . empty
+ * Letters: o outline, s/S skin, e eye, j/J shirt, a stripe, k/K shorts,
+ * w/W socks, b/B boots, h/H hair, l laurel, y gold, c cap, q cap band,
+ * p pom-pom, z sleep "z", g glowing boots, f/t ball.
  */
-const BODY = [
-  '..............', // 0
-  '..............', // 1
-  '..............', // 2
-  '..............', // 3
-  '....ssssss....', // 4
-  '....sesses....', // 5
-  '....ssssss....', // 6
-  '.....ssss.....', // 7
-  '...jjjjjjjj...', // 8
-  '..sjjjjjjjjs..', // 9
-  '..sjjjjjjjjs..', // 10
-  '...jjjjjjjj...', // 11
-  '....kkkkkk....', // 12
-  '....kk..kk....', // 13
-  '....ss..ss....', // 14
-  '....ww..ww....', // 15
-  '...bbb..bbb...', // 16
-  '..............', // 17
-];
-
-/** Rows overlaid on top of BODY ('.' keeps what is below). */
-const OVERLAY: Record<string, Record<number, string>> = {
-  solid: {
-    2: '....hhhhhh....',
-    3: '...hhhhhhhh...',
-    4: '...hssssssh...',
-  },
-  top: {
-    0: '...h..hh..h...',
-    1: '...hhhhhhhhh..',
-    2: '..hhhhhhhhhh..',
-    3: '...hhhhhhhh...',
-    4: '...hssssssh...',
-    16: '...ggg..ggg...',
-    17: '...ggg..ggg...',
-  },
-  wunderkind: {
-    1: '...llyllyll...',
-    2: '..ll.hhhh.ll..',
-    3: '..lhhhhhhhhl..',
-    4: '..l.ssssss.l..',
-    5: '..l.sesses.l..',
-    6: '...lssssssl...',
-    7: '....lssssl....',
-  },
-  late: {
-    0: 'pp.........zzz',
-    1: '.ccccc......z.',
-    2: '...ccccccc.zzz',
-    3: '...qqqqqqqq...',
-  },
-};
-
 const HAIR: Record<string, string> = {
   solid: '#5a3a22',
   top: '#2fd4ff',
-  wunderkind: '#5a3a22',
+  wunderkind: '#e8b84a',
+  late: '#3a2a22',
 };
 
-function paint(talent: string, ch: string, shirt: string, shorts: string): string | null {
-  switch (ch) {
-    case 's': return '#f2c28b';
-    case 'e': return '#1d1b3a';
-    case 'j': return shirt;
-    case 'k': return shorts;
-    case 'w': return shirt;
-    case 'y': return '#ffd23f';
-    case 'q': return '#9ad0ff';
-    case 'b': return '#1d1b3a';
-    case 'h': return HAIR[talent] ?? '#5a3a22';
-    case 'l': return '#3fa34d';
-    case 'c': return '#5b4bd6';
-    case 'p': return '#ff7ab6';
-    case 'z': return '#ffd23f';
-    case 'g': return '#7dffef';
-    default: return null;
-  }
+function darken(hex: string, amount = 0.22): string {
+  const n = parseInt(hex.slice(1), 16);
+  const f = (v: number) => Math.round(v * (1 - amount));
+  const r = f((n >> 16) & 255);
+  const g = f((n >> 8) & 255);
+  const b = f(n & 255);
+  return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
 }
 
-function sprite(talent: string): string[] {
-  const o = OVERLAY[talent] ?? OVERLAY.solid;
-  return BODY.map((row, i) => {
-    const over = o[i];
-    if (!over) return row;
-    return row
-      .split('')
-      .map((c, x) => (over[x] && over[x] !== '.' ? over[x] : c))
-      .join('');
-  });
+function palette(talent: string, primary: string, secondary: string): Record<string, string> {
+  const hair = HAIR[talent] ?? HAIR.solid;
+  return {
+    o: '#1d1b3a',
+    s: '#ffc08a',
+    S: '#e8895a',
+    e: '#1d1b3a',
+    j: primary,
+    J: darken(primary),
+    a: secondary,
+    k: secondary,
+    K: darken(secondary),
+    w: '#fff6dc',
+    W: '#b9b6c9',
+    b: '#3a4bbf',
+    B: '#2a3690',
+    h: hair,
+    H: darken(hair, 0.3),
+    l: '#3fa34d',
+    y: '#ffd23f',
+    c: '#5b4bd6',
+    q: '#9ad0ff',
+    p: '#ff7ab6',
+    z: '#ffd23f',
+    g: '#7dffef',
+    f: '#ffffff',
+    t: '#1d1b3a',
+  };
 }
 
 interface Props {
@@ -106,34 +61,41 @@ interface Props {
   size?: number;
 }
 
-/** Tiny retro figure; shirt colours come from the club. */
-export function PlayerAvatar({ talent, club, size = 64 }: Props) {
+/** Retro footballer mid-kick; shirt colours come from the club. */
+export function PlayerAvatar({ talent, club, size = 72 }: Props) {
   const [primary, secondary] = club ? colorsFor(club) : ['#e63946', '#ffd23f'];
-  const rows = sprite(talent);
+  const pal = palette(talent, primary, secondary);
+  const rows = SPRITES[talent] ?? SPRITES.solid;
   const rects: React.ReactNode[] = [];
   rows.forEach((row, y) => {
-    for (let x = 0; x < row.length; x++) {
+    let x = 0;
+    while (x < row.length) {
       const ch = row[x];
-      const fill = paint(talent, ch, primary, secondary);
-      if (!fill) continue;
+      if (ch === '.') {
+        x++;
+        continue;
+      }
+      let end = x + 1;
+      while (end < row.length && row[end] === ch) end++;
       rects.push(
         <rect
           key={`${x}-${y}`}
           x={x}
           y={y}
-          width={1.02}
+          width={end - x + 0.02}
           height={1.02}
-          fill={fill}
+          fill={pal[ch] ?? '#f0f'}
           className={ch === 'g' ? 'av-glow' : undefined}
         />,
       );
+      x = end;
     }
   });
   return (
     <svg
       className={`avatar av-${talent}`}
-      viewBox="0 0 14 18"
-      width={size * (14 / 18)}
+      viewBox={`0 0 ${SPRITE_W} ${SPRITE_H}`}
+      width={size * (SPRITE_W / SPRITE_H)}
       height={size}
       shapeRendering="crispEdges"
       role="img"
