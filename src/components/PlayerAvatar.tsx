@@ -18,13 +18,24 @@ export type AvatarAnim =
   | 'foul';
 
 /** Short reaction played once on top of the idle loop. */
-export type AvatarMood = 'idle' | 'cheer' | 'sad' | 'hurt';
+export type AvatarMood = 'idle' | 'cheer' | 'sad' | 'hurt' | 'train';
 /** Sprite animations each mood plays (sad has none: CSS dims the figure). */
 const MOOD_ANIMS: Record<AvatarMood, AvatarAnim[]> = {
   idle: [],
   cheer: ['torschuss', 'jubel'],
   sad: [],
   hurt: ['foul'],
+  train: ['laufen'],
+};
+
+/** Default idle rotation; the angled pose shows up once per round. */
+const IDLE: AvatarAnim[] = ['bereit', 'jonglieren', 'bereit', 'laufen', 'bereit', 'bereitSchraeg'];
+/** How often each idle animation loops before the next one (≈ 2–4 s each). */
+const IDLE_LOOPS: Partial<Record<AvatarAnim, number>> = {
+  bereit: 2,
+  jonglieren: 2,
+  laufen: 2,
+  bereitSchraeg: 3,
 };
 
 type Talent = 'wunderkind' | 'top' | 'solid' | 'late';
@@ -138,7 +149,7 @@ interface Props {
   club: Club | null;
   /** Figure height in px (standing pose). */
   size?: number;
-  /** Looping idle animations, played in turn (each `idleLoops` times). */
+  /** Looping idle animations, played in turn (each `idleLoops` times, default per animation). */
   idle?: AvatarAnim[];
   idleLoops?: number;
   /** One-shot animations; played once each whenever `playKey` changes, then back to idle. */
@@ -157,8 +168,8 @@ export function PlayerAvatar({
   talent,
   club,
   size = 72,
-  idle = ['bereit', 'jonglieren'],
-  idleLoops = 3,
+  idle = IDLE,
+  idleLoops,
   play,
   playKey,
   mood = 'idle',
@@ -228,7 +239,7 @@ export function PlayerAvatar({
           queue.current.shift();
           const next = queue.current[0] ?? idle[idleIdx.current % idle.length];
           if (next !== anim) return setAnim(next);
-        } else if (++loops.current >= idleLoops && idle.length > 1) {
+        } else if (++loops.current >= (idleLoops ?? IDLE_LOOPS[anim] ?? 2) && idle.length > 1) {
           loops.current = 0;
           idleIdx.current = (idleIdx.current + 1) % idle.length;
           return setAnim(idle[idleIdx.current]);

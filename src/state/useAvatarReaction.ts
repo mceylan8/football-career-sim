@@ -1,14 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AvatarMood } from '../components/PlayerAvatar';
 import type { PlayerState } from '../types/player';
+import { getEventById } from '../engine/eventEngine';
 import { useCareerStore } from './careerStore';
 
 const MOOD_MS = 2300;
 const SWAP_MS = 800;
+/** Weekly events after which the figure goes for a short run. */
+const TRAIN_TITLES = new Set(
+  ['training_intensity', 'rival_challenge'].map((id) => getEventById(id)?.title).filter(Boolean),
+);
 
 /**
  * Watches the career and returns a short-lived reaction for the avatar:
  * cheer after a won key match, sad after a lost one, hurt on a new injury,
+ * a short run after a training camp or rival challenge,
  * and a shirt "swap" flicker when the club changes. Nothing plays on load.
  */
 export function useAvatarReaction(player: PlayerState): { mood: AvatarMood; swap: boolean } {
@@ -28,6 +34,7 @@ export function useAvatarReaction(player: PlayerState): { mood: AvatarMood; swap
     const match = [...fresh].reverse().find((e) => e.tag === 'Match');
     if (match?.tone === 'win') setMood('cheer');
     else if (match?.tone === 'loss') setMood('sad');
+    else if (fresh.some((e) => e.tag === 'Event' && TRAIN_TITLES.has(e.title))) setMood('train');
   }, [log]);
 
   // new injury
