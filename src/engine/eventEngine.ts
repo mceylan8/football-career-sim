@@ -501,13 +501,13 @@ export interface TransferOffer {
 
 /** Offer from a club in the same league or one tier away. */
 export function generateOffer(s: PlayerState): TransferOffer {
-  const tier = s.club?.tier ?? 5;
+  const tier = s.club?.tier ?? 7;
   const club = pickClub(
     (c) => c.id !== s.club?.id && Math.abs(c.tier - tier) <= 1,
   );
   return {
     club,
     years: 2 + Math.floor(Math.random() * 3),
-    wage: Math.round(4000 + (6 - club.tier) * 3000 + s.reputation * 80),
+    wage: Math.round(4000 + (8 - club.tier) * 2500 + s.reputation * 80),
   };
 }

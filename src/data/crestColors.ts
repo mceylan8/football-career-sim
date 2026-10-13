@@ -2,9 +2,9 @@
  * Real club colours [primary, secondary] for the pixel crests.
  * Only colours are used (no logos), so the crests carry no trademark artwork.
  *
- * Coverage: the 5 leagues in clubs.json (Bundesliga, Premier League, Serie A,
- * Süper Lig, 2. Bundesliga). Clubs from other leagues are NOT covered yet and
- * fall back to a colour derived from the club id (see ClubCrest).
+ * Coverage: the 7 leagues in clubs.json (Premier League, La Liga, Serie A,
+ * Bundesliga, Ligue 1, Süper Lig, 2. Bundesliga). Clubs from other leagues are
+ * NOT covered yet and fall back to a colour derived from the club id (see ClubCrest).
  * Sources: clubs' own colours, rsssf.org/colours (Turkey), Wikipedia (Çorum FK),
  * cross-checked against dominant colours of the open fclogo.top logo set.
  */
@@ -108,4 +108,44 @@ export const CREST_COLORS: Record<string, [string, string]> = {
   'vfl-osnabruck': ['#6A2C91', '#FFFFFF'],
   'fc-st-pauli': ['#6B3E26', '#FFFFFF'],
   'vfl-wolfsburg': ['#65B32E', '#FFFFFF'],
+  // La Liga
+  alaves: ['#0761AF', '#FFFFFF'],
+  'athletic-bilbao': ['#EE2523', '#FFFFFF'],
+  'atletico-madrid': ['#CB3524', '#272E61'],
+  barcelona: ['#A50044', '#004D98'],
+  'celta-vigo': ['#8AC3EE', '#FFFFFF'],
+  'deportivo-la-coruna': ['#0F59AA', '#FFFFFF'],
+  elche: ['#0B7A3E', '#FFFFFF'],
+  espanyol: ['#0071BB', '#FFFFFF'],
+  getafe: ['#004FA3', '#FFFFFF'],
+  levante: ['#B5121B', '#003DA5'],
+  malaga: ['#2A8BD0', '#FFFFFF'],
+  osasuna: ['#D91A21', '#0A346F'],
+  'racing-santander': ['#009A44', '#FFFFFF'],
+  'rayo-vallecano': ['#FFFFFF', '#E53027'],
+  'real-betis': ['#00954C', '#FFFFFF'],
+  'real-madrid': ['#FFFFFF', '#FEBE10'],
+  'real-sociedad': ['#0067B1', '#FFFFFF'],
+  sevilla: ['#FFFFFF', '#D6001C'],
+  valencia: ['#FFFFFF', '#EE7D00'],
+  villarreal: ['#FBE122', '#005187'],
+  // Ligue 1
+  angers: ['#000000', '#FFFFFF'],
+  auxerre: ['#FFFFFF', '#0056A0'],
+  brest: ['#E2001A', '#FFFFFF'],
+  'le-havre': ['#6CB4E4', '#003A70'],
+  'le-mans': ['#FFD100', '#E1001A'],
+  lens: ['#E1001A', '#FFD100'],
+  lille: ['#E01E13', '#1D2951'],
+  lorient: ['#F58220', '#000000'],
+  lyon: ['#FFFFFF', '#003A92'],
+  marseille: ['#2FA7E0', '#FFFFFF'],
+  monaco: ['#E2001A', '#FFFFFF'],
+  nice: ['#000000', '#CE1126'],
+  'paris-fc': ['#004170', '#FFFFFF'],
+  'paris-saint-germain': ['#004170', '#DA291C'],
+  rennes: ['#E1001A', '#000000'],
+  strasbourg: ['#0070BA', '#FFFFFF'],
+  toulouse: ['#5B2C83', '#FFFFFF'],
+  troyes: ['#0066B2', '#FFFFFF'],
 };

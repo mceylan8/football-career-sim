@@ -1,18 +1,22 @@
 import { useState } from 'react';
+import { NATIONS, type NationId } from '../data/nations';
 import { POSITION_LIST, RANDOM_NAMES } from '../data/positions';
 import { rollTalent } from '../engine/squad';
-import { STARTER_CLUBS, type CareerSetup } from '../state/careerStore';
+import { startOffers, type StartOffer } from '../engine/startClubs';
+import { CLUBS, type CareerSetup } from '../state/careerStore';
 import type { Position, Talent } from '../types/player';
 import { PlayerAvatar } from './PlayerAvatar';
+import { PixelFlag } from './PixelFlag';
 import { Digits } from './Digits';
 import { ClubPicker } from './ClubPicker';
 import './Setup.css';
 
-type Step = 'name' | 'position' | 'club' | 'talent';
-const STEPS: Step[] = ['name', 'position', 'club', 'talent'];
+type Step = 'name' | 'position' | 'nation' | 'club' | 'talent';
+const STEPS: Step[] = ['name', 'position', 'nation', 'club', 'talent'];
 const STEP_LABEL: Record<Step, string> = {
   name: 'Name',
   position: 'Position',
+  nation: 'Nation',
   club: 'Verein',
   talent: 'Talent',
 };
@@ -31,7 +35,7 @@ interface Props {
   onCancel: () => void;
 }
 
-/** Career "login": name → position → club. */
+/** Career "login": name → position → nationality → club (3 offers) → talent. */
 export function Setup({ onDone, onCancel }: Props) {
   const [step, setStep] = useState<Step>('name');
   const [name, setName] = useState(lastName);
@@ -41,15 +45,30 @@ export function Setup({ onDone, onCancel }: Props) {
 
   const back = () => (idx === 0 ? onCancel() : setStep(STEPS[idx - 1]));
 
+  const [nation, setNation] = useState<NationId | null>(null);
+  const [offers, setOffers] = useState<StartOffer[]>([]);
   const [clubId, setClubId] = useState<string | null>(null);
   const [talent, setTalent] = useState<Talent | null>(null);
   const [revealed, setRevealed] = useState(false);
-  const club = STARTER_CLUBS.find((c) => c.id === clubId);
+  const club = CLUBS.find((c) => c.id === clubId);
 
-  const pickClub = (id?: string) => {
-    const chosen =
-      id ?? STARTER_CLUBS[Math.floor(Math.random() * STARTER_CLUBS.length)].id;
-    setClubId(chosen);
+  /** The nation decides the league; a new nation draws three new clubs. */
+  const chooseNation = (id: NationId) => {
+    if (id !== nation) {
+      setNation(id);
+      setOffers(startOffers(CLUBS, id));
+      setClubId(null);
+    }
+  };
+
+  const goToClubs = (id: NationId | null = nation) => {
+    if (!id) return;
+    chooseNation(id);
+    setStep('club');
+  };
+
+  const pickClub = (id: string) => {
+    setClubId(id);
     setTalent(rollTalent());
     setRevealed(false);
     setStep('talent');
@@ -65,6 +84,7 @@ export function Setup({ onDone, onCancel }: Props) {
       name: cleanName,
       position: position ?? undefined,
       clubId: clubId ?? undefined,
+      nationality: nation ?? undefined,
       talent: talent ?? undefined,
     });
   };
@@ -168,7 +188,7 @@ export function Setup({ onDone, onCancel }: Props) {
               type="button"
               className="pbtn"
               disabled={!position}
-              onClick={() => setStep('club')}
+              onClick={() => setStep('nation')}
             >
               Weiter
             </button>
@@ -179,7 +199,60 @@ export function Setup({ onDone, onCancel }: Props) {
         </div>
       ) : null}
 
-      {step === 'club' ? <ClubPicker onPick={pickClub} onBack={back} /> : null}
+      {step === 'nation' ? (
+        <div className="step">
+          <div className="step-head">
+            <h2>DEINE NATION</h2>
+            <p>Sie bestimmt, in welcher Liga du als Talent anfängst.</p>
+          </div>
+          <div className="step-body nation-grid">
+            {NATIONS.map((n) => (
+              <button
+                key={n.id}
+                type="button"
+                className={`nation${nation === n.id ? ' on' : ''}`}
+                aria-pressed={nation === n.id}
+                onClick={() => chooseNation(n.id)}
+              >
+                <PixelFlag nation={n.id} width={44} />
+                <span className="nation-txt">
+                  <b>{n.name}</b>
+                  <span>
+                    <Digits>{n.league}</Digits>
+                  </span>
+                </span>
+                <span className="nation-code t-label">{n.code}</span>
+              </button>
+            ))}
+          </div>
+          <div className="step-foot">
+            <button
+              type="button"
+              className="pbtn"
+              disabled={!nation}
+              onClick={() => goToClubs()}
+            >
+              Weiter
+            </button>
+            <div className="row2">
+              <button
+                type="button"
+                className="mini dark"
+                onClick={() => goToClubs(NATIONS[Math.floor(Math.random() * NATIONS.length)].id)}
+              >
+                ZUFÄLLIG
+              </button>
+              <button type="button" className="mini dark" onClick={back}>
+                ZURÜCK
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {step === 'club' && nation ? (
+        <ClubPicker nation={nation} offers={offers} onPick={pickClub} onBack={back} />
+      ) : null}
 
       {step === 'talent' && talent && club ? (
         <div className="step">
@@ -191,10 +264,10 @@ export function Setup({ onDone, onCancel }: Props) {
           </div>
           <div className="step-body">
             {revealed ? (
-              <div className="reveal">
+              <div className={`reveal reveal-${talent.id}`}>
                 <div className="reveal-label">{talent.label.toUpperCase()}</div>
                 <p>{talent.desc}</p>
-                <PlayerAvatar talent={talent.id} club={club} size={130} />
+                <PlayerAvatar talent={talent.id} club={club} size={130} reveal />
                 <p className="reveal-pro">
                   <b>+</b> {talent.pro}
                 </p>

@@ -10,7 +10,8 @@
   margin: 0;
   padding: 10px var(--sp-4);
   display: flex;
-  gap: var(--sp-3);
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
   background: var(--ink);
   color: #8f8bb8;
 }
@@ -212,4 +213,104 @@
 }
 .reveal svg.avatar {
   align-self: center;
+}
+
+/* nationality cards */
+.nation-grid {
+  gap: var(--sp-2);
+}
+
+.nation {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: var(--sp-3);
+  align-items: center;
+  padding: var(--sp-2) 10px;
+  background: var(--white);
+  border: var(--bw) solid var(--ink);
+  cursor: pointer;
+  text-align: left;
+  color: var(--ink);
+}
+
+.nation:hover {
+  background: #fff9e8;
+}
+
+.nation.on {
+  background: var(--yellow);
+  box-shadow: var(--sh-m);
+}
+
+.nation-txt {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.nation-txt b {
+  font-size: var(--fs-body);
+  line-height: 1.1;
+}
+
+.nation-txt span {
+  font-size: var(--fs-sm);
+  color: var(--mute);
+  line-height: 1.2;
+}
+
+.nation.on .nation-txt span {
+  color: var(--ink);
+}
+
+.nation-code {
+  background: var(--ink);
+  color: var(--yellow);
+  padding: 4px 6px;
+}
+
+/* talent reveal: flash, slam-in label, staggered lines */
+.reveal {
+  position: relative;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .reveal::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    pointer-events: none;
+    opacity: 0;
+    animation: rv-flash 0.6s steps(4) 1;
+  }
+  .reveal-wunderkind::after {
+    background: #fff6dc;
+    animation-duration: 1s;
+  }
+  .reveal-label {
+    animation: rv-slam 0.5s steps(5) 1 both;
+  }
+  .reveal > p:first-of-type,
+  .reveal-pro,
+  .reveal-con,
+  .reveal-chips {
+    animation: rv-rise 0.4s steps(4) 1 both;
+  }
+  .reveal > p:first-of-type { animation-delay: 0.25s; }
+  .reveal-pro { animation-delay: 0.9s; }
+  .reveal-con { animation-delay: 1.1s; }
+  .reveal-chips { animation-delay: 1.3s; }
+}
+@keyframes rv-flash {
+  0% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+@keyframes rv-slam {
+  0% { transform: scale(1.8); opacity: 0; }
+  60% { transform: scale(0.92); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes rv-rise {
+  0% { transform: translateY(6px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
 }

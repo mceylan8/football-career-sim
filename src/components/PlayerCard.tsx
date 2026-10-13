@@ -6,6 +6,7 @@ import {
 } from '../engine/marketValue';
 import { positionLabel } from '../data/positions';
 import { playtimeShare, roleLabel, teamName } from '../engine/squad';
+import { useAvatarReaction } from '../state/useAvatarReaction';
 import { useLocalPref } from '../state/useLocalPref';
 import type { PlayerState } from '../types/player';
 import { PlayerAvatar } from './PlayerAvatar';
@@ -19,6 +20,7 @@ interface Props {
 
 export function PlayerCard({ player }: Props) {
   const [collapsed, setCollapsed] = useLocalPref('card-collapsed', false);
+  const { mood, swap } = useAvatarReaction(player);
   const ovr = ovrOf(player);
   const value = marketValue(player);
   const last = player.history[player.history.length - 1];
@@ -99,7 +101,13 @@ export function PlayerCard({ player }: Props) {
             <div className="pc-ovr t-num">{ovr}</div>
             <div className="t-label muted">OVR</div>
             <div className="pc-pos t-label">{positionLabel(player.position)}</div>
-            <PlayerAvatar talent={player.talent?.id ?? 'solid'} club={player.club} size={72} />
+            <PlayerAvatar
+              talent={player.talent?.id ?? 'solid'}
+              club={player.club}
+              size={72}
+              mood={mood}
+              swap={swap}
+            />
           </div>
           <div className="pc-right">
             <div className="pc-tags">

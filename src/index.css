@@ -177,6 +177,10 @@ button:focus-visible {
 .avatar .av-glow {
   filter: drop-shadow(0 0 0.6px #ffe27a) drop-shadow(0 0 1.4px #ffd23f);
 }
+/* reveal particles stay hidden unless the animation runs */
+.avatar .av-burst rect {
+  opacity: 0;
+}
 @media (prefers-reduced-motion: no-preference) {
   .avatar .av-all {
     animation: av-bob 1s steps(1) infinite;
@@ -184,11 +188,42 @@ button:focus-visible {
   .avatar.av-wunderkind .av-aura {
     animation: av-aura 1.6s ease-in-out infinite alternate;
   }
+  .avatar.av-wunderkind .av-rays {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    animation: av-spin 14s steps(28) infinite;
+  }
   .avatar.av-top .av-glow {
     animation: av-pulse 1.4s steps(2, end) infinite;
   }
-  .avatar.av-late rect[fill='#ffd23f'] {
-    animation: av-z 2s steps(3, end) infinite;
+  .avatar.av-top .av-twinkle {
+    opacity: 0;
+    animation: av-twinkle 2.4s steps(1) infinite;
+  }
+  .avatar.av-late .av-zzz {
+    animation: av-zfloat 2.4s steps(4) infinite;
+  }
+
+  /* one-off reactions on the svg root, so they never fight the idle loop */
+  .avatar.mood-cheer {
+    animation: av-cheer 1.2s steps(1) 1;
+  }
+  .avatar.mood-sad {
+    transform-origin: 50% 100%;
+    animation: av-sad 2.2s steps(1) 1;
+  }
+  .avatar.mood-hurt {
+    animation: av-hurt 1.2s steps(1) 1;
+  }
+  .avatar.av-swap {
+    animation: av-swap 0.7s steps(1) 1;
+  }
+  .avatar.av-reveal {
+    transform-origin: 50% 100%;
+    animation: av-pop 0.8s steps(1) 1;
+  }
+  .avatar .av-burst rect {
+    animation: av-burst 1s steps(7) 0.35s 1 both;
   }
 }
 @keyframes av-bob {
@@ -201,13 +236,67 @@ button:focus-visible {
     opacity: 0.55;
   }
 }
-@keyframes av-z {
-  50% {
-    opacity: 0.35;
-  }
-}
-
 @keyframes av-aura {
   from { opacity: 0.55; }
   to { opacity: 1; }
+}
+@keyframes av-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes av-twinkle {
+  0%, 100% { opacity: 0; }
+  20% { opacity: 1; }
+  45% { opacity: 0.4; }
+  60% { opacity: 1; }
+  80% { opacity: 0; }
+}
+@keyframes av-zfloat {
+  0% { transform: translate(0, 0); opacity: 1; }
+  50% { transform: translate(0.5px, -1px); opacity: 0.75; }
+  100% { transform: translate(1px, -2px); opacity: 0.2; }
+}
+@keyframes av-cheer {
+  0% { transform: translateY(0); }
+  15% { transform: translateY(-4px); }
+  30% { transform: translateY(0); }
+  45% { transform: translateY(-4px); }
+  60% { transform: translateY(0); }
+  100% { transform: translateY(0); }
+}
+@keyframes av-sad {
+  0% { transform: translateY(0) scaleY(1); filter: none; }
+  12% { transform: translateY(1px) scaleY(0.96); filter: saturate(0.4) brightness(0.9); }
+  85% { transform: translateY(1px) scaleY(0.96); filter: saturate(0.4) brightness(0.9); }
+  100% { transform: translateY(0) scaleY(1); filter: none; }
+}
+@keyframes av-hurt {
+  0% { transform: translateX(0); filter: drop-shadow(0 0 2px #d93a2b); }
+  12% { transform: translateX(-1.5px); }
+  24% { transform: translateX(1.5px); }
+  36% { transform: translateX(-1.5px); }
+  48% { transform: translateX(1.5px); }
+  60% { transform: translateX(0); filter: drop-shadow(0 0 2px #d93a2b); }
+  100% { transform: translateX(0); filter: none; }
+}
+@keyframes av-swap {
+  0% { opacity: 0; }
+  20% { opacity: 1; filter: brightness(2.2); }
+  40% { opacity: 0.35; filter: none; }
+  60% { opacity: 1; filter: brightness(1.7); }
+  100% { opacity: 1; filter: none; }
+}
+@keyframes av-pop {
+  0% { transform: scale(0.2); opacity: 0; }
+  35% { transform: scale(1.18); opacity: 1; }
+  60% { transform: scale(0.94); }
+  100% { transform: scale(1); }
+}
+@keyframes av-burst {
+  0% { opacity: 1; transform: translate(0, 0); }
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--dx) * 1px), calc(var(--dy) * 1px));
+  }
 }

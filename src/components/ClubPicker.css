@@ -25,24 +25,11 @@
   font-size: var(--fs-body);
 }
 
-.tabs {
+.picker-nation {
   display: flex;
+  align-items: center;
   gap: var(--sp-2);
-  flex-wrap: wrap;
-  margin-top: var(--sp-1);
-}
-
-.tab {
-  padding: 7px 10px;
-  background: var(--cream);
-  color: var(--ink);
-  border: var(--bw) solid var(--ink);
-  cursor: pointer;
-}
-
-.tab.on {
-  background: var(--yellow);
-  box-shadow: var(--sh-s);
+  font-weight: 700;
 }
 
 .picker-list {
@@ -52,7 +39,6 @@
   flex-direction: column;
   gap: var(--sp-2);
   overflow-y: auto;
-  max-height: 52svh;
 }
 
 .pick {
@@ -69,8 +55,25 @@
 
 .pick .nm {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   font-size: var(--fs-body);
-  font-weight: 600;
+}
+
+.pick .nm b {
+  line-height: 1.1;
+}
+
+.pick .size {
+  color: var(--red);
+}
+
+.pick .hint {
+  font-size: var(--fs-sm);
+  color: var(--mute);
+  line-height: 1.2;
 }
 
 .pick .r {
@@ -85,6 +88,14 @@
 .pick.on {
   background: var(--yellow);
   box-shadow: var(--sh-m);
+}
+
+.pick.on .hint {
+  color: var(--ink);
+}
+
+.pick {
+  padding: var(--sp-3);
 }
 
 .picker-foot {

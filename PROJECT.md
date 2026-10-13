@@ -60,34 +60,44 @@ Match-Simulation: stat-basiert statt pure RNG
 
 **Ursprünglich geprüfter Ansatz** (verworfen zugunsten einer direkt kuratierten Liste): openfootball (GitHub, statische Namen/Struktur) + ClubElo API (kostenlose Elo-Ratings, kein Key nötig) mergen. Geprüft, aber nicht gewählt: TheSportsDB (Free-Tier zu eingeschränkt), football-data.org (nur Top-Ligen), api-football.com (Free-Tier zu knapp für Bulk-Export). Der Merge-/Fetch-Workflow bleibt als Option für später (Nice-to-have-Phase, falls echte Elo-Werte gewünscht sind), ist für den MVP aber nicht nötig — die Klublisten unten sind bereits final und aktuell (Saison 2026/27).
 
-### Gewählte Struktur: 5 Ligen, 5 Tiers
+### Gewählte Struktur: 7 Ligen, 7 Tiers
 
 | Tier | Liga | Land | Rating-Range (Platzhalter) |
 |---|---|---|---|
-| 1 | Bundesliga | DE | ~1700–2000 |
-| 2 | Premier League | EN | ~1750–2050 |
-| 3 | Serie A | IT | ~1650–1950 |
-| 4 | Süper Lig | TR | ~1500–1750 |
-| 5 | 2. Bundesliga | DE | ~1450–1700 |
+| 1 | Premier League | EN | ~1810–1985 |
+| 2 | La Liga | ES | ~1705–1960 |
+| 3 | Serie A | IT | ~1700–1900 |
+| 4 | Bundesliga | DE | ~1755–1950 |
+| 5 | Ligue 1 | FR | ~1650–1930 |
+| 6 | Süper Lig | TR | ~1530–1720 |
+| 7 | 2. Bundesliga | DE | ~1485–1670 |
 
-Rating pro Klub grob interpoliert: `baseRating = tierBase + random(-100, +100)`, später ggf. gegen echte ClubElo-Werte ersetzbar (Interface bleibt gleich: `{id, name, tier, rating}`).
+Tier = Stärke-Rang der Liga (1 = stärkste). Die Top-5-Ligen plus Süper Lig sind per Nationalität im Setup wählbar (EN, DE, ES, IT, FR, TR); man startet in der Zweitmannschaft eines von 3 angebotenen Klubs der obersten Liga des Landes (klein / Mittelklasse / Großklub je aus einem Drittel der Rating-Rangliste).
 
-### Bundesliga (DE) — Tier 1, 18 Klubs
+Rating pro Klub synthetisch, innerhalb jeder Liga nach realistischer Stärke-Reihenfolge verteilt (Oktober 2026), später ggf. gegen echte ClubElo-Werte ersetzbar (Interface bleibt gleich: `{id, name, tier, rating}`).
+
+### Bundesliga (DE) — Tier 4, 18 Klubs
 FC Augsburg, Union Berlin, Werder Bremen, Borussia Dortmund, SV Elversberg, Eintracht Frankfurt, SC Freiburg, Hamburger SV, TSG Hoffenheim, 1. FC Köln, RB Leipzig, Bayer Leverkusen, Mainz 05, Borussia Mönchengladbach, Bayern Munich, SC Paderborn, Schalke 04, VfB Stuttgart
 
-### Premier League (EN) — Tier 2, 20 Klubs
+### Premier League (EN) — Tier 1, 20 Klubs
 Arsenal, Aston Villa, Bournemouth, Brentford, Brighton & Hove Albion, Chelsea, Crystal Palace, Everton, Fulham, Liverpool, Manchester City, Manchester United, Newcastle United, Nottingham Forest, Sunderland, Tottenham Hotspur, Leeds United, Coventry City, Ipswich Town, Hull City
+
+### La Liga (ES) — Tier 2, 20 Klubs
+Alavés, Athletic Bilbao, Atlético Madrid, Barcelona, Celta Vigo, Deportivo La Coruña, Elche, Espanyol, Getafe, Levante, Málaga, Osasuna, Racing Santander, Rayo Vallecano, Real Betis, Real Madrid, Real Sociedad, Sevilla, Valencia, Villarreal
+
+### Ligue 1 (FR) — Tier 5, 18 Klubs
+Angers, Auxerre, Brest, Le Havre, Le Mans, Lens, Lille, Lorient, Lyon, Marseille, Monaco, Nice, Paris FC, Paris Saint-Germain, Rennes, Strasbourg, Toulouse, Troyes
 
 ### Serie A (IT) — Tier 3, 20 Klubs
 Atalanta, Bologna, Cagliari, Como, Fiorentina, Frosinone, Genoa, Inter Milan, Juventus, Lazio, Lecce, AC Milan, Monza, Napoli, Parma, Roma, Sassuolo, Torino, Udinese, Venezia
 
-### Süper Lig (TR) — Tier 4, 18 Klubs
+### Süper Lig (TR) — Tier 6, 18 Klubs
 Galatasaray, Fenerbahçe, Beşiktaş, Başakşehir, Kasımpaşa, Eyüpspor, Trabzonspor, Göztepe, Samsunspor, Çaykur Rizespor, Konyaspor, Kocaelispor, Alanyaspor, Gaziantep FK, Gençlerbirliği, Erzurumspor FK, Amed Sportif Faaliyetler, Çorum FK
 
-### 2. Bundesliga (DE) — Tier 5, 18 Klubs
+### 2. Bundesliga (DE) — Tier 7, 18 Klubs
 Hertha BSC, Arminia Bielefeld, VfL Bochum, Eintracht Braunschweig, Energie Cottbus, Darmstadt 98, Dynamo Dresden, Greuther Fürth, Hannover 96, 1. FC Heidenheim, 1. FC Kaiserslautern, Karlsruher SC, Holstein Kiel, 1. FC Magdeburg, 1. FC Nürnberg, VfL Osnabrück, FC St. Pauli, VfL Wolfsburg
 
-**Gesamt: 94 Klubs über 5 Ligen/Tiers.** Stand: Saison 2026/27 (September 2026).
+**Gesamt: 132 Klubs über 7 Ligen/Tiers.** Stand: Saison 2026/27 (Oktober 2026).
 
 **Hinweis Namens-Encoding**: türkische Sonderzeichen (ş, ç, ı, ğ) korrekt als UTF-8 in der JSON halten — bei ASCII-Normalisierung (z.B. für Suchfilter) separat behandeln, nicht die Anzeige-Namen verändern.
 
@@ -102,7 +112,7 @@ export interface Club {
   name: string;
   country: string;
   league: string;
-  tier: number;        // 1-5
+  tier: number;        // 1-7 (Stärke-Rang der Liga)
   rating: number;       // synthetisch interpoliert, später ggf. echte Elo
 }
 
@@ -215,7 +225,7 @@ src/
 - Kern-Stats (technisch/physisch/mental, Form, Reputation, Finanzen) + einfache Wechselwirkungs-Formeln
 - Event-/Node-System mit 30-50 unterschiedlichen Events zum Start (Einstieg: 10-15 Events, dann ausbauen)
 - Stat-reaktive Match-Simulation (siehe Abschnitt 7)
-- Vereins-/Liga-Struktur: 5 Ligen, 5 Tiers, 94 Klubs (siehe Abschnitt 5) — bereits final für MVP
+- Vereins-/Liga-Struktur: 7 Ligen, 7 Tiers, 132 Klubs (siehe Abschnitt 5) — bereits final für MVP
 - Vertragslogik (Angebot annehmen/ablehnen, Laufzeit, Ende → neues Angebot oder Karriereende)
 - Ende-Zustand (Alter, Verletzung, vertragslos ohne Angebot)
 - Save/Load (mind. localStorage)

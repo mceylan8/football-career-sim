@@ -16,6 +16,7 @@ import type {
   LogTone,
   PendingFollowUp,
 } from '../types/event';
+import { NATIONS, nationById, type NationId } from '../data/nations';
 import { POSITION_LIST, positionLabel, positionMeta } from '../data/positions';
 import {
   growthCap,
@@ -33,6 +34,9 @@ import type {
 } from '../types/player';
 
 const clubs = clubsData as Club[];
+
+/** All clubs of the static pool (used by the setup and the club lookups). */
+export const CLUBS = clubs;
 const SAVE_KEY = 'football-career-sim';
 
 let logCounter = Date.now();
@@ -55,26 +59,33 @@ function clamp(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n));
 }
 
+/** Fallback start: a random club from the top league of a random nation. */
 function startingClub(): Club {
-  const pool = clubs.filter((c) => c.tier >= 4);
+  const leagues = NATIONS.map((n) => n.league);
+  const pool = clubs.filter((c) => leagues.includes(c.league));
   return pool[Math.floor(Math.random() * pool.length)];
 }
-
-/** Clubs a 16-year-old can start at (lower two tiers). */
-export const STARTER_CLUBS = clubs.filter((c) => c.tier >= 4);
 
 export interface CareerSetup {
   name?: string;
   position?: Position;
   clubId?: string;
+  nationality?: NationId;
   talent?: Talent;
 }
 
 export function createInitialPlayer(
   chosen?: Club,
-  setup: { name?: string; position?: Position; talent?: Talent } = {},
+  setup: {
+    name?: string;
+    position?: Position;
+    nationality?: NationId;
+    talent?: Talent;
+  } = {},
 ): PlayerState {
   const club = chosen ?? startingClub();
+  const nationality =
+    setup.nationality ?? (nationById(club.country) ? (club.country as NationId) : undefined);
   const position =
     setup.position ??
     POSITION_LIST[Math.floor(Math.random() * POSITION_LIST.length)].id;
@@ -85,6 +96,7 @@ export function createInitialPlayer(
     trust: 50,
     talent: setup.talent ?? null,
     name: setup.name?.trim() || 'Spieler',
+    nationality,
     position,
     seasonGames: 0,
     seasonWins: 0,
@@ -420,7 +432,7 @@ export const useCareerStore = create<CareerStore>()(
       hasSave: false,
 
       newCareer: (setup: CareerSetup = {}) => {
-        const chosen = STARTER_CLUBS.find((c) => c.id === setup.clubId);
+        const chosen = clubs.find((c) => c.id === setup.clubId);
         const player = createInitialPlayer(chosen, setup);
         const weekPlan = generateWeekPlan(player);
         set({
@@ -560,6 +572,10 @@ export const useCareerStore = create<CareerStore>()(
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<CareerStore> & { seasonMap?: unknown };
         const player = { ...current.player, ...p.player } as PlayerState;
+        // Club data can change between versions (tiers, new leagues): re-read it by id.
+        if (player.club) {
+          player.club = clubs.find((c) => c.id === player.club?.id) ?? player.club;
+        }
         // Saves from before the weekly plan: build the first plan from the player.
         const weekPlan =
           p.weekPlan ??

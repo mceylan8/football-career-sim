@@ -1,3 +1,4 @@
+import type { NationId } from '../data/nations';
 import type { Club } from './club';
 
 export interface Trait {
@@ -49,6 +50,8 @@ export interface SeasonRecord {
 
 export interface PlayerState {
   name: string;
+  /** Picked in the setup; decides the start league. Missing in old saves. */
+  nationality?: NationId;
   position: Position;
   /** Start in the second team; promoted to the first team later. */
   squad: 'reserve' | 'first';
