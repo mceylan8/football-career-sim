@@ -76,7 +76,7 @@ interface Props {
   size?: number;
 }
 
-/** Retro footballer, front view with ball; striped shirt in the club colours. */
+/** Retro footballer with a pose per talent; striped shirt in the club colours. */
 export function PlayerAvatar({ talent, club, size = 72 }: Props) {
   const [primary, secondary] = club ? colorsFor(club) : ['#e63946', '#ffd23f'];
   const pal = palette(talent, primary, secondary);
@@ -116,8 +116,10 @@ export function PlayerAvatar({ talent, club, size = 72 }: Props) {
       role="img"
       aria-label={`Spielerfigur ${talent}`}
     >
-      {rects}
-      <g className="av-glow">{glow}</g>
+      <g className="av-all">
+        {rects}
+        <g className="av-glow">{glow}</g>
+      </g>
     </svg>
   );
 }

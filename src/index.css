@@ -172,11 +172,19 @@ button:focus-visible {
   filter: drop-shadow(0 0 0.6px #7dffef) drop-shadow(0 0 1.4px #7dffef);
 }
 @media (prefers-reduced-motion: no-preference) {
+  .avatar .av-all {
+    animation: av-bob 1s steps(1) infinite;
+  }
   .avatar.av-top .av-glow {
     animation: av-pulse 1.4s steps(2, end) infinite;
   }
   .avatar.av-late rect[fill='#ffd23f'] {
     animation: av-z 2s steps(3, end) infinite;
+  }
+}
+@keyframes av-bob {
+  50% {
+    transform: translateY(-1px);
   }
 }
 @keyframes av-pulse {
