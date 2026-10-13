@@ -138,3 +138,43 @@
   border: var(--bw) solid var(--cream);
   font-size: var(--fs-sm);
 }
+
+/* season-end transfer window cards */
+.choice.tw {
+  align-items: flex-start;
+}
+.choice.tw .t > span {
+  display: block;
+}
+.choice.tw .t > .tw-chips {
+  display: flex;
+}
+.tw-crest {
+  flex: none;
+  padding-top: 2px;
+}
+.tw-kind {
+  color: var(--mute);
+  font-size: var(--fs-label);
+}
+.tw-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.choice .tw-chip {
+  font-size: var(--fs-label);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  padding: 1px 6px;
+  background: var(--white);
+}
+.choice .tw-chip.up {
+  background: var(--grass);
+  color: var(--white);
+}
+.choice .tw-chip.down {
+  background: var(--red);
+  color: var(--white);
+}

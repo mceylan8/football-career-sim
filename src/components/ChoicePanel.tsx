@@ -3,6 +3,7 @@ import { useCareerStore } from '../state/careerStore';
 import { useLocalPref } from '../state/useLocalPref';
 import { Digits } from './Digits';
 import { NodeCard } from './NodeCard';
+import { ClubCrest } from './ClubCrest';
 import './ChoicePanel.css';
 
 const WIDE = '(min-width: 1000px)';
@@ -24,6 +25,8 @@ export function ChoicePanel() {
   const activeEvent = useCareerStore((s) => s.activeEvent);
   const selectNode = useCareerStore((s) => s.selectNode);
   const resolveChoice = useCareerStore((s) => s.resolveChoice);
+  const transferWindow = useCareerStore((s) => s.transferWindow);
+  const pickTransfer = useCareerStore((s) => s.pickTransfer);
   const [collapsedPref, setCollapsed] = useLocalPref('panel-collapsed', false);
 
   // An open event always shows, even if the panel was collapsed; on desktop it never collapses.
@@ -31,6 +34,49 @@ export function ChoicePanel() {
   const collapsed = collapsedPref && !activeEvent && !wide;
 
   if (!weekPlan && !activeEvent) return null;
+
+  if (transferWindow) {
+    const goodRole = (r: string) => r === 'Stammspieler' || r === 'Rotation';
+    return (
+      <section className="panel" aria-live="polite">
+        <div className="panel-head">
+          <h2 className="t-label">Transferfenster</h2>
+        </div>
+        <div className="event">
+          <b>{transferWindow.expired ? 'Dein Vertrag läuft aus' : 'Angebote für dich'}</b>
+          <p>
+            <Digits>
+              {transferWindow.expired
+                ? 'Wähle deinen nächsten Klub, sonst ist die Karriere vorbei.'
+                : `Vor Saison ${player.season}: wechseln oder bleiben?`}
+            </Digits>
+          </p>
+        </div>
+        {transferWindow.options.map((o, i) => (
+          <button key={i} type="button" className="choice tw" onClick={() => pickTransfer(i)}>
+            <span className="tw-crest">
+              <ClubCrest club={o.club} size={40} />
+            </span>
+            <span className="t">
+              <span className="tw-kind t-label">
+                {o.kind === 'move' ? 'Wechsel zu' : o.kind === 'extend' ? 'Verlängern bei' : 'Bleiben bei'}
+              </span>
+              <b>{o.club.name}</b>
+              <span>{o.club.league}</span>
+              <span className="tw-chips">
+                <span className={`tw-chip ${goodRole(o.role) ? 'up' : 'down'}`}>
+                  {o.squad === 'reserve' ? `${o.role} · Zweite` : o.role}
+                </span>
+                <span className="tw-chip">
+                  <Digits>{`${o.years} J. · ${o.wage.toLocaleString('de-DE')} €/Wo`}</Digits>
+                </span>
+              </span>
+            </span>
+          </button>
+        ))}
+      </section>
+    );
+  }
 
   const nodes = weekPlan?.options ?? [];
   const title = activeEvent

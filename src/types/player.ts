@@ -28,6 +28,8 @@ export interface Talent {
   boost: number;
   /** Multiplier on yearly growth while young. */
   growth: number;
+  /** OVR ceiling range; the career's potential is rolled inside it. */
+  potential: [number, number];
   /** Short texts shown on the reveal screen. */
   pro: string;
   con: string;
@@ -58,6 +60,8 @@ export interface PlayerState {
   /** Coach trust 0-100 (key matches move it); feeds playtime. */
   trust: number;
   talent: Talent | null;
+  /** OVR ceiling of this career (rolled from the talent). Missing in old saves. */
+  potential?: number;
   /** Matches played in the running season. */
   seasonGames: number;
   seasonWins: number;

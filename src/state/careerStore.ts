@@ -7,6 +7,7 @@ import {
   randomOpponent,
 } from '../engine/eventEngine';
 import { generateWeekPlan, type WeekPlan } from '../engine/weekPlan';
+import { openWindow, type TransferWindow } from '../engine/transfers';
 import { marketValue, ovrOf } from '../engine/marketValue';
 import { simulateMatch } from '../engine/matchSim';
 import type { Club } from '../types/club';
@@ -19,7 +20,8 @@ import type {
 import { NATIONS, nationById, type NationId } from '../data/nations';
 import { POSITION_LIST, positionLabel, positionMeta } from '../data/positions';
 import {
-  growthCap,
+  eventGain,
+  rollPotential,
   seasonGrowth,
   shouldPromote,
   simulateAutoWeek,
@@ -95,6 +97,7 @@ export function createInitialPlayer(
     squad: 'reserve',
     trust: 50,
     talent: setup.talent ?? null,
+    potential: rollPotential(setup.talent ?? null),
     name: setup.name?.trim() || 'Spieler',
     nationality,
     position,
@@ -130,10 +133,18 @@ function mergePlayer(
   state: PlayerState,
   patch: PartialPlayerUpdate,
 ): PlayerState {
+  // Event stat bonuses only partly stick and fade out near the potential.
+  let stats = state.stats;
+  if (patch.stats) {
+    const want = { ...state.stats, ...patch.stats };
+    const one = (k: 'tech' | 'phys' | 'mental') =>
+      Math.max(1, Math.min(99, state.stats[k] + eventGain(state, state.stats[k], want[k] - state.stats[k])));
+    stats = { tech: one('tech'), phys: one('phys'), mental: one('mental') };
+  }
   return {
     ...state,
     ...patch,
-    stats: patch.stats ? { ...state.stats, ...patch.stats } : state.stats,
+    stats,
     contract:
       patch.contract === undefined ? state.contract : patch.contract,
   };
@@ -186,6 +197,9 @@ interface CareerStore {
   lastMatch: LastMatch | null;
   dismissMatch: () => void;
   weekPlan: WeekPlan | null;
+  /** Season-end transfer window; blocks the week until a card is picked. */
+  transferWindow: TransferWindow | null;
+  pickTransfer: (index: number) => void;
   activeEvent: ActiveEvent | null;
   lastMatchSummary: string | null;
   pendingFollowUps: PendingFollowUp[];
@@ -273,7 +287,7 @@ function advanceWeek(player: PlayerState): PlayerState {
     };
     const g = seasonGrowth(player);
     const stat = (k: 'tech' | 'phys' | 'mental') =>
-      Math.max(1, Math.min(Math.max(growthCap(player), next.stats[k]), next.stats[k] + (g[k] ?? 0)));
+      Math.max(1, Math.min(99, next.stats[k] + (g[k] ?? 0)));
     next = {
       ...next,
       stats: { tech: stat('tech'), phys: stat('phys'), mental: stat('mental') },
@@ -292,42 +306,12 @@ function advanceWeek(player: PlayerState): PlayerState {
       age: next.age + 1,
     };
     if (next.contract) {
-      const yearsLeft = next.contract.yearsLeft - 1;
-      if (yearsLeft <= 0) {
-        next = { ...next, contract: null, club: null };
-      } else {
-        next = {
-          ...next,
-          contract: { ...next.contract, yearsLeft },
-        };
-      }
+      // 0 years left = contract runs out; the transfer window decides what happens.
+      next = { ...next, contract: { ...next.contract, yearsLeft: Math.max(0, next.contract.yearsLeft - 1) } };
     }
   }
 
-  if (!next.contract && !next.club) {
-    const offerChance = next.reputation >= 25 ? 0.7 : 0.35;
-    if (Math.random() < offerChance) {
-      const club = clubs.filter((c) => c.tier >= 3)[
-        Math.floor(Math.random() * clubs.filter((c) => c.tier >= 3).length)
-      ];
-      next = {
-        ...next,
-        club,
-        squad: 'first',
-        trust: 50,
-        contract: {
-          yearsLeft: 2,
-          wage: Math.round(2000 + next.reputation * 60),
-        },
-      };
-    } else {
-      next = {
-        ...next,
-        careerEnded: true,
-        endReason: 'Vertragsende ohne neues Angebot — Karriere vorbei.',
-      };
-    }
-  }
+
 
   return checkCareerEnd(next);
 }
@@ -413,10 +397,20 @@ function finishWeek(
   follow: PendingFollowUp[],
 ) {
   const week = playWeek(p, plan.keyMatch);
-  const adv = week.player;
+  let adv = week.player;
+  // New season: transfer window first (offers + stay / extension).
+  let transferWindow: TransferWindow | null = null;
+  if (adv.season > before.season && !adv.careerEnded) {
+    transferWindow = openWindow(adv);
+    if (!transferWindow.options.length) {
+      adv = { ...adv, careerEnded: true, endReason: 'Vertragsende ohne neues Angebot — Karriere vorbei.' };
+      transferWindow = null;
+    }
+  }
   useCareerStore.setState({
     player: adv,
     weekPlan: adv.careerEnded ? plan : generateWeekPlan(adv),
+    transferWindow,
     activeEvent: null,
     log: pushLog(
       useCareerStore.getState().log,
@@ -458,12 +452,44 @@ export const useCareerStore = create<CareerStore>()(
     (set, get) => ({
       player: createInitialPlayer(),
       weekPlan: null,
+      transferWindow: null,
       activeEvent: null,
       lastMatchSummary: null,
       lastMatch: null,
       pendingFollowUps: [],
       log: [],
       hasSave: false,
+
+      pickTransfer: (index: number) => {
+        const { player, transferWindow } = get();
+        const o = transferWindow?.options[index];
+        if (!o) return;
+        let next: PlayerState = player;
+        let logEntry: LogEntry;
+        if (o.kind === 'move') {
+          next = {
+            ...player,
+            club: o.club,
+            squad: o.squad,
+            trust: 50,
+            contract: { yearsLeft: o.years, wage: o.wage },
+            reputation: Math.min(100, player.reputation + 3),
+            flags: player.flags.filter((f) => f !== 'transfer_rumor'),
+          };
+          logEntry = entry(next, 'Transfer', `Wechsel zu ${teamName(next)}`, 'win', `${o.club.league} · ${o.years} J. · ${o.wage.toLocaleString('de-DE')} €/Woche · ${o.role}`);
+        } else if (o.kind === 'extend') {
+          next = { ...player, contract: { yearsLeft: o.years, wage: o.wage } };
+          logEntry = entry(next, 'Vertrag', `Verlängert bei ${teamName(next)}`, 'neutral', `${o.years} J. · ${o.wage.toLocaleString('de-DE')} €/Woche · ${o.role}`);
+        } else {
+          logEntry = entry(next, 'Transfer', `Bleibt bei ${teamName(next)}`, 'neutral', `Noch ${o.years} J. Vertrag · ${o.role}`);
+        }
+        set({
+          player: next,
+          transferWindow: null,
+          weekPlan: generateWeekPlan(next),
+          log: pushLog(get().log, logEntry),
+        });
+      },
 
       dismissMatch: () => set({ lastMatch: null }),
 
@@ -474,6 +500,7 @@ export const useCareerStore = create<CareerStore>()(
         set({
           player,
           weekPlan,
+          transferWindow: null,
           activeEvent: null,
           lastMatchSummary: null,
           lastMatch: null,
@@ -493,7 +520,7 @@ export const useCareerStore = create<CareerStore>()(
 
       selectNode: (optionId: string) => {
         const { player, weekPlan, pendingFollowUps } = get();
-        if (!weekPlan || player.careerEnded || get().activeEvent) return;
+        if (!weekPlan || player.careerEnded || get().activeEvent || get().transferWindow) return;
         const option = weekPlan.options.find((o) => o.id === optionId);
         if (!option) return;
 
@@ -595,6 +622,7 @@ export const useCareerStore = create<CareerStore>()(
         set({
           player: createInitialPlayer(),
           weekPlan: null,
+          transferWindow: null,
           activeEvent: null,
           lastMatchSummary: null,
           lastMatch: null,
@@ -623,6 +651,7 @@ export const useCareerStore = create<CareerStore>()(
       partialize: (s) => ({
         player: s.player,
         weekPlan: s.weekPlan,
+        transferWindow: s.transferWindow,
         pendingFollowUps: s.pendingFollowUps,
         log: s.log,
         lastMatchSummary: s.lastMatchSummary,

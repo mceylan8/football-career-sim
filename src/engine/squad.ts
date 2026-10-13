@@ -111,16 +111,50 @@ export function simulateAutoWeek(
   };
 }
 
-/** Season-end growth, scaled by playtime and talent. */
+/** Career ceiling: rolled potential, or the middle of the talent range for old saves. */
+export function potentialOf(p: PlayerState): number {
+  if (p.potential) return p.potential;
+  const [lo, hi] = TALENTS.find((t) => t.id === p.talent?.id)?.potential ?? [75, 82];
+  return Math.round((lo + hi) / 2);
+}
+
+export function rollPotential(t: Talent | null): number {
+  const [lo, hi] = t?.potential ?? [75, 82];
+  return lo + Math.floor(Math.random() * (hi - lo + 1));
+}
+
+/**
+ * Season-end growth per stat:
+ *   young:  delta = k(age) x (potential - stat) x playtime x talent
+ *   old:    flat decline (physis drops first)
+ * k = 0.22 (<=18), 0.20 (<=21), 0.16 (<=24), 0.10 (<=28), 0 (29-30).
+ * Example (potential 85, start 47, regular games): 55 at 17, 67 at 19, 76 at 22, 80 at 25.
+ */
 export function seasonGrowth(p: PlayerState): Partial<PlayerStats> {
   // The late bloomer's curve runs 3 years behind.
   const age = p.talent?.id === 'late' ? p.age - 3 : p.age;
-  const base =
-    age <= 18 ? 3 : age <= 21 ? 2.2 : age <= 25 ? 1 : age <= 29 ? 0 : age <= 32 ? -1 : -2;
-  const factor = 0.5 + Math.min(1, p.seasonGames / MATCHDAYS);
-  const grow = base > 0 ? factor * (p.talent?.growth ?? 1) : 1;
-  const roll = () => Math.round(base * grow + (Math.random() - 0.5) * 1.4);
-  return { tech: roll(), phys: roll(), mental: roll() };
+  const pot = potentialOf(p);
+  const k = age < 16 ? 0.08 : age <= 18 ? 0.12 : age <= 21 ? 0.14 : age <= 24 ? 0.12 : age <= 28 ? 0.08 : 0;
+  const play = 0.6 + 0.7 * Math.min(1, p.seasonGames / MATCHDAYS);
+  const talent = 1 + ((p.talent?.growth ?? 1) - 1) * 0.5;
+  const decline = age >= 33 ? 2 : age >= 31 ? 1 : 0;
+  const one = (k_: 'tech' | 'phys' | 'mental') => {
+    const cur = p.stats[k_];
+    const up = k * Math.max(0, pot - cur) * play * talent;
+    const down = decline * (k_ === 'phys' ? 1.5 : k_ === 'tech' ? 0.8 : 0.5);
+    return Math.round(up - down + (Math.random() - 0.5) * 1.2);
+  };
+  return { tech: one('tech'), phys: one('phys'), mental: one('mental') };
+}
+
+/** Share of an event's stat bonus that sticks: shrinks towards the potential (0 at the ceiling). */
+export const EVENT_GAIN = 0.15;
+export function eventGain(p: PlayerState, stat: number, delta: number): number {
+  if (delta <= 0) return delta;
+  const headroom = Math.max(0, Math.min(1, (potentialOf(p) - stat) / 25));
+  const raw = delta * EVENT_GAIN * headroom;
+  const whole = Math.floor(raw);
+  return whole + (Math.random() < raw - whole ? 1 : 0);
 }
 
 /** Reserve player moves up when good enough (or too old for the reserves). */
@@ -131,31 +165,26 @@ export function shouldPromote(p: PlayerState): boolean {
 
 export const TALENTS: Talent[] = [
   {
-    id: 'wunderkind', label: 'Wunderkind', desc: 'Scouts reden schon über dich.', boost: 7, growth: 1.25,
-    pro: 'Starke Werte und schnellstes Wachstum.',
+    id: 'wunderkind', label: 'Wunderkind', desc: 'Scouts reden schon über dich.', boost: 7, growth: 1.25, potential: [88, 94],
+    pro: 'Starke Werte, schnellstes Wachstum, Potenzial bis 94.',
     con: 'Hohe Erwartungen: mehr Medien-Druck und mehr Verletzungs-Events.',
   },
   {
-    id: 'top', label: 'Top-Talent', desc: 'Klar über dem Schnitt deines Jahrgangs.', boost: 4, growth: 1.15,
-    pro: 'Gute Werte, früher Transferangebote.',
+    id: 'top', label: 'Top-Talent', desc: 'Klar über dem Schnitt deines Jahrgangs.', boost: 4, growth: 1.15, potential: [82, 88],
+    pro: 'Gute Werte, bessere Transferangebote, Potenzial bis 88.',
     con: 'Trainer verliert bei schwachen Spielen schneller die Geduld.',
   },
   {
-    id: 'solid', label: 'Solide Anlagen', desc: 'Ordentliche Basis, Rest ist Arbeit.', boost: 2, growth: 1,
+    id: 'solid', label: 'Solide Anlagen', desc: 'Ordentliche Basis, Rest ist Arbeit.', boost: 2, growth: 1, potential: [75, 82],
     pro: 'Mehr Trainings-Events, 20 % mehr Gehalt bei Verlängerungen.',
     con: 'Kein Ausreißer nach oben.',
   },
   {
-    id: 'late', label: 'Spätzünder', desc: 'Start holprig, aber du wächst schneller.', boost: 0, growth: 1.3,
-    pro: 'Wächst bis 28 statt 25 und kann über 93 kommen.',
+    id: 'late', label: 'Spätzünder', desc: 'Start holprig, aber du wächst länger.', boost: 0, growth: 1.3, potential: [80, 90],
+    pro: 'Wächst drei Jahre länger, Potenzial bis 90.',
     con: 'Schwacher Start, anfangs oft auf der Bank.',
   },
 ];
-
-/** Stat ceiling for growth; only the late bloomer can pass it. */
-export function growthCap(p: PlayerState): number {
-  return p.talent?.id === 'late' ? 99 : 93;
-}
 
 /** 5 % Wunderkind, 20 % Top-Talent, 50 % Solide, 25 % Spätzünder. */
 export function rollTalent(r: number = Math.random()): Talent {

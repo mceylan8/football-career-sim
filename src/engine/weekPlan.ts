@@ -35,15 +35,7 @@ const POOL: Slot[] = [
   { type: 'SPONSOR', weight: (p) => (p.reputation >= 15 ? 6 : 2) },
   { type: 'AGENT_MEETING', weight: () => 5 },
   { type: 'RIVAL_CHALLENGE', weight: () => 5 },
-  {
-    type: 'TRANSFER_OFFER',
-    weight: (p) =>
-      p.flags.includes('transfer_rumor')
-        ? 12
-        : p.reputation >= (p.talent?.id === 'top' ? 15 : 25)
-          ? p.talent?.id === 'top' ? 5 : 3
-          : 0,
-  },
+  // Transfers only happen in the season-end window (see engine/transfers.ts).
 ];
 
 function pickDistinct(p: PlayerState, n: number): NodeType[] {
