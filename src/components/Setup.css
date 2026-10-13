@@ -205,3 +205,11 @@
   gap: var(--sp-3);
   flex-wrap: wrap;
 }
+
+.reveal-pro,
+.reveal-con {
+  font-size: var(--fs-sm) !important;
+}
+.reveal svg.avatar {
+  align-self: center;
+}

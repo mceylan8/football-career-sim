@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { CREST_COLORS } from '../data/crestColors';
+import { colorsFor, hash } from './crestUtil';
 import type { Club } from '../types/club';
 
 interface Props {
@@ -8,12 +8,6 @@ interface Props {
 }
 
 const SKIP = new Set(['FC', 'SV', 'VfB', 'VfL', 'SC', 'AC', 'AS', 'RC', 'CF']);
-
-function hash(str: string): number {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
-  return h;
-}
 
 function initials(name: string): string {
   const words = name.split(/\s+/).filter((w) => !SKIP.has(w));
@@ -33,13 +27,6 @@ const SHIELD =
 type Pattern = 'band' | 'halves' | 'stripes' | 'top';
 const PATTERNS: Pattern[] = ['band', 'halves', 'stripes', 'top'];
 
-/** Real club colours if known, otherwise a stable colour pair from the id. */
-function colorsFor(club: Club): [string, string] {
-  const known = CREST_COLORS[club.id];
-  if (known) return known;
-  const h = hash(club.id) % 360;
-  return [`hsl(${h} 70% 45%)`, `hsl(${(h + 160) % 360} 85% 60%)`];
-}
 
 /** Pixel crest: club colours + pattern (picked per club) + initials. */
 export function ClubCrest({ club, size = 72 }: Props) {

@@ -27,6 +27,9 @@ export interface Talent {
   boost: number;
   /** Multiplier on yearly growth while young. */
   growth: number;
+  /** Short texts shown on the reveal screen. */
+  pro: string;
+  con: string;
 }
 
 export interface SeasonRecord {

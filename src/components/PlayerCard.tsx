@@ -8,6 +8,7 @@ import { positionLabel } from '../data/positions';
 import { playtimeShare, roleLabel, teamName } from '../engine/squad';
 import { useLocalPref } from '../state/useLocalPref';
 import type { PlayerState } from '../types/player';
+import { PlayerAvatar } from './PlayerAvatar';
 import { ClubCrest } from './ClubCrest';
 import { Digits } from './Digits';
 import './PlayerCard.css';
@@ -98,6 +99,7 @@ export function PlayerCard({ player }: Props) {
             <div className="pc-ovr t-num">{ovr}</div>
             <div className="t-label muted">OVR</div>
             <div className="pc-pos t-label">{positionLabel(player.position)}</div>
+            <PlayerAvatar talent={player.talent?.id ?? 'solid'} club={player.club} size={72} />
           </div>
           <div className="pc-right">
             <div className="pc-tags">

@@ -341,7 +341,7 @@ export const GAME_EVENTS: GameEvent[] = [
           contract: s.contract
             ? {
                 yearsLeft: s.contract.yearsLeft + 2,
-                wage: Math.round(s.contract.wage * 1.1),
+                wage: Math.round(s.contract.wage * (s.talent?.id === 'solid' ? 1.2 : 1.1)),
               }
             : null,
           reputation: clamp(s.reputation + 3, 0, 100),
@@ -455,6 +455,12 @@ export const GAME_EVENTS: GameEvent[] = [
   },
 ];
 
+/** Talent side effects: some events show up more often. */
+const TALENT_WEIGHT: Record<string, Record<string, number>> = {
+  wunderkind: { media_interview: 2, media_scandal_fallout: 2, injury_risk_tackle: 1.6, physio_warning: 1.5 },
+  solid: { training_intensity: 1.5 },
+};
+
 export function pickEventForNode(
   state: PlayerState,
   nodeType: string,
@@ -466,10 +472,12 @@ export function pickEventForNode(
   );
   if (!eligible.length) return null;
 
-  const total = eligible.reduce((sum, e) => sum + e.weight, 0);
+  const w = (e: GameEvent) =>
+    e.weight * (TALENT_WEIGHT[state.talent?.id ?? '']?.[e.id] ?? 1);
+  const total = eligible.reduce((sum, e) => sum + w(e), 0);
   let roll = Math.random() * total;
   for (const event of eligible) {
-    roll -= event.weight;
+    roll -= w(event);
     if (roll <= 0) return event;
   }
   return eligible[eligible.length - 1];

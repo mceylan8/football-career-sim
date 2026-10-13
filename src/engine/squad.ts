@@ -89,7 +89,7 @@ export function simulateAutoWeek(
       seasonAssists: cur.seasonAssists + r.playerAssists,
       seasonRatingSum: cur.seasonRatingSum + r.rating,
       form: clamp(cur.form + (r.outcome === 'win' ? 1 : r.outcome === 'loss' ? -1 : 0), 0, 100),
-      trust: clamp(cur.trust + (r.rating >= 7 ? 1 : r.rating < 5 ? -1 : 0), 0, 100),
+      trust: clamp(cur.trust + (r.rating >= 7 ? 1 : r.rating < 5 ? (p.talent?.id === 'top' ? -3 : -1) : 0), 0, 100),
     };
   }
   const apps = w + d + l;
@@ -113,8 +113,10 @@ export function simulateAutoWeek(
 
 /** Season-end growth, scaled by playtime and talent. */
 export function seasonGrowth(p: PlayerState): Partial<PlayerStats> {
+  // The late bloomer's curve runs 3 years behind.
+  const age = p.talent?.id === 'late' ? p.age - 3 : p.age;
   const base =
-    p.age <= 18 ? 3 : p.age <= 21 ? 2.2 : p.age <= 25 ? 1 : p.age <= 29 ? 0 : p.age <= 32 ? -1 : -2;
+    age <= 18 ? 3 : age <= 21 ? 2.2 : age <= 25 ? 1 : age <= 29 ? 0 : age <= 32 ? -1 : -2;
   const factor = 0.5 + Math.min(1, p.seasonGames / MATCHDAYS);
   const grow = base > 0 ? factor * (p.talent?.growth ?? 1) : 1;
   const roll = () => Math.round(base * grow + (Math.random() - 0.5) * 1.4);
@@ -128,11 +130,32 @@ export function shouldPromote(p: PlayerState): boolean {
 }
 
 export const TALENTS: Talent[] = [
-  { id: 'wunderkind', label: 'Wunderkind', desc: 'Scouts reden schon über dich.', boost: 7, growth: 1.25 },
-  { id: 'top', label: 'Top-Talent', desc: 'Klar über dem Schnitt deines Jahrgangs.', boost: 4, growth: 1.15 },
-  { id: 'solid', label: 'Solide Anlagen', desc: 'Ordentliche Basis, Rest ist Arbeit.', boost: 2, growth: 1 },
-  { id: 'late', label: 'Spätzünder', desc: 'Start holprig, aber du wächst schneller.', boost: 0, growth: 1.3 },
+  {
+    id: 'wunderkind', label: 'Wunderkind', desc: 'Scouts reden schon über dich.', boost: 7, growth: 1.25,
+    pro: 'Starke Werte und schnellstes Wachstum.',
+    con: 'Hohe Erwartungen: mehr Medien-Druck und mehr Verletzungs-Events.',
+  },
+  {
+    id: 'top', label: 'Top-Talent', desc: 'Klar über dem Schnitt deines Jahrgangs.', boost: 4, growth: 1.15,
+    pro: 'Gute Werte, früher Transferangebote.',
+    con: 'Trainer verliert bei schwachen Spielen schneller die Geduld.',
+  },
+  {
+    id: 'solid', label: 'Solide Anlagen', desc: 'Ordentliche Basis, Rest ist Arbeit.', boost: 2, growth: 1,
+    pro: 'Mehr Trainings-Events, 20 % mehr Gehalt bei Verlängerungen.',
+    con: 'Kein Ausreißer nach oben.',
+  },
+  {
+    id: 'late', label: 'Spätzünder', desc: 'Start holprig, aber du wächst schneller.', boost: 0, growth: 1.3,
+    pro: 'Wächst bis 28 statt 25 und kann über 93 kommen.',
+    con: 'Schwacher Start, anfangs oft auf der Bank.',
+  },
 ];
+
+/** Stat ceiling for growth; only the late bloomer can pass it. */
+export function growthCap(p: PlayerState): number {
+  return p.talent?.id === 'late' ? 99 : 93;
+}
 
 /** 5 % Wunderkind, 20 % Top-Talent, 50 % Solide, 25 % Spätzünder. */
 export function rollTalent(r: number = Math.random()): Talent {

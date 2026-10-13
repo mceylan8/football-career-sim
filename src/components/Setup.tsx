@@ -3,6 +3,7 @@ import { POSITION_LIST, RANDOM_NAMES } from '../data/positions';
 import { rollTalent } from '../engine/squad';
 import { STARTER_CLUBS, type CareerSetup } from '../state/careerStore';
 import type { Position, Talent } from '../types/player';
+import { PlayerAvatar } from './PlayerAvatar';
 import { Digits } from './Digits';
 import { ClubPicker } from './ClubPicker';
 import './Setup.css';
@@ -193,6 +194,13 @@ export function Setup({ onDone, onCancel }: Props) {
               <div className="reveal">
                 <div className="reveal-label">{talent.label.toUpperCase()}</div>
                 <p>{talent.desc}</p>
+                <PlayerAvatar talent={talent.id} club={club} size={112} />
+                <p className="reveal-pro">
+                  <b>+</b> {talent.pro}
+                </p>
+                <p className="reveal-con">
+                  <b>−</b> {talent.con}
+                </p>
                 <div className="reveal-chips">
                   <span className="bias">
                     <span className="t-num">+{talent.boost}</span>{' '}

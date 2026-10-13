@@ -18,6 +18,7 @@ import type {
 } from '../types/event';
 import { POSITION_LIST, positionLabel, positionMeta } from '../data/positions';
 import {
+  growthCap,
   seasonGrowth,
   shouldPromote,
   simulateAutoWeek,
@@ -242,7 +243,7 @@ function advanceWeek(player: PlayerState): PlayerState {
     };
     const g = seasonGrowth(player);
     const stat = (k: 'tech' | 'phys' | 'mental') =>
-      Math.max(1, Math.min(99, next.stats[k] + (g[k] ?? 0)));
+      Math.max(1, Math.min(Math.max(growthCap(player), next.stats[k]), next.stats[k] + (g[k] ?? 0)));
     next = {
       ...next,
       stats: { tech: stat('tech'), phys: stat('phys'), mental: stat('mental') },
@@ -318,7 +319,7 @@ function runMatch(
     seasonAssists: base.seasonAssists + result.playerAssists,
     seasonRatingSum: base.seasonRatingSum + result.rating,
     trust: clamp(
-      base.trust + (result.rating >= 7 ? 6 : result.rating < 5 ? -4 : 1),
+      base.trust + (result.rating >= 7 ? 6 : result.rating < 5 ? (base.talent?.id === 'top' ? -7 : -4) : 1),
       0,
       100,
     ),

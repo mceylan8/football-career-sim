@@ -37,7 +37,12 @@ const POOL: Slot[] = [
   { type: 'RIVAL_CHALLENGE', weight: () => 5 },
   {
     type: 'TRANSFER_OFFER',
-    weight: (p) => (p.flags.includes('transfer_rumor') ? 12 : p.reputation >= 25 ? 3 : 0),
+    weight: (p) =>
+      p.flags.includes('transfer_rumor')
+        ? 12
+        : p.reputation >= (p.talent?.id === 'top' ? 15 : 25)
+          ? p.talent?.id === 'top' ? 5 : 3
+          : 0,
   },
 ];
 
