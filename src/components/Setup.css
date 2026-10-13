@@ -210,6 +210,6 @@
 .reveal-con {
   font-size: var(--fs-sm) !important;
 }
-.reveal svg.avatar {
+.reveal .avatar {
   align-self: center;
 }

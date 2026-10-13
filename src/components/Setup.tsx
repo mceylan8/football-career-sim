@@ -194,7 +194,7 @@ export function Setup({ onDone, onCancel }: Props) {
               <div className="reveal">
                 <div className="reveal-label">{talent.label.toUpperCase()}</div>
                 <p>{talent.desc}</p>
-                <PlayerAvatar talent={talent.id} club={club} size={130} />
+                <PlayerAvatar talent={talent.id} club={club} size={130} play={['jubel']} playKey={talent.id} />
                 <p className="reveal-pro">
                   <b>+</b> {talent.pro}
                 </p>

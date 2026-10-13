@@ -8,7 +8,8 @@ import { positionLabel } from '../data/positions';
 import { playtimeShare, roleLabel, teamName } from '../engine/squad';
 import { useLocalPref } from '../state/useLocalPref';
 import type { PlayerState } from '../types/player';
-import { PlayerAvatar } from './PlayerAvatar';
+import { useCareerStore } from '../state/careerStore';
+import { PlayerAvatar, type AvatarAnim } from './PlayerAvatar';
 import { ClubCrest } from './ClubCrest';
 import { Digits } from './Digits';
 import './PlayerCard.css';
@@ -23,6 +24,7 @@ export function PlayerCard({ player }: Props) {
   const value = marketValue(player);
   const last = player.history[player.history.length - 1];
   const diff = last ? value - last.value : null;
+  const reaction = useReaction(player);
 
   if (collapsed) {
     return (
@@ -99,7 +101,13 @@ export function PlayerCard({ player }: Props) {
             <div className="pc-ovr t-num">{ovr}</div>
             <div className="t-label muted">OVR</div>
             <div className="pc-pos t-label">{positionLabel(player.position)}</div>
-            <PlayerAvatar talent={player.talent?.id ?? 'solid'} club={player.club} size={72} />
+            <PlayerAvatar
+              talent={player.talent?.id ?? 'solid'}
+              club={player.club}
+              size={72}
+              play={reaction.anims}
+              playKey={reaction.key}
+            />
           </div>
           <div className="pc-right">
             <div className="pc-tags">
@@ -159,4 +167,17 @@ export function PlayerCard({ player }: Props) {
       </div>
     </section>
   );
+}
+
+/** The figure reacts to the newest log entry: win = shot + celebration, draw = run, injury = foul. */
+function useReaction(player: PlayerState): { anims: AvatarAnim[]; key: string } {
+  const newest = useCareerStore((s) => s.log[s.log.length - 1]);
+  const injured = player.flags.includes('injured');
+  if (!newest) return { anims: [], key: '' };
+  let anims: AvatarAnim[] = [];
+  if (injured) anims = ['foul'];
+  else if (newest.tag === 'Match' || newest.tag === 'Spieltag') {
+    anims = newest.tone === 'win' ? ['torschuss', 'jubel'] : newest.tone === 'draw' ? ['laufen', 'laufen'] : [];
+  }
+  return { anims, key: `${newest.id}-${injured}` };
 }
