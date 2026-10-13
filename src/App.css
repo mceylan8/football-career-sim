@@ -70,3 +70,47 @@
   color: var(--yellow);
   font-size: var(--fn-s);
 }
+
+/* Game screen: one column on phones (wrappers vanish), two columns on desktop. */
+.game,
+.game-main,
+.game-side {
+  display: contents;
+}
+
+@media (min-width: 1000px) {
+  .app.app-game {
+    max-width: 1180px;
+  }
+  .game {
+    flex: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 440px;
+    align-items: start;
+    min-height: 0;
+  }
+  .game-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  /* decisions stay in view on the right while the career scrolls */
+  .game-side {
+    display: block;
+    position: sticky;
+    top: 0;
+    max-height: 100svh;
+    overflow-y: auto;
+    align-self: stretch;
+    background: var(--ink);
+    border-left: 4px solid var(--ink);
+  }
+  .game-side .panel {
+    margin-top: 0;
+    min-height: 100%;
+  }
+  /* collapsing the panel makes no sense when it has its own column */
+  .game-side .panel .chev {
+    display: none;
+  }
+}

@@ -25,7 +25,7 @@ function App() {
   };
 
   return (
-    <div className="app">
+    <div className={`app${!showMenu && !picking && !player.careerEnded ? ' app-game' : ''}`}>
       <header className="topbar">
         <h1 className="t-label">Football Career Sim</h1>
         <div className="topbar-actions">
@@ -78,13 +78,17 @@ function App() {
       ) : null}
 
       {!showMenu && !picking && !player.careerEnded ? (
-        <>
-          <PlayerCard player={player} />
-          <CareerTable player={player} />
-          <Feed />
-          <ChoicePanel />
+        <div className="game">
+          <div className="game-main">
+            <PlayerCard player={player} />
+            <CareerTable player={player} />
+            <Feed />
+          </div>
+          <aside className="game-side" aria-label="Entscheidungen">
+            <ChoicePanel />
+          </aside>
           <MatchBoard />
-        </>
+        </div>
       ) : null}
     </div>
   );

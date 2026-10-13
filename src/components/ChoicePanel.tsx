@@ -1,10 +1,23 @@
+import { useSyncExternalStore } from 'react';
 import { useCareerStore } from '../state/careerStore';
 import { useLocalPref } from '../state/useLocalPref';
 import { Digits } from './Digits';
 import { NodeCard } from './NodeCard';
 import './ChoicePanel.css';
 
-/** Bottom panel: next-step cards, or the active event with its choices. */
+const WIDE = '(min-width: 1000px)';
+function useWide(): boolean {
+  return useSyncExternalStore(
+    (cb) => {
+      const m = window.matchMedia(WIDE);
+      m.addEventListener('change', cb);
+      return () => m.removeEventListener('change', cb);
+    },
+    () => window.matchMedia(WIDE).matches,
+  );
+}
+
+/** Bottom panel (right column on desktop): next-step cards, or the active event with its choices. */
 export function ChoicePanel() {
   const weekPlan = useCareerStore((s) => s.weekPlan);
   const player = useCareerStore((s) => s.player);
@@ -13,8 +26,9 @@ export function ChoicePanel() {
   const resolveChoice = useCareerStore((s) => s.resolveChoice);
   const [collapsedPref, setCollapsed] = useLocalPref('panel-collapsed', false);
 
-  // An open event always shows, even if the panel was collapsed.
-  const collapsed = collapsedPref && !activeEvent;
+  // An open event always shows, even if the panel was collapsed; on desktop it never collapses.
+  const wide = useWide();
+  const collapsed = collapsedPref && !activeEvent && !wide;
 
   if (!weekPlan && !activeEvent) return null;
 
