@@ -9,6 +9,12 @@ export type AvatarTalent = 'wunderkind' | 'top' | 'solid' | 'late' | string;
  * w/W socks, b/B boots, u laces, h/H/i hair, l/L laurel, y gold, c/C cap,
  * q cap band, p pom-pom, z sleep "z", g glowing boots, f/t ball.
  */
+/** Boot colours per talent: [upper, sole/trim]. */
+const BOOTS: Record<string, [string, string]> = {
+  solid: ['#34344a', '#1d1d30'],
+  late: ['#5f8f8a', '#b0714f'],
+};
+
 const HAIR: Record<string, string> = {
   solid: '#5a3a22',
   top: '#1d3f9e',
@@ -36,6 +42,7 @@ function lighten(hex: string, amount = 0.3): string {
 
 function palette(talent: string, primary: string, secondary: string): Record<string, string> {
   const hair = HAIR[talent] ?? HAIR.solid;
+  const [boot, sole] = BOOTS[talent] ?? ['#ffd23f', '#d19a00'];
   return {
     o: '#1d1b3a',
     s: '#ffc08a',
@@ -50,8 +57,8 @@ function palette(talent: string, primary: string, secondary: string): Record<str
     R: '#b0453a',
     w: '#fff6dc',
     W: '#b9b6c9',
-    b: '#ffd23f',
-    B: '#d19a00',
+    b: boot,
+    B: sole,
     h: hair,
     H: darken(hair, 0.3),
     i: lighten(hair),
@@ -117,6 +124,22 @@ export function PlayerAvatar({ talent, club, size = 72 }: Props) {
       role="img"
       aria-label={`Spielerfigur ${talent}`}
     >
+      {talent === 'wunderkind' && (
+        <g className="av-aura" aria-hidden="true">
+          <defs>
+            <radialGradient id="aura-g" cx="50%" cy="55%" r="55%">
+              <stop offset="0%" stopColor="#ffd23f" stopOpacity="0.38" />
+              <stop offset="100%" stopColor="#ffd23f" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <ellipse cx="19" cy="27" rx="17" ry="24" fill="url(#aura-g)" />
+          <path
+            d="M19 0 L22 9 L27 3 L27 13 L34 8 L31 20 L38 18 L32 30 L36 40 L28 38 L24 48 L19 41 L14 48 L10 38 L2 40 L6 30 L0 18 L7 20 L4 8 L11 13 L11 3 L16 9 Z"
+            fill="#ffd23f"
+            opacity="0.22"
+          />
+        </g>
+      )}
       <g className="av-all">
         {rects}
         <g className="av-glow">{glow}</g>

@@ -168,6 +168,9 @@ button:focus-visible {
   display: block;
   overflow: visible;
 }
+.avatar .av-aura {
+  filter: blur(0.8px);
+}
 .avatar .av-laurel {
   filter: drop-shadow(0 0 0.7px #ffe27a) drop-shadow(0 0 1.6px #ffd23f);
 }
@@ -177,6 +180,9 @@ button:focus-visible {
 @media (prefers-reduced-motion: no-preference) {
   .avatar .av-all {
     animation: av-bob 1s steps(1) infinite;
+  }
+  .avatar.av-wunderkind .av-aura {
+    animation: av-aura 1.6s ease-in-out infinite alternate;
   }
   .avatar.av-top .av-glow {
     animation: av-pulse 1.4s steps(2, end) infinite;
@@ -199,4 +205,9 @@ button:focus-visible {
   50% {
     opacity: 0.35;
   }
+}
+
+@keyframes av-aura {
+  from { opacity: 0.55; }
+  to { opacity: 1; }
 }
