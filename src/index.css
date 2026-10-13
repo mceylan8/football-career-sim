@@ -172,7 +172,7 @@ button:focus-visible {
   filter: drop-shadow(0 0 0.7px #ffe27a) drop-shadow(0 0 1.6px #ffd23f);
 }
 .avatar .av-glow {
-  filter: drop-shadow(0 0 0.6px #7dffef) drop-shadow(0 0 1.4px #7dffef);
+  filter: drop-shadow(0 0 0.6px #ffe27a) drop-shadow(0 0 1.4px #ffd23f);
 }
 @media (prefers-reduced-motion: no-preference) {
   .avatar .av-all {
