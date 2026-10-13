@@ -5,7 +5,7 @@ import type { Club } from '../types/club';
 export type AvatarTalent = 'wunderkind' | 'top' | 'solid' | 'late' | string;
 
 /**
- * Letters: o outline, s/S skin, e eye, j/J shirt, a trim, k/K shorts,
+ * Letters: o outline, s/S skin, e eye, R mouth, j/J shirt, a/A stripes, k/K shorts,
  * w/W socks, b/B boots, u laces, h/H/i hair, l/L laurel, y gold, c/C cap,
  * q cap band, p pom-pom, z sleep "z", g glowing boots, f/t ball.
  */
@@ -44,12 +44,14 @@ function palette(talent: string, primary: string, secondary: string): Record<str
     j: primary,
     J: darken(primary),
     a: secondary,
-    k: secondary,
-    K: darken(secondary),
+    A: darken(secondary),
+    k: '#ffffff',
+    K: '#c9c9d6',
+    R: '#b0453a',
     w: '#fff6dc',
     W: '#b9b6c9',
-    b: '#3a4bbf',
-    B: '#2a3690',
+    b: '#34344a',
+    B: '#1d1d30',
     h: hair,
     H: darken(hair, 0.3),
     i: lighten(hair),
@@ -74,7 +76,7 @@ interface Props {
   size?: number;
 }
 
-/** Retro footballer mid-kick; shirt colours come from the club. */
+/** Retro footballer, front view with ball; striped shirt in the club colours. */
 export function PlayerAvatar({ talent, club, size = 72 }: Props) {
   const [primary, secondary] = club ? colorsFor(club) : ['#e63946', '#ffd23f'];
   const pal = palette(talent, primary, secondary);
