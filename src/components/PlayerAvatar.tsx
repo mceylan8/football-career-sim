@@ -1,236 +1,266 @@
-import { useId } from 'react';
-import { SPRITES, SPRITE_H, SPRITE_W } from './avatarSprites';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { colorsFor } from './crestUtil';
 import type { Club } from '../types/club';
+import meta from './playerSprites.json';
+import wunderkindUrl from '../assets/sprites/player_wunderkind.png';
+import topUrl from '../assets/sprites/player_top.png';
+import solidUrl from '../assets/sprites/player_solid.png';
+import lateUrl from '../assets/sprites/player_late.png';
 
 export type AvatarTalent = 'wunderkind' | 'top' | 'solid' | 'late' | string;
+export type AvatarAnim =
+  | 'bereit'
+  | 'bereitSchraeg'
+  | 'laufen'
+  | 'jonglieren'
+  | 'torschuss'
+  | 'jubel'
+  | 'foul';
 
 /** Short reaction played once on top of the idle loop. */
 export type AvatarMood = 'idle' | 'cheer' | 'sad' | 'hurt';
-
-/** Burst colours for the reveal, per talent. */
-const BURST: Record<string, string[]> = {
-  wunderkind: ['#ffd23f', '#ffffff', '#ffe27a'],
-  top: ['#6aa7ff', '#ffd23f', '#ffffff'],
-  solid: ['#fff6dc', '#ffc08a'],
-  late: ['#9ad0ff', '#5f8f8a', '#fff6dc'],
-};
-const BURST_COUNT: Record<string, number> = { wunderkind: 16, top: 12, solid: 8, late: 8 };
-
-/** Spots for the twinkling crosses of the top talent (empty sprite pixels). */
-const TWINKLES: [number, number][] = [
-  [3, 12],
-  [37, 18],
-  [36, 31],
-];
-
-/**
- * Letters: o outline, s/S skin, e eye, R mouth, j/J shirt, a/A stripes, k/K shorts,
- * w/W socks, b/B boots, u laces, h/H/i hair, l/L laurel, y gold, c/C cap,
- * q cap band, p pom-pom, z sleep "z", g glowing boots, f/t ball.
- */
-/** Boot colours per talent: [upper, sole/trim]. */
-const BOOTS: Record<string, [string, string]> = {
-  solid: ['#34344a', '#1d1d30'],
-  late: ['#5f8f8a', '#b0714f'],
+/** Sprite animations each mood plays (sad has none: CSS dims the figure). */
+const MOOD_ANIMS: Record<AvatarMood, AvatarAnim[]> = {
+  idle: [],
+  cheer: ['torschuss', 'jubel'],
+  sad: [],
+  hurt: ['foul'],
 };
 
-const HAIR: Record<string, string> = {
-  solid: '#5a3a22',
-  top: '#1d3f9e',
-  wunderkind: '#e8b84a',
-  late: '#3a2a22',
+type Talent = 'wunderkind' | 'top' | 'solid' | 'late';
+interface AnimMeta {
+  y: number;
+  w: number;
+  h: number;
+  frames: Record<Talent, number>;
+  dur: number;
+}
+const ANIMS = meta.anims as Record<AvatarAnim, AnimMeta>;
+const URLS: Record<Talent, string> = {
+  wunderkind: wunderkindUrl,
+  top: topUrl,
+  solid: solidUrl,
+  late: lateUrl,
+};
+/** Reference height: the figure in "bereit" fills `size` px. */
+const REF_H = ANIMS.bereit.h;
+/** Clubs that play in halved shirts (left secondary, right primary). */
+const HALVES = new Set(['galatasaray']);
+
+type RGB = [number, number, number];
+/** Key colours baked into the atlas: [dark, base, light] per kit part. */
+const KEYS: Record<'j1' | 'j2' | 'sh', RGB[]> = {
+  j1: [[0, 99, 0], [0, 160, 0], [89, 193, 89]],
+  j2: [[99, 0, 99], [160, 0, 160], [193, 89, 193]],
+  sh: [[0, 0, 99], [0, 0, 160], [89, 89, 193]],
 };
 
-function darken(hex: string, amount = 0.22): string {
-  const n = parseInt(hex.slice(1), 16);
-  const f = (v: number) => Math.round(v * (1 - amount));
-  const r = f((n >> 16) & 255);
-  const g = f((n >> 8) & 255);
-  const b = f(n & 255);
-  return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
+/** Same shading as the sprite pipeline (kit.tones). */
+function tones(c: RGB): RGB[] {
+  if (Math.min(...c) > 200) {
+    return [c.map((v) => Math.floor(v * 0.8)) as RGB, c, c.map((v) => Math.min(255, Math.floor(v + (255 - v) * 0.5))) as RGB];
+  }
+  return [
+    c.map((v) => Math.floor(v * 0.62)) as RGB,
+    c,
+    c.map((v) => Math.min(255, Math.floor(v + (255 - v) * 0.35))) as RGB,
+  ];
 }
 
-function lighten(hex: string, amount = 0.3): string {
-  const n = parseInt(hex.slice(1), 16);
-  const f = (v: number) => Math.round(v + (255 - v) * amount);
-  const r = f((n >> 16) & 255);
-  const g = f((n >> 8) & 255);
-  const b = f(n & 255);
-  return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
+/** Any CSS colour (hex, hsl …) to RGB via a 1×1 canvas. */
+function toRgb(css: string): RGB {
+  const c = document.createElement('canvas');
+  c.width = c.height = 1;
+  const ctx = c.getContext('2d')!;
+  ctx.fillStyle = css;
+  ctx.fillRect(0, 0, 1, 1);
+  const d = ctx.getImageData(0, 0, 1, 1).data;
+  return [d[0], d[1], d[2]];
 }
 
-function palette(talent: string, primary: string, secondary: string): Record<string, string> {
-  const hair = HAIR[talent] ?? HAIR.solid;
-  const [boot, sole] = BOOTS[talent] ?? ['#ffd23f', '#d19a00'];
-  return {
-    o: '#1d1b3a',
-    s: '#ffc08a',
-    S: '#e8895a',
-    e: '#1d1b3a',
-    j: primary,
-    J: darken(primary),
-    a: secondary,
-    A: darken(secondary),
-    k: '#ffffff',
-    K: '#c9c9d6',
-    R: '#b0453a',
-    w: '#fff6dc',
-    W: '#b9b6c9',
-    b: boot,
-    B: sole,
-    h: hair,
-    H: darken(hair, 0.3),
-    i: lighten(hair),
-    l: '#3fa34d',
-    L: '#7bd36b',
-    u: '#ffffff',
-    y: '#ffd23f',
-    c: '#5b4bd6',
-    C: '#4637ab',
-    q: '#9ad0ff',
-    p: '#ff7ab6',
-    z: '#ffd23f',
-    g: '#ffd23f',
-    f: '#ffffff',
-    t: '#1d1b3a',
-  };
+const images = new Map<Talent, Promise<HTMLImageElement>>();
+function loadImage(t: Talent): Promise<HTMLImageElement> {
+  let p = images.get(t);
+  if (!p) {
+    p = new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = URLS[t];
+    });
+    images.set(t, p);
+  }
+  return p;
+}
+
+const sheets = new Map<string, Promise<HTMLCanvasElement>>();
+/** Atlas recoloured into the club kit, cached per talent + kit. */
+function kitSheet(t: Talent, shirtL: string, shirtR: string, shorts: string): Promise<HTMLCanvasElement> {
+  const key = `${t}|${shirtL}|${shirtR}|${shorts}`;
+  let p = sheets.get(key);
+  if (!p) {
+    p = loadImage(t).then((img) => {
+      const c = document.createElement('canvas');
+      c.width = img.width;
+      c.height = img.height;
+      const ctx = c.getContext('2d')!;
+      ctx.drawImage(img, 0, 0);
+      const data = ctx.getImageData(0, 0, c.width, c.height);
+      const px = data.data;
+      const map = new Map<number, RGB>();
+      const add = (k: RGB[], to: RGB[]) => k.forEach((kc, i) => map.set((kc[0] << 16) | (kc[1] << 8) | kc[2], to[i]));
+      add(KEYS.j1, tones(toRgb(shirtL)));
+      add(KEYS.j2, tones(toRgb(shirtR)));
+      add(KEYS.sh, tones(toRgb(shorts)));
+      for (let i = 0; i < px.length; i += 4) {
+        if (!px[i + 3]) continue;
+        const to = map.get((px[i] << 16) | (px[i + 1] << 8) | px[i + 2]);
+        if (to) {
+          px[i] = to[0];
+          px[i + 1] = to[1];
+          px[i + 2] = to[2];
+        }
+      }
+      ctx.putImageData(data, 0, 0);
+      return c;
+    });
+    sheets.set(key, p);
+  }
+  return p;
+}
+
+function reducedMotion(): boolean {
+  return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 }
 
 interface Props {
   talent: AvatarTalent;
   club: Club | null;
+  /** Figure height in px (standing pose). */
   size?: number;
+  /** Looping idle animations, played in turn (each `idleLoops` times). */
+  idle?: AvatarAnim[];
+  idleLoops?: number;
+  /** One-shot animations; played once each whenever `playKey` changes, then back to idle. */
+  play?: AvatarAnim[];
+  playKey?: string | number;
   /** One-off reaction (cheer after a win, sad after a loss, hurt on injury). */
   mood?: AvatarMood;
-  /** Pop-in with a particle burst, used by the talent reveal. */
+  /** Pop-in plus celebration, used by the talent reveal. */
   reveal?: boolean;
   /** Short flicker, used when the shirt changes (transfer). */
   swap?: boolean;
 }
 
-/** Retro footballer with a pose per talent; striped shirt in the club colours. */
+/** Animated retro footballer in the club kit (Hero-based sprites, 1 atlas per talent). */
 export function PlayerAvatar({
   talent,
   club,
   size = 72,
+  idle = ['bereit', 'jonglieren'],
+  idleLoops = 3,
+  play,
+  playKey,
   mood = 'idle',
   reveal = false,
   swap = false,
 }: Props) {
-  const gid = `aura-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  const t: Talent = (talent in URLS ? talent : 'solid') as Talent;
   const [primary, secondary] = club ? colorsFor(club) : ['#e63946', '#ffd23f'];
-  const pal = palette(talent, primary, secondary);
-  const rows = SPRITES[talent] ?? SPRITES.solid;
-  const rects: React.ReactNode[] = [];
-  const glow: React.ReactNode[] = [];
-  const gold: React.ReactNode[] = [];
-  const zzz: React.ReactNode[] = [];
-  rows.forEach((row, y) => {
-    let x = 0;
-    while (x < row.length) {
-      const ch = row[x];
-      if (ch === '.') {
-        x++;
-        continue;
-      }
-      let end = x + 1;
-      while (end < row.length && row[end] === ch) end++;
-      (ch === 'g'
-        ? glow
-        : ch === 'z'
-          ? zzz
-          : ch === 'l' || ch === 'L' || ch === 'y'
-            ? gold
-            : rects
-      ).push(
-        <rect
-          key={`${x}-${y}`}
-          x={x}
-          y={y}
-          width={end - x + 0.02}
-          height={1.02}
-          fill={pal[ch] ?? '#f0f'}
-        />,
-      );
-      x = end;
-    }
-  });
-  return (
-    <svg
-      className={`avatar av-${talent}${mood !== 'idle' ? ` mood-${mood}` : ''}${reveal ? ' av-reveal' : ''}${swap ? ' av-swap' : ''}`}
-      viewBox={`0 0 ${SPRITE_W} ${SPRITE_H}`}
-      width={size * (SPRITE_W / SPRITE_H)}
-      height={size}
-      shapeRendering="crispEdges"
-      role="img"
-      aria-label={`Spielerfigur ${talent}`}
-    >
-      {talent === 'wunderkind' && (
-        <g className="av-aura" aria-hidden="true">
-          <defs>
-            <radialGradient id={gid} cx="50%" cy="55%" r="55%">
-              <stop offset="0%" stopColor="#ffd23f" stopOpacity="0.38" />
-              <stop offset="100%" stopColor="#ffd23f" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-          <ellipse cx="19" cy="27" rx="17" ry="24" fill={`url(#${gid})`} />
-          <path
-            className="av-rays"
-            d="M19 0 L22 9 L27 3 L27 13 L34 8 L31 20 L38 18 L32 30 L36 40 L28 38 L24 48 L19 41 L14 48 L10 38 L2 40 L6 30 L0 18 L7 20 L4 8 L11 13 L11 3 L16 9 Z"
-            fill="#ffd23f"
-            opacity="0.22"
-          />
-        </g>
-      )}
-      <g className="av-all">
-        {rects}
-        <g className="av-glow">{glow}</g>
-        <g className="av-laurel">{gold}</g>
-        {zzz.length ? <g className="av-zzz">{zzz}</g> : null}
-      </g>
-      {talent === 'top' && (
-        <g className="av-twinkles" aria-hidden="true">
-          {TWINKLES.map(([cx, cy], i) => (
-            <g key={i} className="av-twinkle" style={{ animationDelay: `${i * 0.6}s` }}>
-              <rect x={cx} y={cy - 1} width="1" height="3" fill="#fff6dc" />
-              <rect x={cx - 1} y={cy} width="3" height="1" fill="#fff6dc" />
-            </g>
-          ))}
-        </g>
-      )}
-      {reveal && <Burst talent={talent} />}
-    </svg>
-  );
-}
+  const halves = club ? HALVES.has(club.id) : false;
+  const shirtL = halves ? secondary : primary;
+  const shorts = halves ? primary : secondary;
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [sheet, setSheet] = useState<HTMLCanvasElement | null>(null);
+  const [anim, setAnim] = useState<AvatarAnim>(idle[0]);
+  const [run, setRun] = useState(0);
 
-/** Ring of little squares that fly outwards once (reveal). */
-function Burst({ talent }: { talent: AvatarTalent }) {
-  const colors = BURST[talent] ?? BURST.solid;
-  const n = BURST_COUNT[talent] ?? 8;
-  const radius = talent === 'wunderkind' ? 30 : 24;
+  useEffect(() => {
+    let alive = true;
+    kitSheet(t, shirtL, primary, shorts).then((s) => alive && setSheet(s));
+    return () => {
+      alive = false;
+    };
+  }, [t, shirtL, primary, shorts]);
+
+  // Queue of one-shot animations, refilled whenever playKey changes.
+  const queue = useRef<AvatarAnim[]>([]);
+  const idleIdx = useRef(0);
+  const loops = useRef(0);
+  const idleKey = idle.join(',');
+  const start = (anims: AvatarAnim[]) => {
+    if (!anims.length) return;
+    queue.current = [...anims];
+    loops.current = 0;
+    setAnim(anims[0]);
+    setRun((r) => r + 1);
+  };
+  useEffect(() => {
+    if (play) start(play);
+  }, [playKey]);
+  useEffect(() => {
+    start(MOOD_ANIMS[mood]);
+  }, [mood]);
+  useEffect(() => {
+    if (reveal) start(['jubel']);
+  }, [reveal]);
+
+  useEffect(() => {
+    if (!sheet) return;
+    const m = ANIMS[anim];
+    const n = m.frames[t];
+    const cv = canvasRef.current;
+    if (!cv) return;
+    const ctx = cv.getContext('2d')!;
+    let frame = 0;
+    let timer = 0;
+    const draw = () => {
+      ctx.clearRect(0, 0, m.w, m.h);
+      ctx.drawImage(sheet, frame * m.w, m.y, m.w, m.h, 0, 0, m.w, m.h);
+    };
+    draw();
+    if (reducedMotion()) return;
+    const tick = () => {
+      frame++;
+      if (frame >= n) {
+        frame = 0;
+        if (queue.current.length) {
+          queue.current.shift();
+          const next = queue.current[0] ?? idle[idleIdx.current % idle.length];
+          if (next !== anim) return setAnim(next);
+        } else if (++loops.current >= idleLoops && idle.length > 1) {
+          loops.current = 0;
+          idleIdx.current = (idleIdx.current + 1) % idle.length;
+          return setAnim(idle[idleIdx.current]);
+        }
+      }
+      draw();
+      timer = window.setTimeout(tick, m.dur);
+    };
+    timer = window.setTimeout(tick, m.dur);
+    return () => window.clearTimeout(timer);
+  }, [sheet, anim, run, t, idleKey, idleLoops]);
+
+  const m = ANIMS[anim];
+  const scale = size / REF_H;
+  const box = useMemo(() => ({ w: ANIMS.bereit.w * scale, h: size }), [scale, size]);
   return (
-    <g className="av-burst" aria-hidden="true">
-      {Array.from({ length: n }, (_, i) => {
-        const a = (i / n) * Math.PI * 2;
-        const r = radius * (i % 2 ? 0.7 : 1);
-        return (
-          <rect
-            key={i}
-            x="20"
-            y="25"
-            width="2"
-            height="2"
-            fill={colors[i % colors.length]}
-            style={
-              {
-                '--dx': Math.round(Math.cos(a) * r),
-                '--dy': Math.round(Math.sin(a) * r),
-              } as React.CSSProperties
-            }
-          />
-        );
-      })}
-    </g>
+    <div
+      className={`avatar av-${t}${mood !== 'idle' ? ` mood-${mood}` : ''}${reveal ? ' av-reveal' : ''}${swap ? ' av-swap' : ''}`}
+      style={{ width: box.w, height: box.h }}
+      role="img"
+      aria-label={`Spielerfigur ${t}`}
+    >
+      <canvas
+        ref={canvasRef}
+        width={m.w}
+        height={m.h}
+        style={{
+          width: m.w * scale,
+          height: m.h * scale,
+          left: Math.round((box.w - m.w * scale) / 2),
+        }}
+      />
+    </div>
   );
 }

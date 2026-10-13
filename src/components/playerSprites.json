@@ -1,0 +1,88 @@
+{
+ "anims": {
+  "bereit": {
+   "y": 0,
+   "w": 34,
+   "h": 55,
+   "frames": {
+    "wunderkind": 6,
+    "top": 6,
+    "solid": 6,
+    "late": 6
+   },
+   "dur": 200
+  },
+  "bereitSchraeg": {
+   "y": 55,
+   "w": 29,
+   "h": 53,
+   "frames": {
+    "wunderkind": 4,
+    "top": 4,
+    "solid": 4,
+    "late": 4
+   },
+   "dur": 220
+  },
+  "laufen": {
+   "y": 108,
+   "w": 50,
+   "h": 51,
+   "frames": {
+    "wunderkind": 16,
+    "top": 16,
+    "solid": 16,
+    "late": 16
+   },
+   "dur": 110
+  },
+  "jonglieren": {
+   "y": 159,
+   "w": 35,
+   "h": 54,
+   "frames": {
+    "wunderkind": 26,
+    "top": 26,
+    "solid": 26,
+    "late": 26
+   },
+   "dur": 70
+  },
+  "torschuss": {
+   "y": 213,
+   "w": 88,
+   "h": 49,
+   "frames": {
+    "wunderkind": 25,
+    "top": 25,
+    "solid": 25,
+    "late": 25
+   },
+   "dur": 55
+  },
+  "jubel": {
+   "y": 262,
+   "w": 35,
+   "h": 65,
+   "frames": {
+    "wunderkind": 12,
+    "top": 12,
+    "solid": 12,
+    "late": 12
+   },
+   "dur": 95
+  },
+  "foul": {
+   "y": 327,
+   "w": 50,
+   "h": 45,
+   "frames": {
+    "wunderkind": 8,
+    "top": 8,
+    "solid": 8,
+    "late": 8
+   },
+   "dur": 110
+  }
+ }
+}
