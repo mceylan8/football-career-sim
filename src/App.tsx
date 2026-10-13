@@ -3,6 +3,7 @@ import { Digits } from './components/Digits';
 import { CareerTable } from './components/CareerTable';
 import { ChoicePanel } from './components/ChoicePanel';
 import { Feed } from './components/Feed';
+import { MatchBoard } from './components/MatchBoard';
 import { PlayerCard } from './components/PlayerCard';
 import { Setup } from './components/Setup';
 import { useCareerStore, type CareerSetup } from './state/careerStore';
@@ -82,6 +83,7 @@ function App() {
           <CareerTable player={player} />
           <Feed />
           <ChoicePanel />
+          <MatchBoard />
         </>
       ) : null}
     </div>

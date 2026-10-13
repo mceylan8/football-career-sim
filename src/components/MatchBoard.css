@@ -1,0 +1,133 @@
+/* Scoreboard after a key match: drops in at the top, outcome colour on the header strip. */
+.mb-wrap {
+  position: fixed;
+  top: var(--sp-3);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--sp-4);
+  pointer-events: none;
+}
+.mb {
+  --mb-c: var(--yellow);
+  pointer-events: auto;
+  position: relative;
+  width: min(420px, 100%);
+  padding: 0;
+  border: var(--bw) solid var(--ink);
+  background: var(--night);
+  color: var(--cream);
+  box-shadow: var(--sh-l);
+  text-align: center;
+  cursor: pointer;
+  overflow: hidden;
+  font: inherit;
+}
+.mb-win {
+  --mb-c: var(--grass);
+}
+.mb-loss {
+  --mb-c: var(--red);
+}
+.mb-head {
+  background: var(--mb-c);
+  color: var(--ink);
+  border-bottom: var(--bw) solid var(--ink);
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-title);
+  letter-spacing: 0.08em;
+}
+.mb-win .mb-head,
+.mb-loss .mb-head {
+  color: var(--white);
+  text-shadow: 2px 2px 0 var(--ink);
+}
+.mb-score {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-3) var(--sp-2);
+}
+.mb-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.mb-name {
+  font-size: var(--fs-sm);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mb-num {
+  font-family: var(--f-n);
+  font-size: var(--fn-xl);
+  line-height: 1;
+  color: var(--mb-c);
+  text-shadow: 3px 3px 0 var(--ink);
+}
+.mb-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2) var(--sp-4);
+  padding: var(--sp-2) var(--sp-3) var(--sp-4);
+  font-size: var(--fs-label);
+}
+.mb-stats b {
+  font-family: var(--f-n);
+  font-size: var(--fn-s);
+  font-weight: 400;
+  color: var(--mb-c);
+}
+.mb-timer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 4px;
+  width: 100%;
+  background: var(--mb-c);
+  transform-origin: left;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mb {
+    animation: mb-drop 0.45s steps(5) both;
+  }
+  .mb-head {
+    animation: mb-stamp 0.5s steps(4) 0.25s both;
+  }
+  .mb-loss {
+    animation: mb-drop 0.45s steps(5) both, mb-shake 0.4s steps(4) 0.5s 1;
+  }
+  .mb-timer {
+    animation-name: mb-timer;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+  }
+}
+@keyframes mb-drop {
+  from { transform: translateY(-140%); }
+  to { transform: translateY(0); }
+}
+@keyframes mb-stamp {
+  0% { transform: scale(1.6); opacity: 0; }
+  60% { transform: scale(0.95); opacity: 1; }
+  100% { transform: scale(1); }
+}
+@keyframes mb-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  50% { transform: translateX(6px); }
+  75% { transform: translateX(-3px); }
+}
+@keyframes mb-timer {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}

@@ -165,8 +165,26 @@ function checkCareerEnd(player: PlayerState): PlayerState {
   return player;
 }
 
+/** Result of the key match just played, shown once on the scoreboard (not saved). */
+export interface LastMatch {
+  id: number;
+  outcome: 'win' | 'draw' | 'loss';
+  goalsFor: number;
+  goalsAgainst: number;
+  ownName: string;
+  opponentName: string;
+  opponentId: string;
+  rating: number;
+  playerGoals: number;
+  playerAssists: number;
+  formDelta: number;
+  reputationDelta: number;
+}
+
 interface CareerStore {
   player: PlayerState;
+  lastMatch: LastMatch | null;
+  dismissMatch: () => void;
   weekPlan: WeekPlan | null;
   activeEvent: ActiveEvent | null;
   lastMatchSummary: string | null;
@@ -318,7 +336,7 @@ function advanceWeek(player: PlayerState): PlayerState {
 function runMatch(
   base: PlayerState,
   opponent: Club,
-): { player: PlayerState; summary: string; entries: LogEntry[] } {
+): { player: PlayerState; summary: string; entries: LogEntry[]; last: LastMatch } {
   const result = simulateMatch(base, opponent);
   const player: PlayerState = {
     ...base,
@@ -343,9 +361,24 @@ function runMatch(
   };
   const word =
     result.outcome === 'win' ? 'Sieg' : result.outcome === 'draw' ? 'Remis' : 'Niederlage';
+  const last: LastMatch = {
+    id: logCounter,
+    outcome: result.outcome,
+    goalsFor: result.goalsFor,
+    goalsAgainst: result.goalsAgainst,
+    ownName: teamName(base),
+    opponentName: result.opponentName,
+    opponentId: opponent.id,
+    rating: result.rating,
+    playerGoals: result.playerGoals,
+    playerAssists: result.playerAssists,
+    formDelta: result.formDelta,
+    reputationDelta: result.reputationDelta,
+  };
   return {
     player,
     summary: result.summary,
+    last,
     entries: [
       entry(
         base,
@@ -427,9 +460,12 @@ export const useCareerStore = create<CareerStore>()(
       weekPlan: null,
       activeEvent: null,
       lastMatchSummary: null,
+      lastMatch: null,
       pendingFollowUps: [],
       log: [],
       hasSave: false,
+
+      dismissMatch: () => set({ lastMatch: null }),
 
       newCareer: (setup: CareerSetup = {}) => {
         const chosen = clubs.find((c) => c.id === setup.clubId);
@@ -440,6 +476,7 @@ export const useCareerStore = create<CareerStore>()(
           weekPlan,
           activeEvent: null,
           lastMatchSummary: null,
+          lastMatch: null,
           pendingFollowUps: [],
           log: [
             entry(
@@ -543,7 +580,7 @@ export const useCareerStore = create<CareerStore>()(
             const m = runMatch(nextPlayer, opp);
             nextPlayer = m.player;
             entries = [eventEntry, ...m.entries];
-            set({ lastMatchSummary: m.summary });
+            set({ lastMatchSummary: m.summary, lastMatch: m.last });
           }
           finishWeek(player, nextPlayer, weekPlan, entries, follow);
           return;
@@ -560,6 +597,7 @@ export const useCareerStore = create<CareerStore>()(
           weekPlan: null,
           activeEvent: null,
           lastMatchSummary: null,
+          lastMatch: null,
           pendingFollowUps: [],
           log: [],
           hasSave: false,
