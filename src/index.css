@@ -168,6 +168,9 @@ button:focus-visible {
   display: block;
   overflow: visible;
 }
+.avatar .av-laurel {
+  filter: drop-shadow(0 0 0.7px #ffe27a) drop-shadow(0 0 1.6px #ffd23f);
+}
 .avatar .av-glow {
   filter: drop-shadow(0 0 0.6px #7dffef) drop-shadow(0 0 1.4px #7dffef);
 }

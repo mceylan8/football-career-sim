@@ -11,7 +11,7 @@ export type AvatarTalent = 'wunderkind' | 'top' | 'solid' | 'late' | string;
  */
 const HAIR: Record<string, string> = {
   solid: '#5a3a22',
-  top: '#2fd4ff',
+  top: '#1d3f9e',
   wunderkind: '#e8b84a',
   late: '#3a2a22',
 };
@@ -83,6 +83,7 @@ export function PlayerAvatar({ talent, club, size = 72 }: Props) {
   const rows = SPRITES[talent] ?? SPRITES.solid;
   const rects: React.ReactNode[] = [];
   const glow: React.ReactNode[] = [];
+  const gold: React.ReactNode[] = [];
   rows.forEach((row, y) => {
     let x = 0;
     while (x < row.length) {
@@ -93,7 +94,7 @@ export function PlayerAvatar({ talent, club, size = 72 }: Props) {
       }
       let end = x + 1;
       while (end < row.length && row[end] === ch) end++;
-      (ch === 'g' ? glow : rects).push(
+      (ch === 'g' ? glow : ch === 'l' || ch === 'L' || ch === 'y' ? gold : rects).push(
         <rect
           key={`${x}-${y}`}
           x={x}
@@ -119,6 +120,7 @@ export function PlayerAvatar({ talent, club, size = 72 }: Props) {
       <g className="av-all">
         {rects}
         <g className="av-glow">{glow}</g>
+        <g className="av-laurel">{gold}</g>
       </g>
     </svg>
   );
