@@ -64,7 +64,7 @@ export function MatchBoard() {
           <PlayerAvatar
             talent={talent}
             club={own}
-            size={64}
+            size={72}
             idle={sc.idle}
             play={sc.play}
             playKey={last.id}
