@@ -4,12 +4,25 @@ import { useCareerStore } from '../state/careerStore';
 import type { Club } from '../types/club';
 import { ClubCrest } from './ClubCrest';
 import { Digits } from './Digits';
+import { PlayerAvatar, type AvatarAnim } from './PlayerAvatar';
 import './MatchBoard.css';
 
 const clubs = clubsData as Club[];
 const SHOW_MS = 4200;
 
 const LABEL = { win: 'SIEG', draw: 'REMIS', loss: 'NIEDERLAGE' } as const;
+
+/** What the figure does on the little pitch: shot + cheer for a goal, run + cheer for an assist. */
+function scene(m: { outcome: 'win' | 'draw' | 'loss'; playerGoals: number; playerAssists: number }): {
+  play?: AvatarAnim[];
+  idle?: AvatarAnim[];
+} {
+  if (m.playerGoals > 0) return { play: ['torschuss', 'jubel'] };
+  if (m.playerAssists > 0) return { play: ['laufen', 'jubel'] };
+  if (m.outcome === 'win') return { play: ['jubel'] };
+  if (m.outcome === 'draw') return { idle: ['bereit', 'jonglieren'] };
+  return { idle: ['bereitSchraeg'] };
+}
 
 function signed(n: number): string {
   return `${n >= 0 ? '+' : ''}${n}`;
@@ -23,6 +36,7 @@ function signed(n: number): string {
 export function MatchBoard() {
   const last = useCareerStore((s) => s.lastMatch);
   const own = useCareerStore((s) => s.player.club);
+  const talent = useCareerStore((s) => s.player.talent?.id ?? 'solid');
   const dismiss = useCareerStore((s) => s.dismissMatch);
 
   useEffect(() => {
@@ -33,6 +47,7 @@ export function MatchBoard() {
 
   if (!last) return null;
   const opp = clubs.find((c) => c.id === last.opponentId) ?? null;
+  const sc = scene(last);
 
   return (
     <div className="mb-wrap" role="status" aria-live="assertive">
@@ -44,6 +59,18 @@ export function MatchBoard() {
         aria-label={`${LABEL[last.outcome]} ${last.goalsFor} zu ${last.goalsAgainst} gegen ${last.opponentName}. Schließen`}
       >
         <div className="mb-head t-label">{LABEL[last.outcome]}</div>
+        <div className={`mb-pitch${last.playerGoals > 0 ? ' scored' : ''}`} aria-hidden>
+          <i className="mb-goal" />
+          <PlayerAvatar
+            talent={talent}
+            club={own}
+            size={64}
+            idle={sc.idle}
+            play={sc.play}
+            playKey={last.id}
+            mood={last.outcome === 'loss' ? 'sad' : 'idle'}
+          />
+        </div>
         <div className="mb-score">
           <div className="mb-team">
             <ClubCrest club={own} size={44} />

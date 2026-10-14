@@ -18,14 +18,17 @@ export type AvatarAnim =
   | 'foul';
 
 /** Short reaction played once on top of the idle loop. */
-export type AvatarMood = 'idle' | 'cheer' | 'sad' | 'hurt' | 'train';
+export type AvatarMood = 'idle' | 'cheer' | 'sad' | 'hurt' | 'train' | 'juggle' | 'celebrate';
 /** Sprite animations each mood plays (sad has none: CSS dims the figure). */
 const MOOD_ANIMS: Record<AvatarMood, AvatarAnim[]> = {
   idle: [],
   cheer: ['torschuss', 'jubel'],
   sad: [],
   hurt: ['foul'],
-  train: ['laufen'],
+  // training: sprint, then ball work
+  train: ['laufen', 'jonglieren'],
+  juggle: ['jonglieren'],
+  celebrate: ['jubel'],
 };
 
 /** Default idle rotation; the angled pose shows up once per round. */

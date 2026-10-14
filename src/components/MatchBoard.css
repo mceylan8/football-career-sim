@@ -131,3 +131,62 @@
   from { transform: scaleX(1); }
   to { transform: scaleX(0); }
 }
+
+/* little pitch with the figure: shot, cheer or slump after the result */
+.mb-pitch {
+  position: relative;
+  height: 92px;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 0 8px 14%;
+  border-bottom: var(--bw) solid var(--ink);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 28px, rgb(0 0 0 / 0.14) 28px 56px),
+    var(--grass);
+  overflow: hidden;
+}
+.mb-loss .mb-pitch {
+  filter: saturate(0.55) brightness(0.85);
+}
+.mb-goal {
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
+  width: 26px;
+  height: 44px;
+  border: 3px solid var(--white);
+  border-right: 0;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 5px, rgb(255 255 255 / 0.35) 5px 6px),
+    repeating-linear-gradient(90deg, transparent 0 5px, rgb(255 255 255 / 0.35) 5px 6px);
+}
+.mb-pitch::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--white);
+  opacity: 0;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* one soft flash (max 30 % opacity, once) and a net wobble at ball contact */
+  .mb-pitch.scored::after {
+    animation: mb-flash 0.3s steps(2) 1.25s 1 both;
+  }
+  .mb-pitch.scored .mb-goal {
+    animation: mb-net 0.4s steps(4) 1.4s 1;
+  }
+  .mb-win .mb-num {
+    animation: mb-stamp 0.5s steps(4) 0.5s both;
+  }
+}
+@keyframes mb-flash {
+  0% { opacity: 0.3; }
+  100% { opacity: 0; }
+}
+@keyframes mb-net {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(4px); }
+  50% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}

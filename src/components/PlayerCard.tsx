@@ -6,6 +6,7 @@ import {
 } from '../engine/marketValue';
 import { positionLabel } from '../data/positions';
 import { playtimeShare, roleLabel, teamName } from '../engine/squad';
+import { idleFor } from '../state/avatarIdle';
 import { useAvatarReaction } from '../state/useAvatarReaction';
 import { useLocalPref } from '../state/useLocalPref';
 import type { PlayerState } from '../types/player';
@@ -107,6 +108,9 @@ export function PlayerCard({ player }: Props) {
               size={72}
               mood={mood}
               swap={swap}
+              idle={idleFor(player.form, player.club ? playtimeShare(player) : 0.5)}
+              play={swap ? ['jubel'] : undefined}
+              playKey={swap ? 'swap' : 'none'}
             />
           </div>
           <div className="pc-right">
