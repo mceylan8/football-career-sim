@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import clubsData from './data/clubs.json';
 import { Digits } from './components/Digits';
 import { CareerTable } from './components/CareerTable';
 import { ChoicePanel } from './components/ChoicePanel';
@@ -9,6 +10,9 @@ import { Setup } from './components/Setup';
 import { useCareerStore, type CareerSetup } from './state/careerStore';
 import { formatMoney, formatValue, marketValue } from './engine/marketValue';
 import './App.css';
+
+const CLUB_COUNT = clubsData.length;
+const LEAGUE_COUNT = new Set(clubsData.map((c) => c.league)).size;
 
 function App() {
   const player = useCareerStore((s) => s.player);
@@ -47,7 +51,7 @@ function App() {
           <h2>DEINE KARRIERE BEGINNT</h2>
           <ul>
             <li>
-              <Digits>94 Klubs · 5 Ligen</Digits>
+              <Digits>{`${CLUB_COUNT} Klubs · ${LEAGUE_COUNT} Ligen`}</Digits>
             </li>
             <li>Wähle jede Woche deinen nächsten Schritt</li>
             <li>Speicherstand automatisch im Browser</li>
