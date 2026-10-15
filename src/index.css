@@ -46,6 +46,24 @@
   -webkit-font-smoothing: antialiased;
 }
 
+/* Desktop: everything one step bigger, the page is wider (see App.css) */
+@media (min-width: 1000px) {
+  :root {
+    --fs-label: 15px;
+    --fs-sm: 18px;
+    --fs-body: 21px;
+    --fs-title: 31px;
+    --fs-hero: 46px;
+    --fn-s: 25px;
+    --fn-m: 32px;
+    --fn-l: 42px;
+    --fn-xl: 64px;
+    --sp-3: 14px;
+    --sp-4: 20px;
+    --sp-5: 30px;
+  }
+}
+
 * {
   box-sizing: border-box;
 }

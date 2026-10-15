@@ -190,3 +190,12 @@
   50% { transform: translateX(-2px); }
   75% { transform: translateX(2px); }
 }
+
+@media (min-width: 1000px) {
+  .mb {
+    width: min(560px, 100%);
+  }
+  .mb-pitch {
+    height: 140px;
+  }
+}

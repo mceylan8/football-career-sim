@@ -64,3 +64,14 @@
   color: var(--mute);
   line-height: 1.25;
 }
+
+/* desktop: report sits in the dark side column */
+.feed-side {
+  padding: var(--sp-4);
+}
+.feed-side h2 {
+  color: var(--cream);
+}
+.feed-side .feed-list {
+  max-height: 46svh;
+}

@@ -80,12 +80,12 @@
 
 @media (min-width: 1000px) {
   .app.app-game {
-    max-width: 1180px;
+    max-width: 1480px;
   }
   .game {
     flex: 1;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 440px;
+    grid-template-columns: minmax(0, 1fr) 520px;
     align-items: start;
     min-height: 0;
   }
@@ -111,6 +111,15 @@
   }
   /* collapsing the panel makes no sense when it has its own column */
   .game-side .panel .chev {
+    display: none;
+  }
+  /* report moves under the choices on desktop */
+  .feed-main {
+    display: none;
+  }
+}
+@media (max-width: 999px) {
+  .feed-side {
     display: none;
   }
 }

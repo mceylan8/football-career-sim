@@ -86,10 +86,11 @@ function App() {
           <div className="game-main">
             <PlayerCard player={player} />
             <CareerTable player={player} />
-            <Feed />
+            <Feed className="feed-main" />
           </div>
           <aside className="game-side" aria-label="Entscheidungen">
             <ChoicePanel />
+            <Feed className="feed-side" />
           </aside>
           <MatchBoard />
         </div>

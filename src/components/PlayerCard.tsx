@@ -9,6 +9,7 @@ import { playtimeShare, roleLabel, teamName } from '../engine/squad';
 import { idleFor } from '../state/avatarIdle';
 import { useAvatarReaction } from '../state/useAvatarReaction';
 import { useLocalPref } from '../state/useLocalPref';
+import { useMedia } from '../state/useMedia';
 import type { PlayerState } from '../types/player';
 import { PlayerAvatar } from './PlayerAvatar';
 import { ClubCrest } from './ClubCrest';
@@ -22,6 +23,8 @@ interface Props {
 export function PlayerCard({ player }: Props) {
   const [collapsed, setCollapsed] = useLocalPref('card-collapsed', false);
   const { mood, swap } = useAvatarReaction(player);
+  const wide = useMedia('(min-width: 1000px)');
+  const size = wide ? 190 : 108;
   const ovr = ovrOf(player);
   const value = marketValue(player);
   const last = player.history[player.history.length - 1];
@@ -97,51 +100,56 @@ export function PlayerCard({ player }: Props) {
           </button>
         </div>
 
-        <div className="pc-main">
-          <div className="pc-left">
-            <div className="pc-ovr t-num">{ovr}</div>
-            <div className="t-label muted">OVR</div>
-            <div className="pc-pos t-label">{positionLabel(player.position)}</div>
+        <div className="pc-stage" style={{ height: Math.round(size * 1.3) + 14 }}>
+          <div className="pc-stage-in">
             <PlayerAvatar
               talent={player.talent?.id ?? 'solid'}
               club={player.club}
-              size={72}
+              size={size}
               mood={mood}
               swap={swap}
               idle={idleFor(player.form, player.club ? playtimeShare(player) : 0.5)}
               play={swap ? ['jubel'] : undefined}
               playKey={swap ? 'swap' : 'none'}
             />
+            <i
+              className="pc-goal"
+              aria-hidden
+              style={{ width: Math.round(size * 0.3), height: Math.round(size * 0.62) }}
+            />
           </div>
-          <div className="pc-right">
-            <div className="pc-tags">
-              <span className="tag">
-                <span className="t-label">Alter</span>{' '}
-                <span className="t-num">{player.age}</span>
-              </span>
-              <span className="tag y t-num">{formatMoney(player.finances)}</span>
-              {player.club ? (
-                <span className="tag r t-label">
-                  {roleLabel(playtimeShare(player))}
-                </span>
-              ) : null}
+        </div>
+
+        <div className="pc-strip">
+          <div className="pc-ovrbox">
+            <div className="pc-ovr t-num">{ovr}</div>
+            <div className="pc-ovrmeta">
+              <span className="t-label muted">OVR</span>
+              <span className="pc-pos t-label">{positionLabel(player.position)}</span>
             </div>
-            <div className="pc-bars">
-              {bars.map((b) => (
-                <div className="pc-bar" key={b.k}>
-                  <span className="t-label">{b.k}</span>
-                  <div className="track">
-                    <i
-                      style={{
-                        width: `${Math.max(0, Math.min(100, b.v))}%`,
-                        background: b.c,
-                      }}
-                    />
-                  </div>
-                  <b className="t-num">{b.v}</b>
+          </div>
+          <div className="pc-tags">
+            <span className="tag">
+              <span className="t-label">Alter</span> <span className="t-num">{player.age}</span>
+            </span>
+            <span className="tag y t-num">{formatMoney(player.finances)}</span>
+            {player.club ? (
+              <span className="tag r t-label">{roleLabel(playtimeShare(player))}</span>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="pc-main">
+          <div className="pc-bars">
+            {bars.map((b) => (
+              <div className="pc-bar" key={b.k}>
+                <span className="t-label">{b.k}</span>
+                <div className="track">
+                  <i style={{ width: `${Math.max(0, Math.min(100, b.v))}%`, background: b.c }} />
                 </div>
-              ))}
-            </div>
+                <b className="t-num">{b.v}</b>
+              </div>
+            ))}
           </div>
         </div>
 

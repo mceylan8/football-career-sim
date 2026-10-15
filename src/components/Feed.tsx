@@ -3,13 +3,13 @@ import { Digits } from './Digits';
 import './Feed.css';
 
 /** Scrollable match/event report, newest entry on top. */
-export function Feed() {
+export function Feed({ className = '' }: { className?: string }) {
   const log = useCareerStore((s) => s.log);
   if (log.length === 0) return null;
   const entries = [...log].reverse();
 
   return (
-    <section className="feed" aria-label="Spielbericht">
+    <section className={`feed ${className}`} aria-label="Spielbericht">
       <h2 className="t-label">Spielbericht</h2>
       <ol className="feed-list" tabIndex={0}>
         {entries.map((e) => (

@@ -55,46 +55,76 @@
   right: var(--sp-2);
 }
 
-/* body: OVR + bars */
-.pc-main {
-  display: grid;
-  grid-template-columns: 92px 1fr;
+/* hero stage: the figure on a little pitch, goal on the right */
+.pc-stage {
+  position: relative;
+  display: flex;
+  border-bottom: 3px solid var(--ink);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 32px, rgb(0 0 0 / 0.14) 32px 64px),
+    var(--grass);
+  overflow: hidden;
+}
+.pc-stage-in {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  height: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 0 10px 36%;
+}
+.pc-goal {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  border: 3px solid var(--white);
+  border-right: 0;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 5px, rgb(255 255 255 / 0.35) 5px 6px),
+    repeating-linear-gradient(90deg, transparent 0 5px, rgb(255 255 255 / 0.35) 5px 6px);
+}
+
+/* OVR + tags under the stage */
+.pc-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--sp-3);
   padding: var(--sp-3);
+  border-bottom: 3px dashed var(--ink);
 }
-
-.pc-left {
+.pc-ovrbox {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: var(--sp-1);
-  border-right: 3px dashed var(--ink);
-  padding-right: var(--sp-3);
+  gap: var(--sp-3);
 }
-
 .pc-ovr {
   font-size: var(--fn-xl);
   line-height: 0.9;
 }
-
+.pc-ovrmeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-1);
+}
 .pc-pos {
   background: var(--ink);
   color: var(--yellow);
   padding: 4px 9px;
-  margin-top: var(--sp-1);
 }
-
-.pc-right {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .pc-tags {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* bars */
+.pc-main {
+  padding: var(--sp-3);
 }
 
 .tag {
@@ -125,7 +155,7 @@
 
 .pc-bar {
   display: grid;
-  grid-template-columns: 38px 1fr 36px;
+  grid-template-columns: var(--bar-label, 38px) 1fr 36px;
   gap: 6px;
   align-items: center;
 }
@@ -246,4 +276,17 @@
 .mc-ovr .t-num {
   font-size: var(--fn-m);
   line-height: 1;
+}
+
+@media (min-width: 1000px) {
+  .pc-bar {
+    --bar-label: 52px;
+    gap: 10px;
+  }
+  .track {
+    height: 14px;
+  }
+  .pc-bars {
+    gap: 8px;
+  }
 }
