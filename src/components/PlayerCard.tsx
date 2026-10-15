@@ -85,8 +85,13 @@ export function PlayerCard({ player }: Props) {
                 'Auf Angebote warten'
               )}
             </div>
-            <div className="pc-meta">
-              <Digits>{`Saison ${player.season} · Spieltag ${matchdayLabel(player.week, seasonMatchdays(player.club))}/${seasonMatchdays(player.club)}`}</Digits>
+            <div className="pc-meta pc-meta-wrap">
+              <span>
+                <Digits>{`Saison ${player.season}`}</Digits>
+              </span>
+              <span>
+                <Digits>{`Spieltag ${matchdayLabel(player.week, seasonMatchdays(player.club))}/${seasonMatchdays(player.club)}`}</Digits>
+              </span>
             </div>
           </div>
           <button
@@ -101,7 +106,8 @@ export function PlayerCard({ player }: Props) {
         </div>
 
         <div className="pc-stage" style={{ height: Math.round(size * 1.3) + 14 }}>
-          <div className="pc-stage-in">
+          <div className="pc-field" style={{ height: Math.round(size * 0.4) }} aria-hidden />
+          <div className="pc-hero" style={{ bottom: 8 + Math.round(size * 0.14) }}>
             <PlayerAvatar
               talent={player.talent?.id ?? 'solid'}
               club={player.club}
@@ -111,11 +117,6 @@ export function PlayerCard({ player }: Props) {
               idle={idleFor(player.form, player.club ? playtimeShare(player) : 0.5)}
               play={swap ? ['jubel'] : undefined}
               playKey={swap ? 'swap' : 'none'}
-            />
-            <i
-              className="pc-goal"
-              aria-hidden
-              style={{ width: Math.round(size * 0.3), height: Math.round(size * 0.62) }}
             />
           </div>
         </div>

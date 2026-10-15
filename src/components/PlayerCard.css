@@ -49,41 +49,48 @@
   color: var(--mute);
 }
 
+.pc-meta-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--sp-3);
+}
+.pc-meta-wrap > span {
+  white-space: nowrap;
+}
+
 .pc-toggle {
   position: absolute;
   top: var(--sp-2);
   right: var(--sp-2);
 }
 
-/* hero stage: the figure on a little pitch, goal on the right */
+/* hero stage: just a patch of pitch where the figure stands and runs */
 .pc-stage {
   position: relative;
-  display: flex;
-  border-bottom: 3px solid var(--ink);
-  background:
-    repeating-linear-gradient(90deg, transparent 0 32px, rgb(0 0 0 / 0.14) 32px 64px),
-    var(--grass);
+  border-bottom: 3px dashed var(--ink);
   overflow: hidden;
 }
-.pc-stage-in {
-  position: relative;
-  width: 100%;
-  max-width: 560px;
-  height: 100%;
-  margin: 0 auto;
-  display: flex;
-  align-items: flex-end;
-  padding: 0 0 10px 36%;
-}
-.pc-goal {
+.pc-field {
   position: absolute;
-  right: 10px;
-  bottom: 10px;
-  border: 3px solid var(--white);
-  border-right: 0;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  width: min(300px, 88%);
+  border: 3px solid var(--ink);
+  box-shadow: var(--sh-s);
   background:
-    repeating-linear-gradient(0deg, transparent 0 5px, rgb(255 255 255 / 0.35) 5px 6px),
-    repeating-linear-gradient(90deg, transparent 0 5px, rgb(255 255 255 / 0.35) 5px 6px);
+    repeating-linear-gradient(90deg, transparent 0 24px, rgb(0 0 0 / 0.14) 24px 48px),
+    var(--grass);
+}
+.pc-hero {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+@media (min-width: 1000px) {
+  .pc-field {
+    width: min(460px, 92%);
+  }
 }
 
 /* OVR + tags under the stage */
