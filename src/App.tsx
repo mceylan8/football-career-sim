@@ -86,7 +86,7 @@ function App() {
           <div className="game-main">
             <PlayerCard player={player} />
             <CareerTable player={player} />
-            <Feed className="feed-main" />
+            <Feed className="feed-main" limit={4} />
           </div>
           <aside className="game-side" aria-label="Entscheidungen">
             <ChoicePanel />

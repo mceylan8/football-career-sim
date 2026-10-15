@@ -7,7 +7,7 @@
 
 .cr {
   display: grid;
-  grid-template-columns: 46px 1fr 34px 34px 28px 28px 42px;
+  grid-template-columns: 38px 1fr 32px 28px 24px 24px 46px;
   gap: 6px;
   align-items: center;
   padding: 6px var(--sp-2);
@@ -32,8 +32,18 @@
 .cr .club {
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.05;
+  font-size: var(--fs-sm);
+  overflow-wrap: anywhere;
+}
+
+.cr .club.next {
+  grid-column: 2 / -1;
+  display: block;
+  color: var(--mute);
 }
 
 .cr.h {
@@ -57,7 +67,7 @@
 }
 
 .cr.future {
-  opacity: 0.35;
+  opacity: 0.6;
 }
 
 .bilanz {
@@ -84,4 +94,11 @@
 .bilanz .b.l {
   background: var(--red);
   color: var(--white);
+}
+
+@media (min-width: 1000px) {
+  .cr {
+    grid-template-columns: 52px 1fr 48px 44px 38px 38px 56px;
+    gap: 8px;
+  }
 }

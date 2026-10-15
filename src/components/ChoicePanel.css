@@ -1,5 +1,6 @@
 .panel {
-  margin-top: auto;
+  /* fills the rest of the screen, so no empty strip above it */
+  flex: 1 0 auto;
   background: var(--ink);
   padding: var(--sp-3) var(--sp-4) var(--sp-4);
   display: flex;
@@ -7,10 +8,28 @@
   gap: var(--sp-3);
 }
 
+.panel.is-collapsed {
+  flex: 0 0 auto;
+  margin-top: auto;
+}
+
 .panel-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+/* whole header bar is the toggle (phones) */
+.panel-toggle {
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .panel h2 {

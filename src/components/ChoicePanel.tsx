@@ -1,6 +1,5 @@
-import { useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { useCareerStore } from '../state/careerStore';
-import { useLocalPref } from '../state/useLocalPref';
 import { Digits } from './Digits';
 import { NodeCard } from './NodeCard';
 import { ClubCrest } from './ClubCrest';
@@ -27,7 +26,11 @@ export function ChoicePanel() {
   const resolveChoice = useCareerStore((s) => s.resolveChoice);
   const transferWindow = useCareerStore((s) => s.transferWindow);
   const pickTransfer = useCareerStore((s) => s.pickTransfer);
-  const [collapsedPref, setCollapsed] = useLocalPref('panel-collapsed', false);
+  // Collapsed only for the current week: every new week starts open.
+  const weekKey = `${player.season}-${player.week}`;
+  const [collapsedKey, setCollapsedKey] = useState<string | null>(null);
+  const collapsedPref = collapsedKey === weekKey;
+  const setCollapsed = (v: boolean) => setCollapsedKey(v ? weekKey : null);
 
   // An open event always shows, even if the panel was collapsed; on desktop it never collapses.
   const wide = useWide();
@@ -86,24 +89,30 @@ export function ChoicePanel() {
     : 'Diese Woche';
 
   return (
-    <section className="panel" aria-live="polite">
-      <div className="panel-head">
-        <h2 className="t-label">
-          {title}
-          {!activeEvent ? <span className="t-num"> · {player.week}/12</span> : null}
-        </h2>
-        {!activeEvent ? (
-          <button
-            type="button"
-            className="chev"
-            aria-expanded={!collapsed}
-            aria-label={collapsed ? 'Auswahl ausklappen' : 'Auswahl einklappen'}
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            {collapsed ? '▴' : '▾'}
-          </button>
-        ) : null}
-      </div>
+    <section className={`panel${collapsed ? ' is-collapsed' : ''}`} aria-live="polite">
+      {activeEvent || wide ? (
+        <div className="panel-head">
+          <h2 className="t-label">
+            {title}
+            {!activeEvent ? <span className="t-num"> · {player.week}/12</span> : null}
+          </h2>
+        </div>
+      ) : (
+        <button
+          type="button"
+          className="panel-head panel-toggle"
+          aria-expanded={!collapsed}
+          onClick={() => setCollapsed(!collapsed)}
+        >
+          <h2 className="t-label">
+            {title}
+            <span className="t-num"> · {player.week}/12</span>
+          </h2>
+          <span className="chev" aria-hidden>
+            {collapsed ? '▴ AUF' : '▾ ZU'}
+          </span>
+        </button>
+      )}
 
       {!collapsed && activeEvent ? (
         <>

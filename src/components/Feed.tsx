@@ -1,17 +1,21 @@
+import { useState } from 'react';
 import { useCareerStore } from '../state/careerStore';
 import { Digits } from './Digits';
 import './Feed.css';
 
 /** Scrollable match/event report, newest entry on top. */
-export function Feed({ className = '' }: { className?: string }) {
+export function Feed({ className = '', limit }: { className?: string; limit?: number }) {
   const log = useCareerStore((s) => s.log);
+  const [all, setAll] = useState(false);
   if (log.length === 0) return null;
-  const entries = [...log].reverse();
+  const newest = [...log].reverse();
+  const capped = limit !== undefined && !all && newest.length > limit;
+  const entries = capped ? newest.slice(0, limit) : newest;
 
   return (
     <section className={`feed ${className}`} aria-label="Spielbericht">
       <h2 className="t-label">Spielbericht</h2>
-      <ol className="feed-list" tabIndex={0}>
+      <ol className="feed-list">
         {entries.map((e) => (
           <li key={e.id} className={`fe ${e.tone}`}>
             <div className="fe-head">
@@ -31,6 +35,11 @@ export function Feed({ className = '' }: { className?: string }) {
           </li>
         ))}
       </ol>
+      {limit !== undefined && newest.length > limit ? (
+        <button type="button" className="mini dark feed-more" onClick={() => setAll(!all)}>
+          {all ? 'Weniger anzeigen' : `Mehr anzeigen (${newest.length - limit})`}
+        </button>
+      ) : null}
     </section>
   );
 }

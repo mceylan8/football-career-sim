@@ -62,12 +62,7 @@ export function CareerTable({ player }: Props) {
       </div>
       <div className="cr future">
         <b className="t-num">{player.age + 1}</b>
-        <span />
-        <span />
-        <span />
-        <span />
-        <span />
-        <span />
+        <span className="club next t-label">Nächste Saison</span>
       </div>
     </section>
   );

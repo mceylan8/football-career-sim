@@ -17,9 +17,18 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  max-height: 260px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+}
+
+.feed-more {
+  align-self: center;
+  margin-top: var(--sp-1);
+  padding: 8px 14px;
+  background: var(--ink);
+  color: var(--yellow);
+  border: 2px solid var(--ink);
+  font-family: var(--f-u);
+  font-size: var(--fs-label);
+  cursor: pointer;
 }
 
 .fe {
@@ -74,4 +83,6 @@
 }
 .feed-side .feed-list {
   max-height: 46svh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
