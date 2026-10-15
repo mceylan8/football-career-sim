@@ -107,7 +107,7 @@
   }
   .game-side .panel {
     margin-top: 0;
-    min-height: 100%;
+    flex: 0 0 auto;
   }
   /* collapsing the panel makes no sense when it has its own column */
   .game-side .panel .chev {
