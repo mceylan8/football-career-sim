@@ -21,7 +21,7 @@ export function Feed({ className = '', limit }: { className?: string; limit?: nu
             <div className="fe-head">
               <span className="fe-tag t-label">{e.tag}</span>
               <span className="fe-when t-num">
-                S{e.season} · W{e.week}
+                S{e.season} · {e.md ? `ST ${e.md}` : `W${e.week}`}
               </span>
             </div>
             <div className="fe-title">

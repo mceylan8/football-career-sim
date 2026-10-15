@@ -3,8 +3,13 @@ import type { PlayerState, PlayerStats, Talent } from '../types/player';
 import { ovrOf } from './marketValue';
 import { RESERVE_OFFSET, opponentStrength, simulateMatch } from './matchSim';
 
-export const MATCHDAYS = 30;
 export const WEEKS = 12;
+
+/** League matchdays per season (2025/26): 20-team leagues play 38, 18-team leagues 34. */
+const LEAGUES_38 = new Set(['Premier League', 'La Liga', 'Serie A']);
+export function seasonMatchdays(club: Club | null): number {
+  return club && LEAGUES_38.has(club.league) ? 38 : 34;
+}
 
 function clamp(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n));
@@ -38,12 +43,21 @@ export function teamName(p: PlayerState): string {
   return p.squad === 'reserve' ? `${p.club.name} II` : p.club.name;
 }
 
-/** Matchdays that fall into week w (1..12): 2,3,2,3,... sums to 30. */
-export function matchdaysInWeek(week: number): number {
-  return (
-    Math.floor((MATCHDAYS * week) / WEEKS) -
-    Math.floor((MATCHDAYS * (week - 1)) / WEEKS)
-  );
+/** Matchdays that fall into week w (1..12): 3,3,2,3,... sums to the league's season length. */
+export function matchdaysInWeek(week: number, total: number): number {
+  return Math.floor((total * week) / WEEKS) - Math.floor((total * (week - 1)) / WEEKS);
+}
+
+/** First and last matchday number of week w, e.g. { first: 4, last: 6 }. */
+export function matchdaySpan(week: number, total: number): { first: number; last: number } {
+  const first = Math.floor((total * (week - 1)) / WEEKS) + 1;
+  return { first, last: first + matchdaysInWeek(week, total) - 1 };
+}
+
+/** "4–6" or "4" for display. */
+export function matchdayLabel(week: number, total: number): string {
+  const { first, last } = matchdaySpan(week, total);
+  return last > first ? `${first}–${last}` : `${first}`;
 }
 
 export interface WeekResult {
@@ -63,8 +77,9 @@ export function simulateAutoWeek(
   keyMatch: boolean,
   pickOpponent: (p: PlayerState) => Club,
 ): WeekResult | null {
-  const total = matchdaysInWeek(p.week);
-  const first = Math.floor((MATCHDAYS * (p.week - 1)) / WEEKS) + 1;
+  const season = seasonMatchdays(p.club);
+  const total = matchdaysInWeek(p.week, season);
+  const first = matchdaySpan(p.week, season).first;
   const count = total - (keyMatch ? 1 : 0);
   if (count <= 0) return null;
 
@@ -135,7 +150,7 @@ export function seasonGrowth(p: PlayerState): Partial<PlayerStats> {
   const age = p.talent?.id === 'late' ? p.age - 3 : p.age;
   const pot = potentialOf(p);
   const k = age < 16 ? 0.08 : age <= 18 ? 0.12 : age <= 21 ? 0.14 : age <= 24 ? 0.12 : age <= 28 ? 0.08 : 0;
-  const play = 0.6 + 0.7 * Math.min(1, p.seasonGames / MATCHDAYS);
+  const play = 0.6 + 0.7 * Math.min(1, p.seasonGames / seasonMatchdays(p.club));
   const talent = 1 + ((p.talent?.growth ?? 1) - 1) * 0.5;
   const decline = age >= 33 ? 2 : age >= 31 ? 1 : 0;
   const one = (k_: 'tech' | 'phys' | 'mental') => {

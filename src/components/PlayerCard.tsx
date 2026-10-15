@@ -5,7 +5,7 @@ import {
   ovrOf,
 } from '../engine/marketValue';
 import { positionLabel } from '../data/positions';
-import { playtimeShare, roleLabel, teamName } from '../engine/squad';
+import { matchdayLabel, playtimeShare, roleLabel, seasonMatchdays, teamName } from '../engine/squad';
 import { idleFor } from '../state/avatarIdle';
 import { useAvatarReaction } from '../state/useAvatarReaction';
 import { useLocalPref } from '../state/useLocalPref';
@@ -86,7 +86,7 @@ export function PlayerCard({ player }: Props) {
               )}
             </div>
             <div className="pc-meta">
-              <Digits>{`Saison ${player.season} · Woche ${player.week}/12`}</Digits>
+              <Digits>{`Saison ${player.season} · Spieltag ${matchdayLabel(player.week, seasonMatchdays(player.club))}/${seasonMatchdays(player.club)}`}</Digits>
             </div>
           </div>
           <button

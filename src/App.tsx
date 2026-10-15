@@ -53,7 +53,7 @@ function App() {
             <li>
               <Digits>{`${CLUB_COUNT} Klubs · ${LEAGUE_COUNT} Ligen`}</Digits>
             </li>
-            <li>Wähle jede Woche deinen nächsten Schritt</li>
+            <li>Wähle vor den nächsten Spieltagen deinen Schritt</li>
             <li>Speicherstand automatisch im Browser</li>
           </ul>
           <button type="button" className="pbtn" onClick={() => setPicking(true)}>

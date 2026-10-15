@@ -21,7 +21,9 @@ import { NATIONS, nationById, type NationId } from '../data/nations';
 import { POSITION_LIST, positionLabel, positionMeta } from '../data/positions';
 import {
   eventGain,
+  matchdayLabel,
   rollPotential,
+  seasonMatchdays,
   seasonGrowth,
   shouldPromote,
   simulateAutoWeek,
@@ -44,13 +46,14 @@ const SAVE_KEY = 'football-career-sim';
 let logCounter = Date.now();
 
 function entry(
-  p: { season: number; week: number },
+  p: { season: number; week: number; club?: Club | null },
   tag: string,
   title: string,
   tone: LogTone = 'neutral',
   text?: string,
 ): LogEntry {
-  return { id: logCounter++, season: p.season, week: p.week, tag, title, text, tone };
+  const md = matchdayLabel(p.week, seasonMatchdays(p.club ?? null));
+  return { id: logCounter++, season: p.season, week: p.week, md, tag, title, text, tone };
 }
 
 function pushLog(log: LogEntry[], ...e: LogEntry[]): LogEntry[] {

@@ -1,5 +1,6 @@
 import { useState, useSyncExternalStore } from 'react';
 import { useCareerStore } from '../state/careerStore';
+import { matchdayLabel, seasonMatchdays } from '../engine/squad';
 import { Digits } from './Digits';
 import { NodeCard } from './NodeCard';
 import { ClubCrest } from './ClubCrest';
@@ -81,12 +82,14 @@ export function ChoicePanel() {
     );
   }
 
+  const seasonLen = seasonMatchdays(player.club);
+  const mdText = `${matchdayLabel(player.week, seasonLen)}/${seasonLen}`;
   const nodes = weekPlan?.options ?? [];
   const title = activeEvent
     ? activeEvent.matchOpponentId
       ? 'Spieltag'
       : 'Ereignis'
-    : 'Diese Woche';
+    : 'Nächste Spieltage';
 
   return (
     <section className={`panel${collapsed ? ' is-collapsed' : ''}`} aria-live="polite">
@@ -94,7 +97,7 @@ export function ChoicePanel() {
         <div className="panel-head">
           <h2 className="t-label">
             {title}
-            {!activeEvent ? <span className="t-num"> · {player.week}/12</span> : null}
+            {!activeEvent ? <span className="t-num"> · {mdText}</span> : null}
           </h2>
         </div>
       ) : (
@@ -106,7 +109,7 @@ export function ChoicePanel() {
         >
           <h2 className="t-label">
             {title}
-            <span className="t-num"> · {player.week}/12</span>
+            <span className="t-num"> · {mdText}</span>
           </h2>
           <span className="chev" aria-hidden>
             {collapsed ? '▴ AUF' : '▾ ZU'}
