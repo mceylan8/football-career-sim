@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { positionLabel } from '../data/positions';
 import { formatValue, marketValue, ovrOf } from '../engine/marketValue';
 import { seasonEventById } from '../engine/seasonEvents';
+import { TITLE_LABEL, TITLE_ORDER, type TitleId } from '../engine/titles';
 import { playtimeShare, roleLabel, teamName } from '../engine/squad';
 import { idleFor } from '../state/avatarIdle';
 import { useCareerStore } from '../state/careerStore';
@@ -12,6 +13,7 @@ import type { LogEntry } from '../types/event';
 import type { SeasonRecord } from '../types/player';
 import { ClubCrest } from './ClubCrest';
 import { PlayerAvatar } from './PlayerAvatar';
+import { Trophy } from './Trophy';
 import { clubTheme, type ClubTheme } from './clubTheme';
 import './FastScreen.css';
 
@@ -70,7 +72,9 @@ export function FastScreen({ onNew, onReset }: Props) {
   useEffect(() => () => window.clearTimeout(timer.current), []);
   useEffect(() => {
     if (!overlay) return;
-    const id = window.setTimeout(() => setOverlay(null), overlay.kind === 'recap' ? RECAP_MS : WELCOME_MS);
+    const ms =
+      overlay.kind === 'recap' ? RECAP_MS + (overlay.record.titles?.length ?? 0) * 700 : WELCOME_MS;
+    const id = window.setTimeout(() => setOverlay(null), ms);
     return () => window.clearTimeout(id);
   }, [overlay]);
 
@@ -82,6 +86,7 @@ export function FastScreen({ onNew, onReset }: Props) {
   const outcome = lastOutcome(log);
   const showOutcome = outcome && outcome.season === player.season - 1 && !ended;
   const busy = leaving !== null || overlay !== null;
+  const titleCount = player.history.reduce((a, r) => a + (r.titles?.length ?? 0), 0);
   // Re-key the decision so it animates in fresh every time it changes.
   const decisionKey = event ? `e-${player.season}-${event.id}` : transferWindow ? `t-${player.season}` : 'end';
 
@@ -161,6 +166,11 @@ export function FastScreen({ onNew, onReset }: Props) {
         <span>{roleLabel(share)}</span>
         <span>{formatValue(marketValue(player))}</span>
         <span>{player.contract ? `${player.contract.yearsLeft} J. Vertrag` : 'Vereinslos'}</span>
+        {titleCount ? (
+          <span className="fs-gold">
+            <Trophy /> {titleCount} Titel
+          </span>
+        ) : null}
       </div>
 
       {player.history.length ? (
@@ -179,7 +189,16 @@ export function FastScreen({ onNew, onReset }: Props) {
               return (
                 <div className={i === rows.length - 1 ? 'fs-row fresh' : 'fs-row'} key={r.age}>
                   <span>{r.age}</span>
-                  <span className="fs-cl">{r.clubName}</span>
+                  <span className="fs-cl">
+                    {r.titles?.length ? (
+                      <span className="fs-cups" title={r.titles.map((x) => TITLE_LABEL[x as TitleId]).join(', ')}>
+                        {r.titles.map((x) => (
+                          <Trophy key={x} size={12} />
+                        ))}
+                      </span>
+                    ) : null}
+                    {r.clubName}
+                  </span>
                   <span className={prev && r.ovr > prev.ovr ? 'up' : undefined}>{r.ovr}</span>
                   <span>{r.games}</span>
                   <span>{r.goals ?? 0}</span>
@@ -288,6 +307,10 @@ export function FastScreen({ onNew, onReset }: Props) {
   );
 }
 
+function sortTitles(ids: string[]): TitleId[] {
+  return TITLE_ORDER.filter((t) => ids.includes(t));
+}
+
 /** OVR box: counts up to a new value and pops while it changes. */
 function OvrBox({ ovr }: { ovr: number }) {
   const [from, setFrom] = useState(ovr);
@@ -312,7 +335,7 @@ function Recap({ o, onClose }: { o: Extract<Overlay, { kind: 'recap' }>; onClose
   const delta = o.ovrAfter - o.ovrBefore;
   return (
     <button type="button" className="fs-overlay" onClick={onClose} aria-label="Weiter">
-      <span className="fs-card">
+      <span className={o.record.titles?.length ? 'fs-card gold' : 'fs-card'}>
         <span className="fs-kicker">Saisonbilanz · {o.record.age} Jahre</span>
         <span className="fs-card-club">{o.record.clubName}</span>
         {o.outcome ? (
@@ -335,6 +358,15 @@ function Recap({ o, onClose }: { o: Extract<Overlay, { kind: 'recap' }>; onClose
             <small>Vorlagen</small>
           </span>
         </span>
+        {o.record.titles?.length ? (
+          <span className="fs-won">
+            {sortTitles(o.record.titles).map((x, i) => (
+              <span key={x} className="fs-trophy" style={{ animationDelay: `${1100 + i * 220}ms` }}>
+                <Trophy size={18} /> {TITLE_LABEL[x]}
+              </span>
+            ))}
+          </span>
+        ) : null}
         <span className="fs-ovrjump">
           <span>{o.ovrBefore}</span>
           <span className="arrow" aria-hidden>
@@ -344,7 +376,11 @@ function Recap({ o, onClose }: { o: Extract<Overlay, { kind: 'recap' }>; onClose
           <em className={delta > 0 ? 'up' : delta < 0 ? 'down' : ''}>{delta > 0 ? `+${delta}` : delta}</em>
         </span>
         <span className="fs-tap">Tippen zum Weiterspielen</span>
-        <span className="fs-timer" style={{ animationDuration: `${RECAP_MS}ms` }} aria-hidden />
+        <span
+          className="fs-timer"
+          style={{ animationDuration: `${RECAP_MS + (o.record.titles?.length ?? 0) * 700}ms` }}
+          aria-hidden
+        />
       </span>
     </button>
   );
@@ -401,6 +437,7 @@ function CareerEnd({ onNew }: { onNew: () => void }) {
           <small>Bestes OVR</small>
         </span>
       </span>
+      <Cabinet />
       {best ? (
         <p className="fs-text">
           Bestes Jahr: mit {best.age} bei {best.clubName}, {best.goals ?? 0} Tore in {best.games} Spielen.
@@ -409,6 +446,24 @@ function CareerEnd({ onNew }: { onNew: () => void }) {
       <button type="button" className="fs-tile main fs-again" onClick={onNew}>
         <span className="fs-tile-t">Neue Karriere</span>
       </button>
+    </div>
+  );
+}
+
+/** Trophy cabinet: every title type once, with how often it was won. */
+function Cabinet() {
+  const history = useCareerStore((s) => s.player.history);
+  const count = new Map<TitleId, number>();
+  for (const r of history) for (const x of r.titles ?? []) count.set(x as TitleId, (count.get(x as TitleId) ?? 0) + 1);
+  const won = TITLE_ORDER.filter((t) => count.has(t));
+  if (!won.length) return <p className="fs-text">Keine Titel. Nächstes Mal.</p>;
+  return (
+    <div className="fs-cabinet">
+      {won.map((t, i) => (
+        <span key={t} className="fs-trophy" style={{ animationDelay: `${300 + i * 150}ms` }}>
+          <Trophy size={18} /> {count.get(t)}× {TITLE_LABEL[t]}
+        </span>
+      ))}
     </div>
   );
 }

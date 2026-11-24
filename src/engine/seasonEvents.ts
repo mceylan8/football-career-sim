@@ -452,13 +452,13 @@ export const SEASON_EVENTS: SeasonEvent[] = [
     id: 'national_team',
     title: 'Ruf der Nationalmannschaft',
     text: () => 'Der Nationaltrainer hat dich auf dem Zettel.',
-    when: (p) => ovrOf(p) >= 72,
+    when: (p) => ovrOf(p) >= 72 && !p.flags.includes('national_team'),
     weight: () => 5,
     choices: [
       {
         label: 'Alles geben',
         outcomes: [
-          odds(60, 'Debüt', 'up', 'Du läufst zum ersten Mal mit der Nationalmannschaft auf.', { rep: 12, mental: 2 }),
+          odds(60, 'Debüt', 'up', 'Du läufst zum ersten Mal mit der Nationalmannschaft auf.', { rep: 12, mental: 2, flag: 'national_team' }),
           odds(40, 'Nicht nominiert', 'down', 'Diesmal reicht es nicht. Du bist frustriert.', { rep: -2, boost: -3 }),
         ],
       },

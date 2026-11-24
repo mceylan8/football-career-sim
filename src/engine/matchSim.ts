@@ -45,13 +45,13 @@ export function playerRatingFromStats(state: PlayerState): number {
   return (tech + phys + mental) / 3;
 }
 
-const GOAL_SHARE: Record<string, number> = { ST: 0.4, OM: 0.28, FL: 0.28, ZM: 0.1, AV: 0.04, IV: 0.05, TW: 0 };
-const ASSIST_SHARE: Record<string, number> = { ST: 0.15, OM: 0.32, FL: 0.32, ZM: 0.2, AV: 0.15, IV: 0.03, TW: 0.01 };
+const GOAL_SHARE: Record<string, number> = { ST: 0.26, OM: 0.16, FL: 0.18, ZM: 0.07, AV: 0.03, IV: 0.04, TW: 0 };
+const ASSIST_SHARE: Record<string, number> = { ST: 0.1, OM: 0.2, FL: 0.2, ZM: 0.12, AV: 0.09, IV: 0.02, TW: 0.01 };
 
-/** Each team goal is yours with position share x rating factor (rating 6 = 1.0). */
+/** Each team goal is yours with position share x rating factor (rating 6 = 1.0), at most 45 %. */
 function contribution(goals: number, share: Record<string, number>, pos: string, rating: number): number {
-  const factor = clamp(rating / 6, 0.4, 1.4);
-  const p = Math.min(0.7, (share[pos] ?? 0.1) * factor * factor);
+  const factor = clamp(rating / 6, 0.5, 1.4);
+  const p = Math.min(0.45, (share[pos] ?? 0.1) * factor);
   let n = 0;
   for (let i = 0; i < goals; i++) if (Math.random() < p) n++;
   return n;

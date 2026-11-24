@@ -4,6 +4,7 @@ import { POSITION_LIST, positionMeta } from '../data/positions';
 import type { Club } from '../types/club';
 import type { PartialPlayerUpdate, PlayerState, Position, Talent } from '../types/player';
 import { randomOpponent } from './eventEngine';
+import { seasonTitles } from './titles';
 import { marketValue, ovrOf } from './marketValue';
 import {
   WEEKS,
@@ -122,6 +123,7 @@ export function advanceWeek(player: PlayerState): PlayerState {
         ? Math.round((player.seasonRatingSum / player.seasonGames) * 10) / 10
         : 0,
       value: marketValue(player),
+      titles: seasonTitles(player),
     };
     const g = seasonGrowth(player);
     const stat = (k: 'tech' | 'phys' | 'mental') =>
@@ -130,6 +132,8 @@ export function advanceWeek(player: PlayerState): PlayerState {
       ...next,
       stats: { tech: stat('tech'), phys: stat('phys'), mental: stat('mental') },
       squad: shouldPromote(player) ? 'first' : player.squad,
+      // Every title lifts the reputation.
+      reputation: Math.min(100, next.reputation + record.titles.length * 4),
       trust: 50 + Math.round((player.trust - 50) / 2),
       history: [...player.history, record].slice(-25),
       seasonGames: 0,

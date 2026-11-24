@@ -42,6 +42,8 @@ export interface SeasonRecord {
   /** Average match rating of the season, 0 if no games. */
   avgRating?: number;
   value: number;
+  /** Trophies won this season (ids of engine/titles.ts). */
+  titles?: string[];
 }
 
 export interface PlayerState {
