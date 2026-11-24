@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { positionLabel } from '../data/positions';
 import { formatValue, marketValue, ovrOf } from '../engine/marketValue';
 import { seasonEventById } from '../engine/seasonEvents';
@@ -6,10 +6,13 @@ import { playtimeShare, roleLabel, teamName } from '../engine/squad';
 import { idleFor } from '../state/avatarIdle';
 import { useCareerStore } from '../state/careerStore';
 import { useAvatarReaction } from '../state/useAvatarReaction';
+import { useCountUp } from '../state/useCountUp';
+import type { Club } from '../types/club';
 import type { LogEntry } from '../types/event';
+import type { SeasonRecord } from '../types/player';
 import { ClubCrest } from './ClubCrest';
 import { PlayerAvatar } from './PlayerAvatar';
-import { clubTheme } from './clubTheme';
+import { clubTheme, type ClubTheme } from './clubTheme';
 import './FastScreen.css';
 
 /** Log tags that are bookkeeping, not the outcome of last season's decision. */
@@ -20,6 +23,25 @@ function lastOutcome(log: LogEntry[]): LogEntry | undefined {
   return undefined;
 }
 
+/** Time the chosen tile stays alone on screen before the season is played. */
+const LEAVE_MS = 320;
+/** The season recap and the "welcome" card close by themselves after this. */
+const RECAP_MS = 3200;
+const WELCOME_MS = 2000;
+
+function themeVars(t: ClubTheme): CSSProperties {
+  return {
+    '--c-bg': t.bg,
+    '--c-panel': t.panel,
+    '--c-accent': t.accent,
+    '--c-on': t.onAccent,
+  } as CSSProperties;
+}
+
+type Overlay =
+  | { kind: 'recap'; record: SeasonRecord; ovrBefore: number; ovrAfter: number; outcome?: LogEntry }
+  | { kind: 'welcome'; club: Club; role: string };
+
 interface Props {
   onNew: () => void;
   onReset: () => void;
@@ -28,6 +50,9 @@ interface Props {
 /**
  * Fast mode in one screen: player head, last seasons, then the decision
  * (season event or transfer window) as tiles side by side. Colours come from the club.
+ *
+ * One click:  tile picked → others fade (LEAVE_MS) → store plays the season
+ *             → recap card counts the season up → next decision slides in.
  */
 export function FastScreen({ onNew, onReset }: Props) {
   const player = useCareerStore((s) => s.player);
@@ -38,26 +63,66 @@ export function FastScreen({ onNew, onReset }: Props) {
   const pickTransfer = useCareerStore((s) => s.pickTransfer);
   const { mood, swap } = useAvatarReaction(player);
   const [allRows, setAllRows] = useState(false);
+  const [leaving, setLeaving] = useState<number | null>(null);
+  const [overlay, setOverlay] = useState<Overlay | null>(null);
+  const timer = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+  useEffect(() => {
+    if (!overlay) return;
+    const id = window.setTimeout(() => setOverlay(null), overlay.kind === 'recap' ? RECAP_MS : WELCOME_MS);
+    return () => window.clearTimeout(id);
+  }, [overlay]);
 
   const t = clubTheme(player.club);
-  const vars = {
-    '--c-bg': t.bg,
-    '--c-panel': t.panel,
-    '--c-accent': t.accent,
-    '--c-on': t.onAccent,
-  } as CSSProperties;
-
   const share = player.club ? playtimeShare(player) : 0.5;
-  const rows = allRows ? player.history : player.history.slice(-3);
+  const ended = player.careerEnded;
+  const rows = allRows || ended ? player.history : player.history.slice(-3);
   const event = seasonCard ? seasonEventById(seasonCard.eventId) : undefined;
   const outcome = lastOutcome(log);
-  const showOutcome = outcome && outcome.season === player.season - 1;
+  const showOutcome = outcome && outcome.season === player.season - 1 && !ended;
+  const busy = leaving !== null || overlay !== null;
+  // Re-key the decision so it animates in fresh every time it changes.
+  const decisionKey = event ? `e-${player.season}-${event.id}` : transferWindow ? `t-${player.season}` : 'end';
+
+  const choose = (i: number) => {
+    if (busy) return;
+    setLeaving(i);
+    const ovrBefore = ovrOf(player);
+    const seasons = player.history.length;
+    timer.current = window.setTimeout(() => {
+      resolveSeason(i);
+      const s = useCareerStore.getState();
+      const record = s.player.history[s.player.history.length - 1];
+      setLeaving(null);
+      if (record && s.player.history.length > seasons) {
+        setOverlay({ kind: 'recap', record, ovrBefore, ovrAfter: ovrOf(s.player), outcome: lastOutcome(s.log) });
+      }
+    }, LEAVE_MS);
+  };
+
+  const transfer = (i: number) => {
+    if (busy || !transferWindow) return;
+    const o = transferWindow.options[i];
+    setLeaving(i);
+    timer.current = window.setTimeout(() => {
+      pickTransfer(i);
+      setLeaving(null);
+      if (o.kind === 'move') setOverlay({ kind: 'welcome', club: o.club, role: o.role });
+    }, LEAVE_MS);
+  };
+
+  const tileClass = (i: number, main: boolean) =>
+    `fs-tile${main ? ' main' : ''}${leaving === null ? '' : leaving === i ? ' picked' : ' gone'}`;
 
   return (
-    <div className="fs" style={vars}>
+    <div className="fs" style={themeVars(t)}>
       <div className="fs-top">
         <span className="fs-label">
-          Saison <b>{player.season}</b>
+          Saison{' '}
+          <b key={player.season} className="fs-tick">
+            {player.season}
+          </b>
         </span>
         <span className="fs-actions">
           <button type="button" className="fs-mini" onClick={onNew}>
@@ -82,15 +147,12 @@ export function FastScreen({ onNew, onReset }: Props) {
             playKey={swap ? 'swap' : 'none'}
           />
         </div>
-        <div className="fs-id">
+        <div className="fs-id" key={player.club?.id ?? 'none'}>
           <span className="fs-name">{player.name}</span>
           <span className="fs-club">{teamName(player)}</span>
           <span className="fs-league">{player.club?.league}</span>
         </div>
-        <div className="fs-ovr pop" key={ovrOf(player)}>
-          <b>{ovrOf(player)}</b>
-          <span>OVR</span>
-        </div>
+        <OvrBox ovr={ovrOf(player)} />
       </header>
 
       <div className="fs-chips">
@@ -111,14 +173,11 @@ export function FastScreen({ onNew, onReset }: Props) {
             <span>T</span>
             <span>A</span>
           </div>
-          <div className={allRows ? 'fs-rows fs-rows-all' : 'fs-rows'}>
+          <div className={allRows || ended ? 'fs-rows fs-rows-all' : 'fs-rows'}>
             {rows.map((r, i) => {
               const prev = player.history[player.history.length - rows.length + i - 1];
               return (
-                <div
-                  className={i === rows.length - 1 ? 'fs-row fresh' : 'fs-row'}
-                  key={r.age}
-                >
+                <div className={i === rows.length - 1 ? 'fs-row fresh' : 'fs-row'} key={r.age}>
                   <span>{r.age}</span>
                   <span className="fs-cl">{r.clubName}</span>
                   <span className={prev && r.ovr > prev.ovr ? 'up' : undefined}>{r.ovr}</span>
@@ -129,21 +188,23 @@ export function FastScreen({ onNew, onReset }: Props) {
               );
             })}
           </div>
-          {player.history.length > 3 ? (
+          {player.history.length > 3 && !ended ? (
             <button type="button" className="fs-more" onClick={() => setAllRows(!allRows)}>
               {allRows ? 'Weniger' : `Alle ${player.history.length} Saisons`}
             </button>
           ) : null}
         </section>
-      ) : null}
+      ) : (
+        <p className="fs-empty">Deine erste Saison. Jede Entscheidung schreibt eine Zeile deiner Karriere.</p>
+      )}
 
       {showOutcome ? (
-        <p className={`fs-outcome ${outcome.tone}`}>
+        <p className={`fs-outcome ${outcome.tone}`} key={outcome.id}>
           <b>{outcome.title}</b> {outcome.text}
         </p>
       ) : null}
 
-      <section className="fs-decide" aria-live="polite">
+      <section className="fs-decide" aria-live="polite" key={decisionKey}>
         {event ? (
           <>
             <span className="fs-kicker">Deine Entscheidung</span>
@@ -154,8 +215,10 @@ export function FastScreen({ onNew, onReset }: Props) {
                 <button
                   key={c.label}
                   type="button"
-                  className={i === 0 ? 'fs-tile main' : 'fs-tile'}
-                  onClick={() => resolveSeason(i)}
+                  className={tileClass(i, i === 0)}
+                  style={{ animationDelay: `${120 + i * 70}ms` }}
+                  disabled={busy}
+                  onClick={() => choose(i)}
                 >
                   <span className="fs-tile-t">{c.label}</span>
                   <span className="fs-odds">
@@ -184,8 +247,10 @@ export function FastScreen({ onNew, onReset }: Props) {
                   <button
                     key={`${o.kind}-${o.club.id}`}
                     type="button"
-                    className="fs-tile fs-offer-tile"
-                    onClick={() => pickTransfer(i)}
+                    className={`${tileClass(i, false)} fs-offer-tile`}
+                    style={{ animationDelay: `${120 + i * 70}ms`, borderTopColor: clubTheme(o.club).accent }}
+                    disabled={busy}
+                    onClick={() => transfer(i)}
                   >
                     <span className="fs-kind">
                       {o.kind === 'move' ? 'Wechsel' : o.kind === 'extend' ? 'Verlängern' : 'Bleiben'}
@@ -209,7 +274,141 @@ export function FastScreen({ onNew, onReset }: Props) {
             </div>
           </>
         ) : null}
+
+        {ended && !overlay ? <CareerEnd onNew={onNew} /> : null}
       </section>
+
+      {overlay?.kind === 'recap' ? (
+        <Recap o={overlay} onClose={() => setOverlay(null)} />
+      ) : null}
+      {overlay?.kind === 'welcome' ? (
+        <Welcome club={overlay.club} role={overlay.role} onClose={() => setOverlay(null)} />
+      ) : null}
+    </div>
+  );
+}
+
+/** OVR box: counts up to a new value and pops while it changes. */
+function OvrBox({ ovr }: { ovr: number }) {
+  const [from, setFrom] = useState(ovr);
+  const shown = useCountUp(ovr, 700, from);
+  useEffect(() => {
+    const id = window.setTimeout(() => setFrom(ovr), 750);
+    return () => window.clearTimeout(id);
+  }, [ovr]);
+  return (
+    <div className={`fs-ovr${ovr !== from ? ' pop' : ''}`}>
+      <b>{shown}</b>
+      <span>OVR</span>
+    </div>
+  );
+}
+
+/** Season recap: games, goals, assists count up, OVR before → after, what the decision did. */
+function Recap({ o, onClose }: { o: Extract<Overlay, { kind: 'recap' }>; onClose: () => void }) {
+  const games = useCountUp(o.record.games, 900, 0, 250);
+  const goals = useCountUp(o.record.goals ?? 0, 900, 0, 400);
+  const assists = useCountUp(o.record.assists ?? 0, 900, 0, 550);
+  const delta = o.ovrAfter - o.ovrBefore;
+  return (
+    <button type="button" className="fs-overlay" onClick={onClose} aria-label="Weiter">
+      <span className="fs-card">
+        <span className="fs-kicker">Saisonbilanz · {o.record.age} Jahre</span>
+        <span className="fs-card-club">{o.record.clubName}</span>
+        {o.outcome ? (
+          <span className={`fs-card-out ${o.outcome.tone}`}>
+            <b>{o.outcome.title}</b>
+            <span>{o.outcome.text}</span>
+          </span>
+        ) : null}
+        <span className="fs-stats">
+          <span>
+            <b>{games}</b>
+            <small>Spiele</small>
+          </span>
+          <span>
+            <b>{goals}</b>
+            <small>Tore</small>
+          </span>
+          <span>
+            <b>{assists}</b>
+            <small>Vorlagen</small>
+          </span>
+        </span>
+        <span className="fs-ovrjump">
+          <span>{o.ovrBefore}</span>
+          <span className="arrow" aria-hidden>
+            →
+          </span>
+          <b>{o.ovrAfter}</b>
+          <em className={delta > 0 ? 'up' : delta < 0 ? 'down' : ''}>{delta > 0 ? `+${delta}` : delta}</em>
+        </span>
+        <span className="fs-tap">Tippen zum Weiterspielen</span>
+        <span className="fs-timer" style={{ animationDuration: `${RECAP_MS}ms` }} aria-hidden />
+      </span>
+    </button>
+  );
+}
+
+/** Transfer: the screen wipes into the new club's colours. */
+function Welcome({ club, role, onClose }: { club: Club; role: string; onClose: () => void }) {
+  return (
+    <button
+      type="button"
+      className="fs-overlay welcome"
+      style={themeVars(clubTheme(club))}
+      onClick={onClose}
+      aria-label="Weiter"
+    >
+      <span className="fs-wipe" aria-hidden />
+      <span className="fs-welcome">
+        <span className="fs-crest-big">
+          <ClubCrest club={club} size={96} />
+        </span>
+        <span className="fs-kicker">Willkommen bei</span>
+        <span className="fs-welcome-name">{club.name}</span>
+        <span className="fs-league">
+          {club.league} · {role}
+        </span>
+      </span>
+    </button>
+  );
+}
+
+/** End of the career in club colours: totals count up, best year. */
+function CareerEnd({ onNew }: { onNew: () => void }) {
+  const player = useCareerStore((s) => s.player);
+  const h = player.history;
+  const games = useCountUp(h.reduce((a, r) => a + r.games, 0), 1200, 0, 200);
+  const goals = useCountUp(h.reduce((a, r) => a + (r.goals ?? 0), 0), 1200, 0, 350);
+  const peak = h.reduce((a, r) => Math.max(a, r.ovr), 0);
+  const best = h.reduce<SeasonRecord | null>((a, r) => (!a || (r.goals ?? 0) > (a.goals ?? 0) ? r : a), null);
+  return (
+    <div className="fs-end">
+      <span className="fs-kicker">Karriere beendet</span>
+      <h2 className="fs-title">{player.endReason}</h2>
+      <span className="fs-stats">
+        <span>
+          <b>{games}</b>
+          <small>Spiele</small>
+        </span>
+        <span>
+          <b>{goals}</b>
+          <small>Tore</small>
+        </span>
+        <span>
+          <b>{peak}</b>
+          <small>Bestes OVR</small>
+        </span>
+      </span>
+      {best ? (
+        <p className="fs-text">
+          Bestes Jahr: mit {best.age} bei {best.clubName}, {best.goals ?? 0} Tore in {best.games} Spielen.
+        </p>
+      ) : null}
+      <button type="button" className="fs-tile main fs-again" onClick={onNew}>
+        <span className="fs-tile-t">Neue Karriere</span>
+      </button>
     </div>
   );
 }

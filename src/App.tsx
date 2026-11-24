@@ -39,7 +39,7 @@ function App() {
   };
 
   // Fast mode has its own full screen (club colours, no top bar).
-  if (mode === 'fast' && started && !picking && !player.careerEnded) {
+  if (mode === 'fast' && (started || (player.careerEnded && hasSave)) && !picking) {
     return (
       <div className="app app-fast">
         <FastScreen onNew={() => pick('fast')} onReset={clearSave} />

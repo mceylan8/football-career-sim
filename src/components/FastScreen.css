@@ -366,3 +366,316 @@
     animation: none;
   }
 }
+
+/* ---- Motion -------------------------------------------------------------
+   Curves: --ease-out for things arriving, --ease-in for things leaving. */
+.fs {
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in: cubic-bezier(0.5, 0, 0.75, 0);
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.6s var(--ease-out);
+}
+.fs-head,
+.fs-chips span,
+.fs-table,
+.fs-ovr {
+  transition:
+    background-color 0.6s var(--ease-out),
+    border-color 0.6s var(--ease-out),
+    color 0.6s var(--ease-out);
+}
+
+/* Season number ticks over, club name slides in after a transfer. */
+.fs-tick {
+  display: inline-block;
+  animation: fs-tick 0.5s var(--ease-out);
+}
+.fs-id {
+  animation: fs-slide 0.55s var(--ease-out);
+}
+
+/* The decision block arrives from below, tiles follow one after another. */
+.fs-decide {
+  animation: fs-up 0.45s var(--ease-out) backwards;
+}
+.fs-decide .fs-tile {
+  animation: fs-up 0.45s var(--ease-out) backwards;
+}
+.fs-tile:disabled {
+  cursor: default;
+}
+.fs-tile.picked {
+  transform: scale(1.04);
+  box-shadow: 0 0 0 3px var(--cream-2), 6px 6px 0 rgb(0 0 0 / 0.5);
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+  z-index: 1;
+}
+.fs-tile.gone {
+  opacity: 0;
+  transform: translateY(10px) scale(0.96);
+  transition: opacity 0.25s var(--ease-in), transform 0.25s var(--ease-in);
+}
+.fs-tile.fs-offer-tile {
+  border-top: 5px solid transparent;
+}
+
+.fs-outcome {
+  animation: fs-up 0.4s var(--ease-out) both;
+}
+.fs-empty {
+  margin: 0;
+  padding: 12px;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--mute-2);
+  border: 2px dashed color-mix(in srgb, var(--cream-2) 25%, transparent);
+}
+
+/* ---- Season recap ------------------------------------------------------- */
+.fs-overlay {
+  all: unset;
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--c-bg) 78%, transparent);
+  backdrop-filter: blur(6px);
+  animation: fs-fade 0.25s var(--ease-out);
+}
+.fs-card {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  box-sizing: border-box;
+  padding: 22px 20px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--cream-2);
+  color: #12102b;
+  box-shadow: 8px 8px 0 var(--c-accent);
+  overflow: hidden;
+  animation: fs-card 0.5s var(--ease-out);
+}
+.fs-card .fs-kicker {
+  color: #4a4760;
+}
+.fs-card-club {
+  font-family: var(--f-poster);
+  font-size: 30px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.fs-card-out {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  background: #12102b0f;
+  font-size: 14px;
+  line-height: 1.35;
+  animation: fs-up 0.4s 0.15s var(--ease-out) both;
+}
+.fs-card-out b {
+  font-family: var(--f-cond);
+  font-size: 15px;
+  text-transform: uppercase;
+}
+.fs-card-out.win b {
+  color: #2e7d3a;
+}
+.fs-card-out.loss b {
+  color: #c62835;
+}
+.fs-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.fs-stats > span {
+  display: flex;
+  flex-direction: column;
+}
+.fs-stats b {
+  font-family: var(--f-poster);
+  font-weight: 400;
+  font-size: 44px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.fs-stats small {
+  font-family: var(--f-cond);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.fs-ovrjump {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-family: var(--f-poster);
+  font-size: 28px;
+  animation: fs-up 0.4s 0.9s var(--ease-out) both;
+}
+.fs-ovrjump > span:first-child {
+  opacity: 0.5;
+}
+.fs-ovrjump b {
+  font-weight: 400;
+  font-size: 48px;
+  line-height: 1;
+}
+.fs-ovrjump em {
+  font-style: normal;
+  font-family: var(--f-cond);
+  font-weight: 700;
+  font-size: 18px;
+  padding: 2px 8px;
+  background: #12102b14;
+  animation: fs-pop 0.45s 1.2s var(--ease-out) both;
+}
+.fs-ovrjump em.up {
+  background: #2e7d3a;
+  color: #fff;
+}
+.fs-ovrjump em.down {
+  background: #c62835;
+  color: #fff;
+}
+.fs-tap {
+  font-family: var(--f-cond);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+.fs-timer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 5px;
+  width: 100%;
+  background: var(--c-accent);
+  transform-origin: left;
+  animation: fs-timer linear forwards;
+}
+
+/* ---- Transfer: wipe into the new club colours --------------------------- */
+.fs-overlay.welcome {
+  background: none;
+  backdrop-filter: none;
+  animation: none;
+}
+.fs-wipe {
+  position: absolute;
+  inset: 0;
+  background: var(--c-bg);
+  animation: fs-wipe 0.55s var(--ease-out) both;
+}
+.fs-wipe::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 14px;
+  background: var(--c-accent);
+}
+.fs-welcome {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  color: var(--cream-2);
+  animation: fs-up 0.5s 0.35s var(--ease-out) both;
+}
+.fs-crest-big {
+  animation: fs-pop 0.6s 0.45s var(--ease-out) both;
+}
+.fs-welcome .fs-kicker {
+  color: var(--c-accent);
+}
+.fs-welcome-name {
+  font-family: var(--f-poster);
+  font-size: 44px;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+/* ---- Career end --------------------------------------------------------- */
+.fs-end {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.fs-end .fs-stats b {
+  color: var(--c-accent);
+}
+.fs-end .fs-stats small {
+  color: var(--mute-2);
+  opacity: 1;
+}
+.fs-again {
+  min-height: 0;
+  padding: 14px;
+  align-items: center;
+}
+
+@keyframes fs-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+@keyframes fs-slide {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+}
+@keyframes fs-tick {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+@keyframes fs-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes fs-card {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.94) rotate(-1.5deg);
+  }
+}
+@keyframes fs-wipe {
+  from {
+    transform: translateX(-102%);
+  }
+}
+@keyframes fs-timer {
+  to {
+    transform: scaleX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fs *,
+  .fs *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+}
