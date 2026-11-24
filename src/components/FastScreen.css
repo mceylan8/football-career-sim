@@ -1,68 +1,111 @@
-/* Fast mode ("Schnellkarriere"): poster look, colours from the club (--c-* set in FastScreen). */
+/* Fast mode ("Schnellkarriere"). Club colours come in as --c-* from FastScreen.tsx;
+   everything else is a token here. Two families: Anton (display), Barlow (everything else). */
 .fs {
+  /* type */
   --f-poster: 'Anton', 'Impact', sans-serif;
-  --f-cond: 'Barlow Condensed', 'Arial Narrow', sans-serif;
   --f-text: 'Barlow', system-ui, sans-serif;
-  --cream-2: #f4f1e6;
-  --mute-2: #c9c4d6;
+  /* colour */
+  --fs-paper: #f4f1e6;
+  --fs-ink: #12102b;
+  --fs-text-2: color-mix(in srgb, var(--fs-paper) 70%, var(--c-bg));
+  --fs-ink-2: color-mix(in srgb, var(--fs-ink) 68%, var(--fs-paper));
+  --fs-line: color-mix(in srgb, var(--fs-paper) 14%, transparent);
+  --fs-good: #2e7d3a;
+  --fs-bad: #c62835;
+  --fs-good-on-dark: #7fe38a;
+  --fs-bad-on-dark: #ff9aa3;
+  --gold: #f2c230;
+  --gold-ink: #2b2006;
+  /* depth */
+  --fs-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 16px rgb(0 0 0 / 0.28);
+  --fs-shadow-lg: 0 2px 4px rgb(0 0 0 / 0.25), 0 18px 40px rgb(0 0 0 / 0.45);
+  /* shape: inner 6px, card 14px (= 6 + 8 inset) */
+  --r-in: 6px;
+  --r-card: 14px;
+  /* motion */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --press-scale: 0.96;
+
+  position: relative;
+  overflow: clip;
   flex: 1;
   box-sizing: border-box;
   padding: 14px 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   background: var(--c-bg);
-  color: var(--cream-2);
+  color: var(--fs-paper);
   font-family: var(--f-text);
-  transition: background 0.4s;
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.6s var(--ease-in-out);
+}
+.fs ::selection {
+  background: var(--c-accent);
+  color: var(--c-on);
 }
 
+/* ---- Top line ------------------------------------------------------------ */
 .fs-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-.fs-label,
-.fs-kicker,
-.fs-kind {
-  font-family: var(--f-cond);
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--mute-2);
+.fs-label {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--fs-text-2);
 }
 .fs-label b {
+  display: inline-block;
   font-family: var(--f-poster);
   font-weight: 400;
-  font-size: 18px;
-  letter-spacing: 0;
+  font-size: 20px;
   color: var(--c-accent);
+  font-variant-numeric: tabular-nums;
 }
 .fs-actions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 .fs-mini {
-  font-family: var(--f-cond);
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+  font: 600 14px/1 var(--f-text);
   background: transparent;
-  color: var(--cream-2);
-  border: 2px solid color-mix(in srgb, var(--cream-2) 45%, transparent);
-  padding: 6px 10px;
-  min-height: 32px;
+  color: var(--fs-paper);
+  border: 1px solid var(--fs-line);
+  border-radius: var(--r-in);
+  padding: 0 14px;
+  min-height: 40px;
   cursor: pointer;
+  transition:
+    transform 0.12s var(--ease-out),
+    background-color 0.15s ease;
+}
+.fs-mini:active {
+  transform: scale(var(--press-scale));
+}
+.fs-mini:focus-visible,
+.fs-more:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .fs-mini:hover {
+    background: var(--fs-line);
+  }
 }
 
+/* ---- Player head ----------------------------------------------------------- */
 .fs-head {
   display: flex;
   align-items: flex-end;
   gap: 12px;
-  border-bottom: 4px solid var(--c-accent);
-  padding-bottom: 10px;
+  padding-bottom: 12px;
+  border-bottom: 3px solid var(--c-accent);
+  transition: border-color 0.6s var(--ease-in-out);
 }
 .fs-hero {
   width: 96px;
@@ -88,85 +131,101 @@
   white-space: nowrap;
 }
 .fs-club {
-  font-family: var(--f-cond);
   font-weight: 700;
   font-size: 17px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  line-height: 1.15;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .fs-league {
-  font-size: 13px;
-  color: var(--mute-2);
+  font-size: 14px;
+  color: var(--fs-text-2);
 }
 .fs-ovr {
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-width: 64px;
+  padding: 6px 10px 7px;
+  margin-bottom: 4px;
+  border-radius: var(--r-in);
   background: var(--c-accent);
   color: var(--c-on);
-  padding: 4px 10px 6px;
-  margin-bottom: 4px;
+  box-shadow: var(--fs-shadow);
+  transition:
+    background-color 0.6s var(--ease-in-out),
+    color 0.6s var(--ease-in-out);
 }
 .fs-ovr b {
   font-family: var(--f-poster);
   font-weight: 400;
-  font-size: 50px;
+  font-size: 46px;
   line-height: 0.9;
+  font-variant-numeric: tabular-nums;
 }
 .fs-ovr span {
-  font-family: var(--f-cond);
   font-weight: 700;
   font-size: 12px;
-  letter-spacing: 2px;
 }
 
+/* ---- Facts ---------------------------------------------------------------- */
 .fs-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 .fs-chips span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: var(--r-in);
   background: var(--c-panel);
-  font-family: var(--f-cond);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 15px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  padding: 3px 8px;
+  transition: background-color 0.6s var(--ease-in-out);
+}
+.fs-chips .fs-gold {
+  background: var(--gold);
+  color: var(--gold-ink);
 }
 
+/* ---- Career table ----------------------------------------------------------- */
 .fs-table {
-  background: var(--c-panel);
-  padding: 8px 10px;
   display: flex;
   flex-direction: column;
-  font-family: var(--f-cond);
+  padding: 8px 12px;
+  border-radius: var(--r-card);
+  background: var(--c-panel);
+  transition: background-color 0.6s var(--ease-in-out);
 }
 .fs-row {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) 34px 30px 28px 28px;
+  grid-template-columns: 26px minmax(0, 1fr) 32px 30px 28px 26px;
   gap: 6px;
   align-items: baseline;
-  font-weight: 500;
-  font-size: 18px;
-  padding: 4px 0;
-  border-top: 1px solid color-mix(in srgb, var(--cream-2) 14%, transparent);
+  padding: 5px 0;
+  border-top: 1px solid var(--fs-line);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.fs-row > :nth-child(n + 3) {
+  text-align: right;
 }
 .fs-row.fs-th {
   border-top: 0;
   padding-top: 0;
-  font-weight: 700;
-  font-size: 11px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--mute-2);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--fs-text-2);
 }
 .fs-rows-all {
   max-height: 40svh;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--fs-line) transparent;
 }
 .fs-cl {
   white-space: nowrap;
@@ -177,50 +236,56 @@
   color: var(--c-accent);
   font-weight: 700;
 }
+.fs-cups {
+  display: inline-flex;
+  gap: 1px;
+  margin-right: 5px;
+  color: var(--gold);
+}
 .fs-more {
   align-self: flex-end;
+  min-height: 40px;
+  padding: 0 2px;
   background: none;
   border: 0;
-  color: var(--mute-2);
-  font-family: var(--f-cond);
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  padding: 6px 0 0;
-  min-height: 28px;
+  color: var(--fs-text-2);
+  font: 600 14px/1 var(--f-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
   cursor: pointer;
 }
-
+.fs-empty {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--r-card);
+  border: 1px dashed var(--fs-line);
+  color: var(--fs-text-2);
+  text-wrap: pretty;
+}
 .fs-outcome {
   margin: 0;
-  font-size: 14px;
-  line-height: 1.35;
-  padding: 8px 10px;
-  border-left: 0;
-  background: color-mix(in srgb, var(--c-panel) 70%, transparent);
+  padding: 10px 12px;
+  border-radius: var(--r-card);
+  background: color-mix(in srgb, var(--c-panel) 65%, transparent);
+  font-size: 15px;
+  text-wrap: pretty;
 }
 .fs-outcome b {
-  font-family: var(--f-cond);
-  font-size: 15px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-weight: 700;
 }
 .fs-outcome.win b {
-  color: #6fe07a;
+  color: var(--fs-good-on-dark);
 }
 .fs-outcome.loss b {
-  color: #ff8a94;
+  color: var(--fs-bad-on-dark);
 }
 
+/* ---- Decision --------------------------------------------------------------- */
 .fs-decide {
   margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-.fs-kicker {
-  color: var(--c-accent);
+  gap: 6px;
 }
 .fs-title {
   margin: 0;
@@ -229,19 +294,19 @@
   font-size: 32px;
   line-height: 1;
   text-transform: uppercase;
+  text-wrap: balance;
 }
 .fs-text {
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.35;
-  color: var(--mute-2);
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: var(--fs-text-2);
+  text-wrap: pretty;
 }
 
 /* Choices side by side as rectangles. */
 .fs-grid {
   display: grid;
   gap: 8px;
-  margin-top: 4px;
 }
 .fs-grid.n1 {
   grid-template-columns: minmax(0, 1fr);
@@ -255,61 +320,64 @@
 .fs-tile {
   all: unset;
   box-sizing: border-box;
-  cursor: pointer;
-  min-height: 118px;
+  position: relative;
+  min-height: 120px;
   padding: 12px 10px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: var(--cream-2);
-  color: #12102b;
-  box-shadow: 4px 4px 0 rgb(0 0 0 / 0.45);
+  border-radius: var(--r-in);
+  background: var(--fs-paper);
+  color: var(--fs-ink);
+  box-shadow: var(--fs-shadow);
+  cursor: pointer;
   transition:
-    transform 0.08s,
-    box-shadow 0.08s;
+    transform 0.14s var(--ease-out),
+    box-shadow 0.2s var(--ease-out),
+    opacity 0.22s var(--ease-out);
 }
 .fs-tile.main {
   background: var(--c-accent);
   color: var(--c-on);
 }
-.fs-tile:hover,
-.fs-tile:focus-visible {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0 rgb(0 0 0 / 0.45);
+.fs-tile:active:not(:disabled) {
+  transform: scale(var(--press-scale));
 }
 .fs-tile:focus-visible {
-  outline: 3px solid var(--cream-2);
-  outline-offset: 2px;
+  outline: 2px solid var(--fs-paper);
+  outline-offset: 3px;
 }
-.fs-tile:active {
-  transform: translate(4px, 4px);
-  box-shadow: none;
+.fs-tile:disabled {
+  cursor: default;
+}
+@media (hover: hover) and (pointer: fine) {
+  .fs-tile:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--fs-shadow-lg);
+  }
 }
 .fs-tile-t {
   font-family: var(--f-poster);
   font-size: 19px;
   line-height: 1.05;
   text-transform: uppercase;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
-.fs-tile .fs-kind {
-  color: inherit;
-  opacity: 0.7;
-  font-size: 11px;
-}
-.fs-tile.fs-offer-tile {
-  min-height: 0;
-  padding: 10px;
-  gap: 6px;
+.fs-kind {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--fs-ink-2);
 }
 .fs-offer {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 }
 .fs-sub {
-  font-size: 13px;
-  opacity: 0.75;
+  font-size: 14px;
+  color: var(--fs-ink-2);
 }
 .fs-odds {
   margin-top: auto;
@@ -317,181 +385,102 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 4px;
-  font-family: var(--f-cond);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 14px;
-  line-height: 1.1;
+  line-height: 1.15;
 }
 .fs-odds span {
-  padding: 2px 6px;
-  background: rgb(0 0 0 / 0.1);
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: rgb(18 16 43 / 0.08);
 }
-.fs-odds .up {
-  background: #2e7d3a;
+.fs-tile.main .fs-odds span {
+  background: rgb(0 0 0 / 0.14);
+}
+.fs-odds .up,
+.fs-tile.main .fs-odds .up {
+  background: var(--fs-good);
   color: #fff;
 }
-.fs-odds .down {
-  background: #c62835;
+.fs-odds .down,
+.fs-tile.main .fs-odds .down {
+  background: var(--fs-bad);
   color: #fff;
-}
-
-@media (min-width: 1000px) {
-  .fs {
-    padding: 24px 28px 28px;
-  }
-}
-
-/* A bit of juice: the newest season row slides in, the OVR box pops when it changes. */
-.fs-row.fresh {
-  animation: fs-in 0.5s ease-out;
-}
-.fs-ovr.pop {
-  animation: fs-pop 0.45s ease-out;
-}
-@keyframes fs-in {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-    background: color-mix(in srgb, var(--c-accent) 40%, transparent);
-  }
-}
-@keyframes fs-pop {
-  40% {
-    transform: scale(1.15);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .fs-row.fresh,
-  .fs-ovr.pop {
-    animation: none;
-  }
-}
-
-/* ---- Motion -------------------------------------------------------------
-   Curves: --ease-out for things arriving, --ease-in for things leaving. */
-.fs {
-  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --ease-in: cubic-bezier(0.5, 0, 0.75, 0);
-  position: relative;
-  overflow: hidden;
-  transition: background-color 0.6s var(--ease-out);
-}
-.fs-head,
-.fs-chips span,
-.fs-table,
-.fs-ovr {
-  transition:
-    background-color 0.6s var(--ease-out),
-    border-color 0.6s var(--ease-out),
-    color 0.6s var(--ease-out);
-}
-
-/* Season number ticks over, club name slides in after a transfer. */
-.fs-tick {
-  display: inline-block;
-  animation: fs-tick 0.5s var(--ease-out);
-}
-.fs-id {
-  animation: fs-slide 0.55s var(--ease-out);
-}
-
-/* The decision block arrives from below, tiles follow one after another. */
-.fs-decide {
-  animation: fs-up 0.45s var(--ease-out) backwards;
-}
-.fs-decide .fs-tile {
-  animation: fs-up 0.45s var(--ease-out) backwards;
-}
-.fs-tile:disabled {
-  cursor: default;
-}
-.fs-tile.picked {
-  transform: scale(1.04);
-  box-shadow: 0 0 0 3px var(--cream-2), 6px 6px 0 rgb(0 0 0 / 0.5);
-  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
-  z-index: 1;
-}
-.fs-tile.gone {
-  opacity: 0;
-  transform: translateY(10px) scale(0.96);
-  transition: opacity 0.25s var(--ease-in), transform 0.25s var(--ease-in);
 }
 .fs-tile.fs-offer-tile {
-  border-top: 5px solid transparent;
+  min-height: 0;
+  padding: 10px;
+  gap: 6px;
 }
 
-.fs-outcome {
-  animation: fs-up 0.4s var(--ease-out) both;
-}
-.fs-empty {
-  margin: 0;
-  padding: 12px;
-  font-size: 15px;
-  line-height: 1.4;
-  color: var(--mute-2);
-  border: 2px dashed color-mix(in srgb, var(--cream-2) 25%, transparent);
-}
-
-/* ---- Season recap ------------------------------------------------------- */
+/* ---- Overlays: recap card and transfer wipe -------------------------------- */
 .fs-overlay {
   all: unset;
   position: absolute;
   inset: 0;
   z-index: 10;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  box-sizing: border-box;
   cursor: pointer;
-  background: color-mix(in srgb, var(--c-bg) 78%, transparent);
-  backdrop-filter: blur(6px);
-  animation: fs-fade 0.25s var(--ease-out);
+  background: color-mix(in srgb, var(--c-bg) 82%, transparent);
 }
 .fs-card {
   position: relative;
   width: 100%;
   max-width: 360px;
   box-sizing: border-box;
-  padding: 22px 20px 26px;
+  padding: 20px 20px 24px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  background: var(--cream-2);
-  color: #12102b;
-  box-shadow: 8px 8px 0 var(--c-accent);
+  gap: 14px;
   overflow: hidden;
-  animation: fs-card 0.5s var(--ease-out);
+  border-radius: var(--r-card);
+  background: var(--fs-paper);
+  color: var(--fs-ink);
+  box-shadow: var(--fs-shadow-lg);
 }
-.fs-card .fs-kicker {
-  color: #4a4760;
+.fs-card.gold {
+  box-shadow:
+    0 0 0 3px var(--gold),
+    var(--fs-shadow-lg);
+}
+.fs-card-head {
+  display: flex;
+  flex-direction: column;
 }
 .fs-card-club {
   font-family: var(--f-poster);
   font-size: 30px;
   line-height: 1;
   text-transform: uppercase;
+  text-wrap: balance;
+}
+.fs-card-age {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--fs-ink-2);
 }
 .fs-card-out {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 8px 10px;
-  background: #12102b0f;
-  font-size: 14px;
-  line-height: 1.35;
-  animation: fs-up 0.4s 0.15s var(--ease-out) both;
+  padding: 10px 12px;
+  border-radius: var(--r-in);
+  background: rgb(18 16 43 / 0.06);
+  font-size: 15px;
+  line-height: 1.4;
 }
 .fs-card-out b {
-  font-family: var(--f-cond);
-  font-size: 15px;
-  text-transform: uppercase;
+  font-weight: 700;
 }
 .fs-card-out.win b {
-  color: #2e7d3a;
+  color: var(--fs-good);
 }
 .fs-card-out.loss b {
-  color: #c62835;
+  color: var(--fs-bad);
 }
 .fs-stats {
   display: grid;
@@ -505,105 +494,88 @@
 .fs-stats b {
   font-family: var(--f-poster);
   font-weight: 400;
-  font-size: 44px;
+  font-size: 42px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 .fs-stats small {
-  font-family: var(--f-cond);
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  opacity: 0.7;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--fs-ink-2);
 }
 .fs-ovrjump {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
   font-family: var(--f-poster);
-  font-size: 28px;
-  animation: fs-up 0.4s 0.9s var(--ease-out) both;
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
 }
 .fs-ovrjump > span:first-child {
-  opacity: 0.5;
+  color: var(--fs-ink-2);
+}
+.fs-ovrjump .arrow {
+  color: var(--fs-ink-2);
 }
 .fs-ovrjump b {
   font-weight: 400;
-  font-size: 48px;
+  font-size: 46px;
   line-height: 1;
 }
 .fs-ovrjump em {
   font-style: normal;
-  font-family: var(--f-cond);
+  font-family: var(--f-text);
   font-weight: 700;
-  font-size: 18px;
-  padding: 2px 8px;
-  background: #12102b14;
-  animation: fs-pop 0.45s 1.2s var(--ease-out) both;
+  font-size: 17px;
+  padding: 3px 9px;
+  border-radius: var(--r-in);
+  background: rgb(18 16 43 / 0.08);
 }
 .fs-ovrjump em.up {
-  background: #2e7d3a;
+  background: var(--fs-good);
   color: #fff;
 }
 .fs-ovrjump em.down {
-  background: #c62835;
+  background: var(--fs-bad);
   color: #fff;
 }
 .fs-tap {
-  font-family: var(--f-cond);
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  opacity: 0.55;
+  font-size: 14px;
+  color: var(--fs-ink-2);
 }
 .fs-timer {
   position: absolute;
   left: 0;
   bottom: 0;
-  height: 5px;
   width: 100%;
+  height: 4px;
   background: var(--c-accent);
   transform-origin: left;
   animation: fs-timer linear forwards;
 }
 
-/* ---- Transfer: wipe into the new club colours --------------------------- */
 .fs-overlay.welcome {
   background: none;
-  backdrop-filter: none;
-  animation: none;
 }
 .fs-wipe {
   position: absolute;
   inset: 0;
   background: var(--c-bg);
-  animation: fs-wipe 0.55s var(--ease-out) both;
-}
-.fs-wipe::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  width: 14px;
-  background: var(--c-accent);
+  clip-path: inset(0 0 0 0);
+  animation: fs-wipe 0.6s var(--ease-in-out) both;
 }
 .fs-welcome {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   text-align: center;
-  color: var(--cream-2);
-  animation: fs-up 0.5s 0.35s var(--ease-out) both;
+  color: var(--fs-paper);
 }
-.fs-crest-big {
-  animation: fs-pop 0.6s 0.45s var(--ease-out) both;
-}
-.fs-welcome .fs-kicker {
+.fs-welcome-hi {
+  font-weight: 600;
+  font-size: 16px;
   color: var(--c-accent);
 }
 .fs-welcome-name {
@@ -611,90 +583,21 @@
   font-size: 44px;
   line-height: 0.95;
   text-transform: uppercase;
+  text-wrap: balance;
 }
-
-/* ---- Career end --------------------------------------------------------- */
-.fs-end {
+.fs-welcome-meta {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
-.fs-end .fs-stats b {
-  color: var(--c-accent);
-}
-.fs-end .fs-stats small {
-  color: var(--mute-2);
-  opacity: 1;
-}
-.fs-again {
-  min-height: 0;
-  padding: 14px;
-  align-items: center;
+.fs-welcome-meta span {
+  padding: 3px 10px;
+  border-radius: var(--r-in);
+  background: var(--c-panel);
+  font-weight: 600;
+  font-size: 15px;
 }
 
-@keyframes fs-up {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-}
-@keyframes fs-slide {
-  from {
-    opacity: 0;
-    transform: translateX(-12px);
-  }
-}
-@keyframes fs-tick {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-}
-@keyframes fs-fade {
-  from {
-    opacity: 0;
-  }
-}
-@keyframes fs-card {
-  from {
-    opacity: 0;
-    transform: translateY(24px) scale(0.94) rotate(-1.5deg);
-  }
-}
-@keyframes fs-wipe {
-  from {
-    transform: translateX(-102%);
-  }
-}
-@keyframes fs-timer {
-  to {
-    transform: scaleX(0);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .fs *,
-  .fs *::after {
-    animation-duration: 1ms !important;
-    animation-delay: 0ms !important;
-    transition-duration: 1ms !important;
-  }
-}
-
-/* ---- Titles -------------------------------------------------------------- */
-.fs {
-  --gold: #f2c230;
-  --gold-ink: #2b2006;
-}
-.fs-chips .fs-gold {
-  background: var(--gold);
-  color: var(--gold-ink);
-}
-.fs-cups {
-  color: var(--gold);
-  margin-right: 5px;
-  display: inline-flex;
-  gap: 1px;
-}
+/* ---- Titles ----------------------------------------------------------------- */
 .fs-won,
 .fs-cabinet {
   display: flex;
@@ -705,41 +608,166 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  padding: 5px 11px;
+  border-radius: var(--r-in);
   background: var(--gold);
   color: var(--gold-ink);
-  font-family: var(--f-cond);
   font-weight: 700;
   font-size: 15px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  padding: 5px 10px;
-  box-shadow: 3px 3px 0 #12102b;
+  box-shadow: var(--fs-shadow);
+}
+
+/* ---- Career end ------------------------------------------------------------- */
+.fs-end {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.fs-end .fs-stats b {
+  color: var(--c-accent);
+}
+.fs-end .fs-stats small {
+  color: var(--fs-text-2);
+}
+.fs-again {
+  min-height: 52px;
+  padding: 0 16px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---- Motion -----------------------------------------------------------------
+   Once per season: decision and tiles rise in, lightly staggered.
+   Rare (season end, transfer, titles): recap card, wipe, trophy pop. */
+.fs-label b,
+.fs-id,
+.fs-decide,
+.fs-decide .fs-tile,
+.fs-outcome {
+  animation: fs-rise 0.42s var(--ease-out) backwards;
+}
+.fs-label b {
+  animation-name: fs-drop;
+}
+.fs-tile.picked {
+  transform: scale(1.03);
+  box-shadow:
+    0 0 0 2px var(--fs-paper),
+    var(--fs-shadow-lg);
+  z-index: 1;
+}
+.fs-tile.gone {
+  opacity: 0;
+  transform: translateY(6px) scale(0.97);
+}
+.fs-ovr.pop {
+  animation: fs-pop 0.45s var(--ease-out);
+}
+.fs-row.fresh {
+  animation: fs-flash 0.9s var(--ease-out);
+}
+.fs-overlay:not(.welcome) {
+  animation: fs-fade 0.24s var(--ease-out);
+}
+.fs-card {
+  animation: fs-card 0.5s var(--ease-out);
+}
+.fs-card-out {
+  animation: fs-rise 0.4s 0.15s var(--ease-out) backwards;
+}
+.fs-ovrjump {
+  animation: fs-rise 0.4s 0.9s var(--ease-out) backwards;
+}
+.fs-ovrjump em {
+  animation: fs-pop 0.45s 1.2s var(--ease-out) backwards;
+}
+.fs-welcome {
+  animation: fs-rise 0.5s 0.35s var(--ease-out) backwards;
+}
+.fs-trophy {
   animation: fs-trophy 0.55s var(--ease-out) backwards;
 }
-.fs-card.gold {
-  box-shadow: 8px 8px 0 var(--gold);
+
+@keyframes fs-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
 }
-.fs-card.gold::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(115deg, transparent 35%, rgb(255 255 255 / 0.6) 50%, transparent 65%);
-  transform: translateX(-100%);
-  animation: fs-shine 1.1s 1.2s var(--ease-out) forwards;
+@keyframes fs-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+@keyframes fs-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes fs-pop {
+  40% {
+    transform: scale(1.12);
+  }
+}
+@keyframes fs-flash {
+  from {
+    background: color-mix(in srgb, var(--c-accent) 35%, transparent);
+  }
+}
+@keyframes fs-card {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+}
+@keyframes fs-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+@keyframes fs-timer {
+  to {
+    transform: scaleX(0);
+  }
 }
 @keyframes fs-trophy {
   0% {
     opacity: 0;
-    transform: translateY(10px) scale(0.6) rotate(-6deg);
+    transform: translateY(8px) scale(0.7);
   }
   60% {
     opacity: 1;
-    transform: translateY(-3px) scale(1.12) rotate(2deg);
+    transform: translateY(-2px) scale(1.08);
   }
 }
-@keyframes fs-shine {
-  to {
-    transform: translateX(100%);
+
+/* Reduced motion: keep the fades, drop the movement. */
+@media (prefers-reduced-motion: reduce) {
+  .fs-label b,
+  .fs-id,
+  .fs-decide,
+  .fs-decide .fs-tile,
+  .fs-outcome,
+  .fs-card,
+  .fs-card-out,
+  .fs-ovrjump,
+  .fs-welcome,
+  .fs-trophy,
+  .fs-ovr.pop,
+  .fs-ovrjump em,
+  .fs-wipe {
+    animation-name: fs-fade;
+  }
+  .fs-tile,
+  .fs-tile.picked,
+  .fs-tile.gone {
+    transform: none;
+  }
+}
+
+@media (min-width: 1000px) {
+  .fs {
+    padding: 24px 28px 28px;
   }
 }

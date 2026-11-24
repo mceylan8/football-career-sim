@@ -88,7 +88,11 @@ export function FastScreen({ onNew, onReset }: Props) {
   const busy = leaving !== null || overlay !== null;
   const titleCount = player.history.reduce((a, r) => a + (r.titles?.length ?? 0), 0);
   // Re-key the decision so it animates in fresh every time it changes.
-  const decisionKey = event ? `e-${player.season}-${event.id}` : transferWindow ? `t-${player.season}` : 'end';
+  const decisionKey = event
+    ? `e-${player.season}-${event.id}`
+    : transferWindow
+      ? `t-${player.season}`
+      : 'end';
 
   const choose = (i: number) => {
     if (busy) return;
@@ -101,7 +105,13 @@ export function FastScreen({ onNew, onReset }: Props) {
       const record = s.player.history[s.player.history.length - 1];
       setLeaving(null);
       if (record && s.player.history.length > seasons) {
-        setOverlay({ kind: 'recap', record, ovrBefore, ovrAfter: ovrOf(s.player), outcome: lastOutcome(s.log) });
+        setOverlay({
+          kind: 'recap',
+          record,
+          ovrBefore,
+          ovrAfter: ovrOf(s.player),
+          outcome: lastOutcome(s.log),
+        });
       }
     }, LEAVE_MS);
   };
@@ -191,7 +201,10 @@ export function FastScreen({ onNew, onReset }: Props) {
                   <span>{r.age}</span>
                   <span className="fs-cl">
                     {r.titles?.length ? (
-                      <span className="fs-cups" title={r.titles.map((x) => TITLE_LABEL[x as TitleId]).join(', ')}>
+                      <span
+                        className="fs-cups"
+                        title={r.titles.map((x) => TITLE_LABEL[x as TitleId]).join(', ')}
+                      >
                         {r.titles.map((x) => (
                           <Trophy key={x} size={12} />
                         ))}
@@ -214,7 +227,9 @@ export function FastScreen({ onNew, onReset }: Props) {
           ) : null}
         </section>
       ) : (
-        <p className="fs-empty">Deine erste Saison. Jede Entscheidung schreibt eine Zeile deiner Karriere.</p>
+        <p className="fs-empty">
+          Deine erste Saison. Jede Entscheidung schreibt eine Zeile deiner Karriere.
+        </p>
       )}
 
       {showOutcome ? (
@@ -226,7 +241,6 @@ export function FastScreen({ onNew, onReset }: Props) {
       <section className="fs-decide" aria-live="polite" key={decisionKey}>
         {event ? (
           <>
-            <span className="fs-kicker">Deine Entscheidung</span>
             <h2 className="fs-title">{event.title}</h2>
             <p className="fs-text">{event.text(player)}</p>
             <div className={`fs-grid n${Math.min(event.choices.length, 3)}`}>
@@ -235,7 +249,7 @@ export function FastScreen({ onNew, onReset }: Props) {
                   key={c.label}
                   type="button"
                   className={tileClass(i, i === 0)}
-                  style={{ animationDelay: `${120 + i * 70}ms` }}
+                  style={{ animationDelay: `${60 + i * 50}ms` }}
                   disabled={busy}
                   onClick={() => choose(i)}
                 >
@@ -255,10 +269,14 @@ export function FastScreen({ onNew, onReset }: Props) {
 
         {transferWindow ? (
           <>
-            <span className="fs-kicker">Transferfenster</span>
             <h2 className="fs-title">
-              {transferWindow.expired ? 'Vertrag läuft aus' : 'Wechseln oder bleiben?'}
+              {transferWindow.expired ? 'Dein Vertrag läuft aus' : 'Wechseln oder bleiben?'}
             </h2>
+            <p className="fs-text">
+              {transferWindow.expired
+                ? 'Ohne neuen Klub ist die Karriere vorbei.'
+                : 'Das Transferfenster ist offen.'}
+            </p>
             <div className="fs-grid n2">
               {transferWindow.options.map((o, i) => {
                 const good = o.role === 'Stammspieler' || o.role === 'Rotation';
@@ -267,12 +285,19 @@ export function FastScreen({ onNew, onReset }: Props) {
                     key={`${o.kind}-${o.club.id}`}
                     type="button"
                     className={`${tileClass(i, false)} fs-offer-tile`}
-                    style={{ animationDelay: `${120 + i * 70}ms`, borderTopColor: clubTheme(o.club).accent }}
+                    style={{
+                      animationDelay: `${60 + i * 50}ms`,
+                      borderTopColor: clubTheme(o.club).accent,
+                    }}
                     disabled={busy}
                     onClick={() => transfer(i)}
                   >
                     <span className="fs-kind">
-                      {o.kind === 'move' ? 'Wechsel' : o.kind === 'extend' ? 'Verlängern' : 'Bleiben'}
+                      {o.kind === 'move'
+                        ? 'Wechsel'
+                        : o.kind === 'extend'
+                          ? 'Verlängern'
+                          : 'Bleiben'}
                     </span>
                     <span className="fs-offer">
                       <ClubCrest club={o.club} size={30} />
@@ -281,11 +306,10 @@ export function FastScreen({ onNew, onReset }: Props) {
                     <span className="fs-sub">{o.club.league}</span>
                     <span className="fs-odds">
                       <span className={good ? 'up' : 'down'}>
-                        {o.squad === 'reserve' ? `${o.role} · Zweite` : o.role}
+                        {o.squad === 'reserve' ? `${o.role} in der Zweiten` : o.role}
                       </span>
-                      <span className="neutral">
-                        {o.years} J. · {o.wage.toLocaleString('de-DE')} €/Wo
-                      </span>
+                      <span className="neutral">{o.years} Jahre</span>
+                      <span className="neutral">{o.wage.toLocaleString('de-DE')} € pro Woche</span>
                     </span>
                   </button>
                 );
@@ -297,9 +321,7 @@ export function FastScreen({ onNew, onReset }: Props) {
         {ended && !overlay ? <CareerEnd onNew={onNew} /> : null}
       </section>
 
-      {overlay?.kind === 'recap' ? (
-        <Recap o={overlay} onClose={() => setOverlay(null)} />
-      ) : null}
+      {overlay?.kind === 'recap' ? <Recap o={overlay} onClose={() => setOverlay(null)} /> : null}
       {overlay?.kind === 'welcome' ? (
         <Welcome club={overlay.club} role={overlay.role} onClose={() => setOverlay(null)} />
       ) : null}
@@ -327,7 +349,7 @@ function OvrBox({ ovr }: { ovr: number }) {
   );
 }
 
-/** Season recap: games, goals, assists count up, OVR before → after, what the decision did. */
+/** Season recap: games, goals, assists count up, OVR old to new, what the decision did. */
 function Recap({ o, onClose }: { o: Extract<Overlay, { kind: 'recap' }>; onClose: () => void }) {
   const games = useCountUp(o.record.games, 900, 0, 250);
   const goals = useCountUp(o.record.goals ?? 0, 900, 0, 400);
@@ -336,8 +358,10 @@ function Recap({ o, onClose }: { o: Extract<Overlay, { kind: 'recap' }>; onClose
   return (
     <button type="button" className="fs-overlay" onClick={onClose} aria-label="Weiter">
       <span className={o.record.titles?.length ? 'fs-card gold' : 'fs-card'}>
-        <span className="fs-kicker">Saisonbilanz · {o.record.age} Jahre</span>
-        <span className="fs-card-club">{o.record.clubName}</span>
+        <span className="fs-card-head">
+          <span className="fs-card-club">{o.record.clubName}</span>
+          <span className="fs-card-age">Saison mit {o.record.age}</span>
+        </span>
         {o.outcome ? (
           <span className={`fs-card-out ${o.outcome.tone}`}>
             <b>{o.outcome.title}</b>
@@ -369,11 +393,20 @@ function Recap({ o, onClose }: { o: Extract<Overlay, { kind: 'recap' }>; onClose
         ) : null}
         <span className="fs-ovrjump">
           <span>{o.ovrBefore}</span>
-          <span className="arrow" aria-hidden>
-            →
-          </span>
+          <svg className="arrow" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M5 12h13m-5-5 5 5-5 5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
           <b>{o.ovrAfter}</b>
-          <em className={delta > 0 ? 'up' : delta < 0 ? 'down' : ''}>{delta > 0 ? `+${delta}` : delta}</em>
+          <em className={delta > 0 ? 'up' : delta < 0 ? 'down' : ''}>
+            {delta > 0 ? `+${delta}` : delta}
+          </em>
         </span>
         <span className="fs-tap">Tippen zum Weiterspielen</span>
         <span
@@ -401,10 +434,11 @@ function Welcome({ club, role, onClose }: { club: Club; role: string; onClose: (
         <span className="fs-crest-big">
           <ClubCrest club={club} size={96} />
         </span>
-        <span className="fs-kicker">Willkommen bei</span>
+        <span className="fs-welcome-hi">Willkommen bei</span>
         <span className="fs-welcome-name">{club.name}</span>
-        <span className="fs-league">
-          {club.league} · {role}
+        <span className="fs-welcome-meta">
+          <span>{club.league}</span>
+          <span>{role}</span>
         </span>
       </span>
     </button>
@@ -415,14 +449,27 @@ function Welcome({ club, role, onClose }: { club: Club; role: string; onClose: (
 function CareerEnd({ onNew }: { onNew: () => void }) {
   const player = useCareerStore((s) => s.player);
   const h = player.history;
-  const games = useCountUp(h.reduce((a, r) => a + r.games, 0), 1200, 0, 200);
-  const goals = useCountUp(h.reduce((a, r) => a + (r.goals ?? 0), 0), 1200, 0, 350);
+  const games = useCountUp(
+    h.reduce((a, r) => a + r.games, 0),
+    1200,
+    0,
+    200,
+  );
+  const goals = useCountUp(
+    h.reduce((a, r) => a + (r.goals ?? 0), 0),
+    1200,
+    0,
+    350,
+  );
   const peak = h.reduce((a, r) => Math.max(a, r.ovr), 0);
-  const best = h.reduce<SeasonRecord | null>((a, r) => (!a || (r.goals ?? 0) > (a.goals ?? 0) ? r : a), null);
+  const best = h.reduce<SeasonRecord | null>(
+    (a, r) => (!a || (r.goals ?? 0) > (a.goals ?? 0) ? r : a),
+    null,
+  );
   return (
     <div className="fs-end">
-      <span className="fs-kicker">Karriere beendet</span>
-      <h2 className="fs-title">{player.endReason}</h2>
+      <h2 className="fs-title">Karriere beendet</h2>
+      <p className="fs-text">{player.endReason}</p>
       <span className="fs-stats">
         <span>
           <b>{games}</b>
@@ -440,7 +487,8 @@ function CareerEnd({ onNew }: { onNew: () => void }) {
       <Cabinet />
       {best ? (
         <p className="fs-text">
-          Bestes Jahr: mit {best.age} bei {best.clubName}, {best.goals ?? 0} Tore in {best.games} Spielen.
+          Bestes Jahr: mit {best.age} bei {best.clubName}, {best.goals ?? 0} Tore in {best.games}{' '}
+          Spielen.
         </p>
       ) : null}
       <button type="button" className="fs-tile main fs-again" onClick={onNew}>
@@ -454,7 +502,8 @@ function CareerEnd({ onNew }: { onNew: () => void }) {
 function Cabinet() {
   const history = useCareerStore((s) => s.player.history);
   const count = new Map<TitleId, number>();
-  for (const r of history) for (const x of r.titles ?? []) count.set(x as TitleId, (count.get(x as TitleId) ?? 0) + 1);
+  for (const r of history)
+    for (const x of r.titles ?? []) count.set(x as TitleId, (count.get(x as TitleId) ?? 0) + 1);
   const won = TITLE_ORDER.filter((t) => count.has(t));
   if (!won.length) return <p className="fs-text">Keine Titel. Nächstes Mal.</p>;
   return (
