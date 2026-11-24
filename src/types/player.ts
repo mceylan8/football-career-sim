@@ -1,12 +1,6 @@
 import type { NationId } from '../data/nations';
 import type { Club } from './club';
 
-export interface Trait {
-  id: string;
-  name: string;
-  description: string;
-}
-
 export interface Contract {
   yearsLeft: number;
   wage: number;
@@ -82,9 +76,10 @@ export interface PlayerState {
   finances: number;
   club: Club | null;
   contract: Contract | null;
-  traits: Trait[];
   /** Serialized as string[] for localStorage; treat as Set semantically. */
   flags: string[];
+  /** Playtime edge (OVR points) for the running season, set by fast-mode season events; 0 otherwise. */
+  seasonBoost?: number;
   careerEnded: boolean;
   endReason: string | null;
 }

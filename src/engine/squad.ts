@@ -1,6 +1,7 @@
 import type { Club } from '../types/club';
 import type { PlayerState, PlayerStats, Talent } from '../types/player';
 import { ovrOf } from './marketValue';
+import { clamp } from './util';
 import { RESERVE_OFFSET, opponentStrength, simulateMatch } from './matchSim';
 
 export const WEEKS = 12;
@@ -11,9 +12,6 @@ export function seasonMatchdays(club: Club | null): number {
   return club && LEAGUES_38.has(club.league) ? 38 : 34;
 }
 
-function clamp(n: number, lo: number, hi: number): number {
-  return Math.max(lo, Math.min(hi, n));
-}
 
 /** Average squad level of the player's current team (0-100 scale). */
 export function squadLevel(club: Club | null, reserve: boolean): number {
@@ -22,12 +20,12 @@ export function squadLevel(club: Club | null, reserve: boolean): number {
 }
 
 /**
- * edge     = OVR - squadLevel + (trust - 50) / 5
+ * edge     = OVR - squadLevel + (trust - 50) / 5 + seasonBoost
  * playtime = clamp(0.5 + edge / 20, 0.05, 0.95)   (share of matchdays you play)
  */
 export function playtimeShare(p: PlayerState): number {
   const level = squadLevel(p.club, p.squad === 'reserve');
-  const edge = ovrOf(p) - level + (p.trust - 50) / 5;
+  const edge = ovrOf(p) - level + (p.trust - 50) / 5 + (p.seasonBoost ?? 0);
   return clamp(0.5 + edge / 20, 0.05, 0.95);
 }
 

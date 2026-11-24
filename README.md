@@ -1,6 +1,7 @@
 # Football Career Sim
 
 Roguelike Fußball-Karriere-Simulator im Browser (React + Vite + Zustand).
+Zwei Modi: **Schnellkarriere** (eine Entscheidung pro Saison) und **Volle Karriere** (Wochen + Schlüsselspiele).
 
 Vollständiger Projektkontext: [`PROJECT.md`](./PROJECT.md)
 
@@ -9,13 +10,7 @@ Vollständiger Projektkontext: [`PROJECT.md`](./PROJECT.md)
 ```bash
 npm install
 npm run dev
-```
-
-## Build / Deploy
-
-```bash
 npm run build
-npm run deploy   # gh-pages (optional; CI deployt main → GitHub Pages)
 ```
 
-GitHub Pages Base-Pfad: `/football-career-sim/`
+Deploy: Vercel baut automatisch jeden Push auf `main`.

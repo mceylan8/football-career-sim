@@ -1,7 +1,6 @@
 export type NodeType =
   | 'MATCH'
   | 'SPONSOR'
-  | 'TRANSFER_OFFER'
   | 'INJURY_RISK'
   | 'MEDIA_EVENT'
   | 'TRAINING_CAMP'

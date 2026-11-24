@@ -1,7 +1,7 @@
 import type { Club } from '../types/club';
 import type { NodeType } from '../types/node';
 import type { PlayerState } from '../types/player';
-import { generateOffer, randomOpponent, type TransferOffer } from './eventEngine';
+import { randomOpponent } from './eventEngine';
 
 /** Weeks (1-12) that end with a key match you play yourself: 5 per season. */
 export const KEY_WEEKS = [2, 4, 6, 9, 12];
@@ -9,8 +9,6 @@ export const KEY_WEEKS = [2, 4, 6, 9, 12];
 export interface ActivityOption {
   id: string;
   type: NodeType;
-  /** Concrete transfer offer, only for TRANSFER_OFFER. */
-  offer?: TransferOffer;
 }
 
 export interface WeekPlan {
@@ -35,6 +33,8 @@ const POOL: Slot[] = [
   { type: 'SPONSOR', weight: (p) => (p.reputation >= 15 ? 6 : 2) },
   { type: 'AGENT_MEETING', weight: () => 5 },
   { type: 'RIVAL_CHALLENGE', weight: () => 5 },
+  // Was missing before, so injuries never happened.
+  { type: 'INJURY_RISK', weight: (p) => (p.flags.includes('fatigue') ? 6 : 2) },
   // Transfers only happen in the season-end window (see engine/transfers.ts).
 ];
 
@@ -64,7 +64,6 @@ export function generateWeekPlan(p: PlayerState): WeekPlan {
   const options: ActivityOption[] = types.map((type, i) => ({
     id: `s${p.season}-w${p.week}-${i}`,
     type,
-    offer: type === 'TRANSFER_OFFER' ? generateOffer(p) : undefined,
   }));
   const keyMatch = KEY_WEEKS.includes(p.week) && !!p.club;
   return {

@@ -225,3 +225,9 @@ button:focus-visible {
   60% { transform: scale(0.94); }
   100% { transform: scale(1); }
 }
+
+/* Second, quieter start button (e.g. "Volle Karriere" under "Schnellkarriere"). */
+.pbtn.alt {
+  background: var(--cream);
+  color: var(--ink);
+}

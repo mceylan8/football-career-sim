@@ -12,7 +12,6 @@ interface Meta {
 const META: Record<NodeType, Meta> = {
   MATCH: { label: 'MATCH', desc: 'Schlüsselspiel', chip: 'FORM', color: 'var(--red)' },
   SPONSOR: { label: 'SPONSOR', desc: 'Geld gegen Aufmerksamkeit', chip: '€', color: 'var(--yellow)', dark: true },
-  TRANSFER_OFFER: { label: 'TRANSFER', desc: 'Ein Klub meldet sich', chip: 'ANGEBOT', color: 'var(--blue)' },
   INJURY_RISK: { label: 'RISIKO', desc: 'Hartes Spiel, Verletzung droht', chip: 'GEFAHR', color: 'var(--red)' },
   MEDIA_EVENT: { label: 'MEDIEN', desc: 'Interviews, Ruf auf dem Spiel', chip: 'RUF', color: 'var(--blue)' },
   TRAINING_CAMP: { label: 'TRAINING', desc: 'Werte verbessern', chip: 'STATS', color: 'var(--blue)' },
@@ -23,7 +22,7 @@ const META: Record<NodeType, Meta> = {
 
 interface Props {
   type: NodeType;
-  /** Overrides the default description (e.g. the club of a transfer offer). */
+  /** Overrides the default description. */
   desc?: string;
   disabled?: boolean;
   onClick: () => void;

@@ -4,13 +4,13 @@ Lies und beachte `PROJECT.md` im Repo-Root als verbindlichen Projektkontext.
 
 ## Architektur-Leitplanken
 
-- Roguelike Node-Map pro Saison (Slay-the-Spire-ähnlich), keine lineare Wochenmenü-Schleife.
+- Zwei Modi: Schnellkarriere (eine Entscheidung pro Saison, `engine/seasonEvents.ts`) und Volle Karriere (Wochenplan, `engine/weekPlan.ts`).
 - Event-Engine datengetrieben (`conditions` / `weight` / `choices`), keine wachsende Hardcode-Liste.
 - Match-Simulation stat-basiert (MVP-Formel in PROJECT.md §7), nicht pure RNG.
 - Vereine nur als statischer Pool in `src/data/clubs.json` (132 Klubs, 7 Tiers) — keine Live-API.
 - UTF-8-Klubnamen (bes. türkische Sonderzeichen) in der Anzeige unverändert lassen; ASCII nur für IDs/Suche.
-- State: Zustand (`careerStore.ts`); Save initial via localStorage.
-- Hosting: GitHub Pages mit `base: '/football-career-sim/'`.
+- Spiellogik in `src/engine/` (z. B. `season.ts`), der Store (`careerStore.ts`) verbindet nur Engine und UI; Save via localStorage.
+- Hosting: Vercel, Auto-Deploy von `main`.
 
 ## Scope
 

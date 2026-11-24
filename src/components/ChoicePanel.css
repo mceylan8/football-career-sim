@@ -197,3 +197,10 @@
   background: var(--red);
   color: var(--white);
 }
+/* Numbers inside chips keep the chip colour (".choice .t span" would grey them out). */
+.choice .tw-chip .dg {
+  color: inherit;
+}
+.choice .t .tw-chip:not(.up):not(.down) {
+  color: var(--ink);
+}

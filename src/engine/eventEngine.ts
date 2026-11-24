@@ -2,12 +2,10 @@ import type { Club } from '../types/club';
 import type { GameEvent } from '../types/event';
 import type { PlayerState } from '../types/player';
 import clubsData from '../data/clubs.json';
+import { clamp } from './util';
 
 const clubs = clubsData as Club[];
 
-function clamp(n: number, lo: number, hi: number): number {
-  return Math.max(lo, Math.min(hi, n));
-}
 
 function addFlag(flags: string[], flag: string): string[] {
   return flags.includes(flag) ? flags : [...flags, flag];
@@ -59,7 +57,6 @@ export const GAME_EVENTS: GameEvent[] = [
         effects: (s) => ({
           finances: s.finances + 25000,
           reputation: clamp(s.reputation + 8, 0, 100),
-          flags: addFlag(s.flags, 'big_sponsor'),
         }),
       },
       {
@@ -245,36 +242,6 @@ export const GAME_EVENTS: GameEvent[] = [
     ],
   },
   {
-    id: 'transfer_offer',
-    title: 'Transferangebot',
-    description: 'Ein Klub unterbreitet dir ein Angebot.',
-    nodeTypes: ['TRANSFER_OFFER'],
-    conditions: () => true,
-    weight: 10,
-    choices: [
-      {
-        label: 'Angebot prüfen & annehmen',
-        effects: (s, ctx) => {
-          const o = ctx?.offer ?? generateOffer(s);
-          return {
-            club: o.club,
-            contract: { yearsLeft: o.years, wage: o.wage },
-            reputation: clamp(s.reputation + 5, 0, 100),
-            form: clamp(s.form - 4, 0, 100),
-            flags: removeFlag(s.flags, 'transfer_rumor'),
-          };
-        },
-      },
-      {
-                label: 'Ablehnen',
-        effects: (s) => ({
-          reputation: clamp(s.reputation + 1, 0, 100),
-          form: clamp(s.form + 2, 0, 100),
-        }),
-      },
-    ],
-  },
-  {
     id: 'rival_challenge',
     title: 'Rivalen-Challenge',
     description: 'Ein ehemaliger Mitspieler fordert dich öffentlich heraus.',
@@ -291,7 +258,6 @@ export const GAME_EVENTS: GameEvent[] = [
             mental: clamp(s.stats.mental + 2, 1, 99),
           },
           form: clamp(s.form + 4, 0, 100),
-          flags: addFlag(s.flags, 'rivalry'),
         }),
       },
       {
@@ -323,35 +289,6 @@ export const GAME_EVENTS: GameEvent[] = [
         effects: (s) => ({
           stats: { ...s.stats, tech: clamp(s.stats.tech + 1, 1, 99) },
           form: clamp(s.form + 2, 0, 100),
-        }),
-      },
-    ],
-  },
-  {
-    id: 'contract_talk',
-    title: 'Vertragsgespräch',
-    description: 'Der Verein will die Zukunft klären.',
-    nodeTypes: ['AGENT_MEETING', 'TRANSFER_OFFER'],
-    conditions: (s) => !!s.contract && s.contract.yearsLeft <= 1,
-    weight: 12,
-    choices: [
-      {
-        label: 'Verlängern',
-        effects: (s) => ({
-          contract: s.contract
-            ? {
-                yearsLeft: s.contract.yearsLeft + 2,
-                wage: Math.round(s.contract.wage * (s.talent?.id === 'solid' ? 1.2 : 1.1)),
-              }
-            : null,
-          reputation: clamp(s.reputation + 3, 0, 100),
-        }),
-      },
-      {
-        label: 'Frei werden wollen',
-        effects: (s) => ({
-          flags: addFlag(s.flags, 'wants_free_agency'),
-          form: clamp(s.form - 2, 0, 100),
         }),
       },
     ],
@@ -447,7 +384,6 @@ export const GAME_EVENTS: GameEvent[] = [
       {
         label: 'Weitermachen',
         effects: (s) => ({
-          flags: addFlag(s.flags, 'injury_watch'),
           form: clamp(s.form - 5, 0, 100),
         }),
       },
@@ -493,21 +429,3 @@ export function randomOpponent(state: PlayerState): Club {
   return pickClub((c) => c.id !== state.club?.id && c.league === league);
 }
 
-export interface TransferOffer {
-  club: Club;
-  years: number;
-  wage: number;
-}
-
-/** Offer from a club in the same league or one tier away. */
-export function generateOffer(s: PlayerState): TransferOffer {
-  const tier = s.club?.tier ?? 7;
-  const club = pickClub(
-    (c) => c.id !== s.club?.id && Math.abs(c.tier - tier) <= 1,
-  );
-  return {
-    club,
-    years: 2 + Math.floor(Math.random() * 3),
-    wage: Math.round(4000 + (8 - club.tier) * 2500 + s.reputation * 80),
-  };
-}

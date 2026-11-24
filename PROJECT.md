@@ -174,46 +174,38 @@ Reicht fürs MVP, wird später um Position/Gegnerformation erweitert.
 ## 8. Projekt-Setup
 
 ```bash
-npm create vite@latest football-career-sim -- --template react-ts
-cd football-career-sim
-npm install zustand
-npm install -D gh-pages
+npm install
+npm run dev     # lokal
+npm run build   # tsc + vite build
 ```
 
-`vite.config.ts` → `base: '/football-career-sim/'` setzen (sonst brechen Pfade auf GitHub Pages).
+Deploy: Vercel baut automatisch jeden Push auf `main` (kein GitHub Pages mehr).
 
-`package.json` Scripts ergänzen:
-```json
-"predeploy": "npm run build",
-"deploy": "gh-pages -d dist"
-```
+### Zwei Spielmodi
 
-GitHub Actions Workflow (`.github/workflows/deploy.yml`) früh aufsetzen, damit jeder Push auf `main` automatisch baut und deployed.
+- **Schnellkarriere** (`mode: 'fast'`): pro Saison eine Entscheidung mit sichtbaren Folgen als Chips
+  (`engine/seasonEvents.ts`), danach wird die ganze Saison simuliert (`simulateSeason`), dann Transferfenster.
+  Etwa 2 Klicks pro Saison, eine Karriere hat rund 40 Klicks.
+- **Volle Karriere** (`mode: 'full'`): 12 Wochen mit Aktivität + Event, 5 Schlüsselspiele selbst spielen.
 
 ### Ordnerstruktur
 
 ```
 src/
-  data/
-    clubs.json
-    events.json
-  types/
-    club.ts
-    event.ts
-    player.ts
-    node.ts
+  data/          clubs.json, crestColors.ts, nations.ts, positions.ts
+  types/         club.ts, event.ts, node.ts, player.ts
   engine/
-    matchSim.ts
-    eventEngine.ts
-    mapGenerator.ts
+    season.ts        Spieler anlegen, Woche/Saison weiterschalten, Saison am Stück simulieren
+    seasonEvents.ts  Saison-Entscheidungen der Schnellkarriere (Chips mit Wahrscheinlichkeiten)
+    eventEngine.ts   Wochen-Events der vollen Karriere
+    weekPlan.ts      3 Aktivitäten pro Woche (volle Karriere)
+    squad.ts         Einsatzzeit, Wachstum, Talente, Spieltage
+    matchSim.ts      Match-Simulation
+    transfers.ts     Transferfenster am Saisonende
+    marketValue.ts, startClubs.ts, util.ts
   state/
-    careerStore.ts        // Zustand store
-  components/
-    SeasonMap.tsx
-    NodeCard.tsx
-    EventModal.tsx
-    StatsPanel.tsx
-  App.tsx
+    careerStore.ts   Zustand-Store: verbindet Engine und UI, speichert in localStorage
+  components/    PlayerCard, CareerTable, ChoicePanel, MatchBoard, Setup, …
 ```
 
 ---

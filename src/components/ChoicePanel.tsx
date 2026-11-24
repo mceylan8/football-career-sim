@@ -1,6 +1,7 @@
 import { useState, useSyncExternalStore } from 'react';
 import { useCareerStore } from '../state/careerStore';
-import { matchdayLabel, seasonMatchdays } from '../engine/squad';
+import { matchdayLabel, playtimeShare, roleLabel, seasonMatchdays } from '../engine/squad';
+import { seasonEventById } from '../engine/seasonEvents';
 import { Digits } from './Digits';
 import { NodeCard } from './NodeCard';
 import { ClubCrest } from './ClubCrest';
@@ -27,6 +28,8 @@ export function ChoicePanel() {
   const resolveChoice = useCareerStore((s) => s.resolveChoice);
   const transferWindow = useCareerStore((s) => s.transferWindow);
   const pickTransfer = useCareerStore((s) => s.pickTransfer);
+  const seasonCard = useCareerStore((s) => s.seasonCard);
+  const resolveSeason = useCareerStore((s) => s.resolveSeason);
   // Collapsed only for the current week: every new week starts open.
   const weekKey = `${player.season}-${player.week}`;
   const [collapsedKey, setCollapsedKey] = useState<string | null>(null);
@@ -37,7 +40,7 @@ export function ChoicePanel() {
   const wide = useWide();
   const collapsed = collapsedPref && !activeEvent && !wide;
 
-  if (!weekPlan && !activeEvent) return null;
+  if (!weekPlan && !activeEvent && !seasonCard && !transferWindow) return null;
 
   if (transferWindow) {
     const goodRole = (r: string) => r === 'Stammspieler' || r === 'Rotation';
@@ -74,6 +77,45 @@ export function ChoicePanel() {
                 <span className="tw-chip">
                   <Digits>{`${o.years} J. · ${o.wage.toLocaleString('de-DE')} €/Wo`}</Digits>
                 </span>
+              </span>
+            </span>
+          </button>
+        ))}
+      </section>
+    );
+  }
+
+  // Fast mode: one decision, then the whole season is played.
+  const seasonEvent = seasonCard ? seasonEventById(seasonCard.eventId) : undefined;
+  if (seasonEvent) {
+    return (
+      <section className="panel" aria-live="polite">
+        <div className="panel-head">
+          <h2 className="t-label">
+            Saison <span className="t-num">{player.season}</span>
+            <span className="t-num"> · {roleLabel(playtimeShare(player))}</span>
+          </h2>
+        </div>
+        <div className="event">
+          <b>
+            <Digits>{seasonEvent.title}</Digits>
+          </b>
+          <p>
+            <Digits>{seasonEvent.text(player)}</Digits>
+          </p>
+        </div>
+        {seasonEvent.choices.map((choice, i) => (
+          <button key={i} type="button" className="choice tw" onClick={() => resolveSeason(i)}>
+            <span className="t">
+              <b>
+                <Digits>{choice.label}</Digits>
+              </b>
+              <span className="tw-chips">
+                {choice.outcomes.map((o) => (
+                  <span key={o.chip} className={`tw-chip${o.tone === 'neutral' ? '' : ` ${o.tone}`}`}>
+                    <Digits>{o.chance < 100 ? `${o.chance} % ${o.chip}` : o.chip}</Digits>
+                  </span>
+                ))}
               </span>
             </span>
           </button>
@@ -161,11 +203,6 @@ export function ChoicePanel() {
             <NodeCard
               key={n.id}
               type={n.type}
-              desc={
-                n.offer
-                  ? `${n.offer.club.name} · ${n.offer.wage.toLocaleString('de-DE')} €/Wo`
-                  : undefined
-              }
               onClick={() => selectNode(n.id)}
             />
           ))

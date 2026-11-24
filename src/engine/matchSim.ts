@@ -1,5 +1,6 @@
 import type { Club } from '../types/club';
 import type { PlayerState } from '../types/player';
+import { clamp } from './util';
 
 /** Reserve teams are this much weaker than the first team (player scale). */
 export const RESERVE_OFFSET = 8;
@@ -24,9 +25,6 @@ function noise(min: number, max: number): number {
   return min + Math.random() * (max - min);
 }
 
-function clamp(n: number, lo: number, hi: number): number {
-  return Math.max(lo, Math.min(hi, n));
-}
 
 /** Club Elo (1485–1984 in clubs.json) mapped onto the 0–100 player scale. */
 export function opponentStrength(elo: number): number {

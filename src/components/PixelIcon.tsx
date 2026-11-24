@@ -3,7 +3,6 @@ import type { NodeType } from '../types/node';
 const BITMAPS: Record<NodeType, string[]> = {
   MATCH: ['..XXX..', '.X...X.', 'X..X..X', 'X.XXX.X', 'X..X..X', '.X...X.', '..XXX..'],
   SPONSOR: ['..XXX..', 'XXXXXXX', 'X.....X', 'XXXXXXX', 'X..X..X', 'X.....X', 'XXXXXXX'],
-  TRANSFER_OFFER: ['.XXXXX.', '.X...X.', '.X.X.X.', '.X...X.', '.X.X.X.', '.X...X.', '.XXXXX.'],
   INJURY_RISK: ['..XXX..', '..XXX..', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX', '..XXX..', '..XXX..'],
   MEDIA_EVENT: ['XXXXXXX', 'X.....X', 'X.....X', 'X.....X', 'XXXXXXX', '..XXX..', '.XXXXX.'],
   TRAINING_CAMP: ['.X...X.', 'XX...XX', 'XXXXXXX', 'XX...XX', '.X...X.'],

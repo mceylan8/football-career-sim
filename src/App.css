@@ -123,3 +123,9 @@
     display: none;
   }
 }
+
+/* Whole career under the end screen. */
+.end-table {
+  padding: 0 18px 28px;
+  background: var(--red);
+}
