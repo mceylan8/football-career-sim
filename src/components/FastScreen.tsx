@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { positionLabel } from '../data/positions';
 import { formatValue, marketValue, ovrOf } from '../engine/marketValue';
 import { seasonEventById } from '../engine/seasonEvents';
@@ -14,7 +14,7 @@ import type { SeasonRecord } from '../types/player';
 import { ClubCrest } from './ClubCrest';
 import { PlayerAvatar } from './PlayerAvatar';
 import { Trophy } from './Trophy';
-import { clubTheme, type ClubTheme } from './clubTheme';
+import { clubTheme, themeVars } from './clubTheme';
 import './FastScreen.css';
 
 /** Log tags that are bookkeeping, not the outcome of last season's decision. */
@@ -30,15 +30,6 @@ const LEAVE_MS = 320;
 /** The season recap and the "welcome" card close by themselves after this. */
 const RECAP_MS = 3200;
 const WELCOME_MS = 2000;
-
-function themeVars(t: ClubTheme): CSSProperties {
-  return {
-    '--c-bg': t.bg,
-    '--c-panel': t.panel,
-    '--c-accent': t.accent,
-    '--c-on': t.onAccent,
-  } as CSSProperties;
-}
 
 type Overlay =
   | { kind: 'recap'; record: SeasonRecord; ovrBefore: number; ovrAfter: number; outcome?: LogEntry }
@@ -491,7 +482,7 @@ function CareerEnd({ onNew }: { onNew: () => void }) {
           Spielen.
         </p>
       ) : null}
-      <button type="button" className="fs-tile main fs-again" onClick={onNew}>
+      <button type="button" className="fs-tile main fs-cta" onClick={onNew}>
         <span className="fs-tile-t">Neue Karriere</span>
       </button>
     </div>

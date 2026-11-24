@@ -2,13 +2,11 @@ import clubsData from '../data/clubs.json';
 import { NATIONS, nationById, type NationId } from '../data/nations';
 import { POSITION_LIST, positionMeta } from '../data/positions';
 import type { Club } from '../types/club';
-import type { PartialPlayerUpdate, PlayerState, Position, Talent } from '../types/player';
-import { randomOpponent } from './eventEngine';
+import type { PlayerState, Position, Talent } from '../types/player';
 import { seasonTitles } from './titles';
 import { marketValue, ovrOf } from './marketValue';
 import {
   WEEKS,
-  eventGain,
   rollPotential,
   seasonGrowth,
   shouldPromote,
@@ -69,23 +67,6 @@ export function createInitialPlayer(
     seasonBoost: 0,
     careerEnded: false,
     endReason: null,
-  };
-}
-
-/** Applies an event patch; stat bonuses only partly stick and fade out near the potential. */
-export function mergePlayer(state: PlayerState, patch: PartialPlayerUpdate): PlayerState {
-  let stats = state.stats;
-  if (patch.stats) {
-    const want = { ...state.stats, ...patch.stats };
-    const one = (k: 'tech' | 'phys' | 'mental') =>
-      Math.max(1, Math.min(99, state.stats[k] + eventGain(state, state.stats[k], want[k] - state.stats[k])));
-    stats = { tech: one('tech'), phys: one('phys'), mental: one('mental') };
-  }
-  return {
-    ...state,
-    ...patch,
-    stats,
-    contract: patch.contract === undefined ? state.contract : patch.contract,
   };
 }
 
@@ -158,12 +139,12 @@ export function advanceWeek(player: PlayerState): PlayerState {
   return checkCareerEnd(next);
 }
 
-/** Fast mode: all 12 weeks at once, every matchday simulated (no key matches). */
+/** The whole season at once: all 12 weeks, every matchday simulated. */
 export function simulateSeason(player: PlayerState): PlayerState {
   let p = player;
   const season = p.season;
   while (p.season === season && !p.careerEnded) {
-    const auto = simulateAutoWeek(p, false, randomOpponent);
+    const auto = simulateAutoWeek(p);
     p = advanceWeek(auto ? auto.player : p);
   }
   return p;

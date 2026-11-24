@@ -1,3 +1,4 @@
+/* One phone-sized column. On wider screens it floats as a card on the dark page. */
 .app {
   width: 100%;
   max-width: 430px;
@@ -5,138 +6,11 @@
   min-height: 100svh;
   display: flex;
   flex-direction: column;
-  background: var(--cream);
 }
-
 @media (min-width: 480px) {
   .app {
     margin-block: 20px;
     min-height: calc(100svh - 40px);
-    border: 4px solid var(--cream);
-    box-shadow: 8px 8px 0 #000;
-  }
-}
-
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-2);
-  padding: 10px 14px;
-  background: var(--ink);
-  color: var(--yellow);
-}
-
-.topbar h1 {
-  letter-spacing: 0.06em;
-}
-
-.topbar-actions {
-  display: flex;
-  gap: var(--sp-2);
-}
-
-.screen {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 18px;
-  padding: 28px 18px;
-  background: var(--red);
-  color: var(--cream);
-}
-
-.screen h2 {
-  font-size: var(--fs-hero);
-  line-height: 1;
-  text-shadow: var(--sh-s);
-}
-
-.screen p,
-.screen li {
-  font-size: var(--fs-body);
-}
-
-.screen ul {
-  margin: 0;
-  padding-left: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-1);
-}
-
-.screen .meta {
-  color: var(--yellow);
-  font-size: var(--fn-s);
-}
-
-/* Game screen: one column on phones (wrappers vanish), two columns on desktop. */
-.game,
-.game-main,
-.game-side {
-  display: contents;
-}
-
-@media (min-width: 1000px) {
-  .app.app-game {
-    max-width: 1480px;
-  }
-  .game {
-    flex: 1;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 520px;
-    align-items: start;
-    min-height: 0;
-  }
-  .game-main {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  }
-  /* decisions stay in view on the right while the career scrolls */
-  .game-side {
-    display: block;
-    position: sticky;
-    top: 0;
-    max-height: 100svh;
-    overflow-y: auto;
-    align-self: stretch;
-    background: var(--ink);
-    border-left: 4px solid var(--ink);
-  }
-  .game-side .panel {
-    margin-top: 0;
-    flex: 0 0 auto;
-  }
-  /* collapsing the panel makes no sense when it has its own column */
-  .game-side .panel .chev {
-    display: none;
-  }
-  /* report moves under the choices on desktop */
-  .feed-main {
-    display: none;
-  }
-}
-@media (max-width: 999px) {
-  .feed-side {
-    display: none;
-  }
-}
-
-/* Whole career under the end screen. */
-.end-table {
-  padding: 0 18px 28px;
-  background: var(--red);
-}
-
-/* Fast mode: the club-coloured screen fills the frame. */
-.app.app-fast {
-  background: none;
-}
-@media (min-width: 480px) {
-  .app.app-fast {
-    border: 0;
     border-radius: 18px;
     overflow: clip;
     box-shadow:

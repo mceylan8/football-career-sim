@@ -53,7 +53,7 @@ export interface PlayerState {
   position: Position;
   /** Start in the second team; promoted to the first team later. */
   squad: 'reserve' | 'first';
-  /** Coach trust 0-100 (key matches move it); feeds playtime. */
+  /** Coach trust 0-100 (season events and matches move it); feeds playtime. */
   trust: number;
   talent: Talent | null;
   /** OVR ceiling of this career (rolled from the talent). Missing in old saves. */
@@ -80,15 +80,8 @@ export interface PlayerState {
   contract: Contract | null;
   /** Serialized as string[] for localStorage; treat as Set semantically. */
   flags: string[];
-  /** Playtime edge (OVR points) for the running season, set by fast-mode season events; 0 otherwise. */
+  /** Playtime edge (OVR points) for the running season, set by season events; 0 otherwise. */
   seasonBoost?: number;
   careerEnded: boolean;
   endReason: string | null;
 }
-
-export type PartialPlayerUpdate = Partial<
-  Omit<PlayerState, 'stats' | 'contract'>
-> & {
-  stats?: Partial<PlayerStats>;
-  contract?: Contract | null;
-};

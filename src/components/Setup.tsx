@@ -1,26 +1,24 @@
-import { useState } from 'react';
-import { NATIONS, type NationId } from '../data/nations';
+import { useEffect, useRef, useState } from 'react';
+import { NATIONS, nationById, type NationId } from '../data/nations';
 import { POSITION_LIST, RANDOM_NAMES } from '../data/positions';
 import { rollTalent } from '../engine/squad';
-import { startOffers, type StartOffer } from '../engine/startClubs';
+import { START_SIZE_HINT, START_SIZE_LABEL, startOffers, type StartOffer } from '../engine/startClubs';
 import { CLUBS, type CareerSetup } from '../state/careerStore';
 import type { Position, Talent } from '../types/player';
-import { PlayerAvatar } from './PlayerAvatar';
+import { ClubCrest } from './ClubCrest';
 import { PixelFlag } from './PixelFlag';
-import { Digits } from './Digits';
-import { ClubPicker } from './ClubPicker';
+import { PlayerAvatar } from './PlayerAvatar';
+import { clubTheme, themeVars } from './clubTheme';
+import './FastScreen.css';
 import './Setup.css';
 
 type Step = 'name' | 'position' | 'nation' | 'club' | 'talent';
 const STEPS: Step[] = ['name', 'position', 'nation', 'club', 'talent'];
-const STEP_LABEL: Record<Step, string> = {
-  name: 'Name',
-  position: 'Position',
-  nation: 'Nation',
-  club: 'Verein',
-  talent: 'Talent',
-};
 const NAME_KEY = 'fcs-last-name';
+/** A tapped tile shows its picked state this long before the next step slides in. */
+const ADVANCE_MS = 240;
+
+const STAT_LABEL = { tech: 'TEC', phys: 'PHY', mental: 'MEN' } as const;
 
 function lastName(): string {
   try {
@@ -35,40 +33,63 @@ interface Props {
   onCancel: () => void;
 }
 
-/** Career "login": name → position → nationality → club (3 offers) → talent. */
+/**
+ * New career in five steps: name → position → nation → club (3 offers) → talent roll.
+ * Position and nation advance on tap; a club tile tints the whole screen in its colours.
+ */
 export function Setup({ onDone, onCancel }: Props) {
   const [step, setStep] = useState<Step>('name');
   const [name, setName] = useState(lastName);
   const [position, setPosition] = useState<Position | null>(null);
-  const idx = STEPS.indexOf(step);
-  const cleanName = name.trim();
-
-  const back = () => (idx === 0 ? onCancel() : setStep(STEPS[idx - 1]));
-
   const [nation, setNation] = useState<NationId | null>(null);
   const [offers, setOffers] = useState<StartOffer[]>([]);
   const [clubId, setClubId] = useState<string | null>(null);
   const [talent, setTalent] = useState<Talent | null>(null);
   const [revealed, setRevealed] = useState(false);
-  const club = CLUBS.find((c) => c.id === clubId);
+  const [touched, setTouched] = useState(false);
+  const timer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  const idx = STEPS.indexOf(step);
+  const cleanName = name.trim();
+  const nameOk = cleanName.length >= 2;
+  const club = CLUBS.find((c) => c.id === clubId) ?? null;
+  // Club colours as soon as a club is in play; the default red before that.
+  const theme = clubTheme(step === 'club' || step === 'talent' ? club : null);
+
+  const later = (fn: () => void) => {
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(fn, ADVANCE_MS);
+  };
+
+  const back = () => {
+    window.clearTimeout(timer.current);
+    if (idx === 0) onCancel();
+    else setStep(STEPS[idx - 1]);
+  };
+
+  const submitName = () => {
+    setTouched(true);
+    if (nameOk) setStep('position');
+  };
+
+  const pickPosition = (id: Position) => {
+    setPosition(id);
+    later(() => setStep('nation'));
+  };
 
   /** The nation decides the league; a new nation draws three new clubs. */
-  const chooseNation = (id: NationId) => {
+  const pickNation = (id: NationId) => {
     if (id !== nation) {
       setNation(id);
       setOffers(startOffers(CLUBS, id));
       setClubId(null);
     }
+    later(() => setStep('club'));
   };
 
-  const goToClubs = (id: NationId | null = nation) => {
-    if (!id) return;
-    chooseNation(id);
-    setStep('club');
-  };
-
-  const pickClub = (id: string) => {
-    setClubId(id);
+  const sign = () => {
+    if (!club) return;
     setTalent(rollTalent());
     setRevealed(false);
     setStep('talent');
@@ -78,7 +99,7 @@ export function Setup({ onDone, onCancel }: Props) {
     try {
       localStorage.setItem(NAME_KEY, cleanName);
     } catch {
-      /* ignore */
+      /* private mode: the name is just not remembered */
     }
     onDone({
       name: cleanName,
@@ -89,217 +110,220 @@ export function Setup({ onDone, onCancel }: Props) {
     });
   };
 
+  const info = nation ? nationById(nation) : undefined;
+  // After the reveal there is no way back: going back would re-roll the talent.
+  const canGoBack = !(step === 'talent' && revealed);
+
   return (
-    <section className="setup">
-      <ol className="stepbar" aria-label="Fortschritt">
-        {STEPS.map((s, i) => (
-          <li
-            key={s}
-            className={`t-label${i === idx ? ' on' : ''}${i < idx ? ' done' : ''}`}
-          >
-            <span className="t-num">{i + 1}</span> {STEP_LABEL[s]}
-          </li>
-        ))}
-      </ol>
+    <div className="fs setup" style={themeVars(theme)}>
+      <div className="fs-top">
+        {canGoBack ? (
+          <button type="button" className="fs-mini" onClick={back}>
+            {idx === 0 ? 'Abbrechen' : 'Zurück'}
+          </button>
+        ) : (
+          <span />
+        )}
+        <span className="fs-label">
+          Schritt <b key={idx}>{idx + 1}</b> von {STEPS.length}
+        </span>
+      </div>
+      <div
+        className="su-progress"
+        role="progressbar"
+        aria-label="Fortschritt"
+        aria-valuemin={1}
+        aria-valuemax={STEPS.length}
+        aria-valuenow={idx + 1}
+      >
+        <span style={{ transform: `scaleX(${(idx + 1) / STEPS.length})` }} />
+      </div>
 
       {step === 'name' ? (
-        <div className="step">
-          <div className="step-head">
-            <h2>WIE HEISST DU?</h2>
-            <p>So steht dein Name auf der Spielerkarte.</p>
-          </div>
-          <div className="step-body">
-            <label className="t-label" htmlFor="player-name">
+        <section className="su-step" key="name">
+          <h2 className="fs-title su-title">Wie heißt du?</h2>
+          <p className="fs-text">So steht dein Name über deiner Karriere.</p>
+          <form
+            className="su-name"
+            onSubmit={(e) => {
+              e.preventDefault();
+              submitName();
+            }}
+          >
+            <label className="su-label" htmlFor="player-name">
               Spielername
             </label>
             <input
               id="player-name"
-              className="name-input"
+              className="su-input"
               value={name}
               maxLength={16}
               autoComplete="off"
-              placeholder="Dein Name"
+              autoCapitalize="words"
+              spellCheck={false}
+              placeholder="z. B. Jonas"
+              aria-invalid={touched && !nameOk}
+              aria-describedby="name-hint"
               onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && cleanName.length >= 2) setStep('position');
-              }}
             />
+            <span id="name-hint" className={`su-hint${touched && !nameOk ? ' bad' : ''}`}>
+              {touched && !nameOk ? 'Der Name braucht mindestens 2 Zeichen.' : '2 bis 16 Zeichen'}
+            </span>
             <button
               type="button"
-              className="mini dark"
-              onClick={() =>
-                setName(RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)])
-              }
+              className="fs-mini su-random"
+              onClick={() => setName(RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)])}
             >
-              ZUFÄLLIGER NAME
+              Zufälligen Namen nehmen
+            </button>
+          </form>
+          <div className="su-foot">
+            <button type="button" className="fs-tile main fs-cta" onClick={submitName}>
+              <span className="fs-tile-t">Weiter</span>
             </button>
           </div>
-          <div className="step-foot">
-            <button
-              type="button"
-              className="pbtn"
-              disabled={cleanName.length < 2}
-              onClick={() => setStep('position')}
-            >
-              Weiter
-            </button>
-            <button type="button" className="mini dark" onClick={back}>
-              ABBRECHEN
-            </button>
-          </div>
-        </div>
+        </section>
       ) : null}
 
       {step === 'position' ? (
-        <div className="step">
-          <div className="step-head">
-            <h2>DEINE POSITION</h2>
-            <p>Sie bestimmt, wo du am Anfang stark bist.</p>
-          </div>
-          <div className="step-body pos-grid">
-            {POSITION_LIST.map((p) => (
+        <section className="su-step" key="position">
+          <h2 className="fs-title su-title">Deine Position</h2>
+          <p className="fs-text">Sie entscheidet, wo du am Anfang stark bist.</p>
+          <div className="su-grid">
+            {POSITION_LIST.map((p, i) => (
               <button
                 key={p.id}
                 type="button"
-                className={`pos${position === p.id ? ' on' : ''}`}
+                className={`fs-tile su-tile${position === p.id ? ' main' : ''}`}
+                style={{ animationDelay: `${40 + i * 30}ms` }}
                 aria-pressed={position === p.id}
-                onClick={() => setPosition(p.id)}
+                onClick={() => pickPosition(p.id)}
               >
-                <span className="pos-code t-label">{p.label}</span>
-                <span className="pos-txt">
-                  <b>{p.name}</b>
-                  <span>{p.desc}</span>
-                </span>
-                <span className="pos-bias">
+                <span className="su-code">{p.label}</span>
+                <span className="su-name-t">{p.name}</span>
+                <span className="su-desc">{p.desc}</span>
+                <span className="fs-odds su-bias">
                   {Object.entries(p.bias).map(([k, v]) => (
-                    <span key={k} className="bias">
-                      <span className="t-num">+{v}</span>{' '}
-                      <span className="t-label">
-                        {k === 'tech' ? 'TEC' : k === 'phys' ? 'PHY' : 'MEN'}
-                      </span>
+                    <span key={k}>
+                      +{v} {STAT_LABEL[k as keyof typeof STAT_LABEL]}
                     </span>
                   ))}
                 </span>
               </button>
             ))}
           </div>
-          <div className="step-foot">
-            <button
-              type="button"
-              className="pbtn"
-              disabled={!position}
-              onClick={() => setStep('nation')}
-            >
-              Weiter
-            </button>
-            <button type="button" className="mini dark" onClick={back}>
-              ZURÜCK
-            </button>
-          </div>
-        </div>
+        </section>
       ) : null}
 
       {step === 'nation' ? (
-        <div className="step">
-          <div className="step-head">
-            <h2>DEINE NATION</h2>
-            <p>Sie bestimmt, in welcher Liga du als Talent anfängst.</p>
-          </div>
-          <div className="step-body nation-grid">
-            {NATIONS.map((n) => (
+        <section className="su-step" key="nation">
+          <h2 className="fs-title su-title">Deine Nation</h2>
+          <p className="fs-text">Sie entscheidet, in welcher Liga du als Talent anfängst.</p>
+          <div className="su-grid">
+            {NATIONS.map((n, i) => (
               <button
                 key={n.id}
                 type="button"
-                className={`nation${nation === n.id ? ' on' : ''}`}
+                className={`fs-tile su-tile su-nation${nation === n.id ? ' main' : ''}`}
+                style={{ animationDelay: `${40 + i * 30}ms` }}
                 aria-pressed={nation === n.id}
-                onClick={() => chooseNation(n.id)}
+                onClick={() => pickNation(n.id)}
               >
-                <PixelFlag nation={n.id} width={44} />
-                <span className="nation-txt">
-                  <b>{n.name}</b>
-                  <span>
-                    <Digits>{n.league}</Digits>
-                  </span>
-                </span>
-                <span className="nation-code t-label">{n.code}</span>
+                <PixelFlag nation={n.id} width={40} />
+                <span className="su-name-t">{n.name}</span>
+                <span className="su-desc">{n.league}</span>
               </button>
             ))}
           </div>
-          <div className="step-foot">
+          <div className="su-foot">
             <button
               type="button"
-              className="pbtn"
-              disabled={!nation}
-              onClick={() => goToClubs()}
+              className="fs-mini"
+              onClick={() => pickNation(NATIONS[Math.floor(Math.random() * NATIONS.length)].id)}
             >
-              Weiter
+              Zufällige Nation
             </button>
-            <div className="row2">
-              <button
-                type="button"
-                className="mini dark"
-                onClick={() => goToClubs(NATIONS[Math.floor(Math.random() * NATIONS.length)].id)}
-              >
-                ZUFÄLLIG
-              </button>
-              <button type="button" className="mini dark" onClick={back}>
-                ZURÜCK
-              </button>
-            </div>
           </div>
-        </div>
+        </section>
       ) : null}
 
       {step === 'club' && nation ? (
-        <ClubPicker nation={nation} offers={offers} onPick={pickClub} onBack={back} />
+        <section className="su-step" key="club">
+          <h2 className="fs-title su-title">Wähle deinen Verein</h2>
+          <p className="fs-text su-where">
+            <PixelFlag nation={nation} width={24} />
+            <span>
+              {info?.league}. Du startest mit 16 in der Zweiten des Klubs.
+            </span>
+          </p>
+          <div className="su-clubs">
+            {offers.map(({ size, club: c }, i) => (
+              <button
+                key={c.id}
+                type="button"
+                className={`fs-tile su-club${c.id === clubId ? ' picked-club' : ''}`}
+                style={{ animationDelay: `${40 + i * 50}ms` }}
+                aria-pressed={c.id === clubId}
+                onClick={() => setClubId(c.id)}
+              >
+                <ClubCrest club={c} size={44} />
+                <span className="su-club-txt">
+                  <span className="fs-tile-t">{c.name}</span>
+                  <span className="su-desc">
+                    <b>{START_SIZE_LABEL[size]}.</b> {START_SIZE_HINT[size]}
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="su-foot">
+            <button type="button" className="fs-tile main fs-cta" disabled={!club} onClick={sign}>
+              <span className="fs-tile-t">{club ? `Bei ${club.name} unterschreiben` : 'Verein wählen'}</span>
+            </button>
+          </div>
+        </section>
       ) : null}
 
       {step === 'talent' && talent && club ? (
-        <div className="step">
-          <div className="step-head">
-            <h2>SCOUTING-BERICHT</h2>
-            <p>
-              <Digits>{`Du startest in der Zweiten von ${club.name} (U19). Dein Talent wird jetzt ausgewürfelt.`}</Digits>
-            </p>
-          </div>
-          <div className="step-body">
-            {revealed ? (
-              <div className={`reveal reveal-${talent.id}`}>
-                <div className="reveal-label">{talent.label.toUpperCase()}</div>
-                <p>{talent.desc}</p>
-                <PlayerAvatar talent={talent.id} club={club} size={130} reveal />
-                <p className="reveal-pro">
-                  <b>+</b> {talent.pro}
-                </p>
-                <p className="reveal-con">
-                  <b>−</b> {talent.con}
-                </p>
-                <div className="reveal-chips">
-                  <span className="bias">
-                    <span className="t-num">+{talent.boost}</span>{' '}
-                    <span className="t-label">alle Werte</span>
-                  </span>
-                  <span className="bias">
-                    <span className="t-num">×{talent.growth.toFixed(2)}</span>{' '}
-                    <span className="t-label">Wachstum</span>
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <button type="button" className="pbtn" onClick={() => setRevealed(true)}>
-                Bericht öffnen
+        <section className="su-step" key="talent">
+          <h2 className="fs-title su-title">Scouting-Bericht</h2>
+          <p className="fs-text">
+            {club.name} hat dich unter Vertrag genommen. Jetzt zeigt sich, was in dir steckt.
+          </p>
+          {revealed ? (
+            <div className={`su-reveal t-${talent.id}`}>
+              <span className="su-reveal-label">{talent.label}</span>
+              <span className="su-reveal-desc">{talent.desc}</span>
+              <span className="su-reveal-fig">
+                <PlayerAvatar talent={talent.id} club={club} size={120} reveal />
+              </span>
+              <span className="su-line up">
+                <b>Stärke</b> {talent.pro}
+              </span>
+              <span className="su-line down">
+                <b>Schwäche</b> {talent.con}
+              </span>
+              <span className="fs-odds su-bias">
+                <span>+{talent.boost} auf alle Werte</span>
+                <span>×{talent.growth.toLocaleString('de-DE', { minimumFractionDigits: 2 })} Wachstum</span>
+              </span>
+            </div>
+          ) : (
+            <button type="button" className="fs-tile su-sealed" onClick={() => setRevealed(true)}>
+              <ClubCrest club={club} size={56} />
+              <span className="fs-tile-t">Bericht öffnen</span>
+              <span className="su-desc">Vertraulich: nur für {club.name}</span>
+            </button>
+          )}
+          {revealed ? (
+            <div className="su-foot">
+              <button type="button" className="fs-tile main fs-cta" onClick={finish}>
+                <span className="fs-tile-t">Karriere starten</span>
               </button>
-            )}
-          </div>
-          <div className="step-foot">
-            {revealed ? (
-              <button type="button" className="pbtn" onClick={finish}>
-                Karriere starten
-              </button>
-            ) : null}
-          </div>
-        </div>
+            </div>
+          ) : null}
+        </section>
       ) : null}
-    </section>
+    </div>
   );
 }

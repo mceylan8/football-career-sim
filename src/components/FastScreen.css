@@ -1,31 +1,9 @@
-/* Fast mode ("Schnellkarriere"). Club colours come in as --c-* from FastScreen.tsx;
-   everything else is a token here. Two families: Anton (display), Barlow (everything else). */
+/* Game screen. Tokens live in index.css; club colours come in as --c-* (clubTheme.ts).
+   .fs is the shell every screen shares (menu, setup, game). */
 .fs {
-  /* type */
-  --f-poster: 'Anton', 'Impact', sans-serif;
-  --f-text: 'Barlow', system-ui, sans-serif;
-  /* colour */
-  --fs-paper: #f4f1e6;
-  --fs-ink: #12102b;
   --fs-text-2: color-mix(in srgb, var(--fs-paper) 70%, var(--c-bg));
   --fs-ink-2: color-mix(in srgb, var(--fs-ink) 68%, var(--fs-paper));
   --fs-line: color-mix(in srgb, var(--fs-paper) 14%, transparent);
-  --fs-good: #2e7d3a;
-  --fs-bad: #c62835;
-  --fs-good-on-dark: #7fe38a;
-  --fs-bad-on-dark: #ff9aa3;
-  --gold: #f2c230;
-  --gold-ink: #2b2006;
-  /* depth */
-  --fs-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 16px rgb(0 0 0 / 0.28);
-  --fs-shadow-lg: 0 2px 4px rgb(0 0 0 / 0.25), 0 18px 40px rgb(0 0 0 / 0.45);
-  /* shape: inner 6px, card 14px (= 6 + 8 inset) */
-  --r-in: 6px;
-  --r-card: 14px;
-  /* motion */
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
-  --press-scale: 0.96;
 
   position: relative;
   overflow: clip;
@@ -41,7 +19,7 @@
   font-size: 16px;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.6s var(--ease-in-out);
+  transition: background-color var(--theme-ms) var(--ease-in-out);
 }
 .fs ::selection {
   background: var(--c-accent);
@@ -50,6 +28,7 @@
 
 /* ---- Top line ------------------------------------------------------------ */
 .fs-top {
+  min-height: 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -105,7 +84,7 @@
   gap: 12px;
   padding-bottom: 12px;
   border-bottom: 3px solid var(--c-accent);
-  transition: border-color 0.6s var(--ease-in-out);
+  transition: border-color var(--theme-ms) var(--ease-in-out);
 }
 .fs-hero {
   width: 96px;
@@ -154,8 +133,8 @@
   color: var(--c-on);
   box-shadow: var(--fs-shadow);
   transition:
-    background-color 0.6s var(--ease-in-out),
-    color 0.6s var(--ease-in-out);
+    background-color var(--theme-ms) var(--ease-in-out),
+    color var(--theme-ms) var(--ease-in-out);
 }
 .fs-ovr b {
   font-family: var(--f-poster);
@@ -185,7 +164,7 @@
   background: var(--c-panel);
   font-weight: 600;
   font-size: 15px;
-  transition: background-color 0.6s var(--ease-in-out);
+  transition: background-color var(--theme-ms) var(--ease-in-out);
 }
 .fs-chips .fs-gold {
   background: var(--gold);
@@ -199,7 +178,7 @@
   padding: 8px 12px;
   border-radius: var(--r-card);
   background: var(--c-panel);
-  transition: background-color 0.6s var(--ease-in-out);
+  transition: background-color var(--theme-ms) var(--ease-in-out);
 }
 .fs-row {
   display: grid;
@@ -562,7 +541,7 @@
   inset: 0;
   background: var(--c-bg);
   clip-path: inset(0 0 0 0);
-  animation: fs-wipe 0.6s var(--ease-in-out) both;
+  animation: fs-wipe var(--theme-ms) var(--ease-in-out) both;
 }
 .fs-welcome {
   position: relative;
@@ -629,11 +608,21 @@
 .fs-end .fs-stats small {
   color: var(--fs-text-2);
 }
-.fs-again {
-  min-height: 52px;
+/* Big primary action of a screen (one per screen). */
+.fs-cta {
+  min-height: 56px;
   padding: 0 16px;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
+  text-align: center;
+}
+.fs-cta .fs-tile-t {
+  font-size: 22px;
+}
+.fs-cta:disabled {
+  opacity: 0.4;
+  box-shadow: none;
 }
 
 /* ---- Motion -----------------------------------------------------------------

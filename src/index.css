@@ -1,67 +1,42 @@
+/* Design tokens of the whole game (poster look).
+   Club colours come in as --c-bg / --c-panel / --c-accent / --c-on from clubTheme.ts
+   on every screen root; everything else is a token here.
+   Two families: Anton (display), Barlow (everything else). Pixel art (sprite, crest)
+   keeps its own pixel font for the crest initials. */
 :root {
-  --red: #e63946;
-  --yellow: #ffd23f;
-  --ink: #1d1b3a;
-  --night: #12102b;
-  --cream: #fff6dc;
-  --blue: #3a86ff;
-  --grass: #3fa34d;
-  --mute: #6b6890;
-  --white: #fff;
-  --track: #e3d9b8;
-  --f-d: 'Pixelify Sans', 'Courier New', monospace;
-  --f-n: 'Jersey 10', 'Pixelify Sans', monospace;
-  --f-u: 'Silkscreen', 'Courier New', monospace;
+  /* type */
+  --f-poster: 'Anton', 'Impact', sans-serif;
+  --f-text: 'Barlow', system-ui, sans-serif;
+  --f-pixel: 'Silkscreen', 'Courier New', monospace;
+  /* colour */
+  --fs-paper: #f4f1e6;
+  --fs-ink: #12102b;
+  --ink: var(--fs-ink);
+  --fs-good: #2e7d3a;
+  --fs-bad: #c62835;
+  --fs-good-on-dark: #7fe38a;
+  --fs-bad-on-dark: #ff9aa3;
+  --gold: #f2c230;
+  --gold-ink: #2b2006;
+  /* depth */
+  --fs-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 16px rgb(0 0 0 / 0.28);
+  --fs-shadow-lg: 0 2px 4px rgb(0 0 0 / 0.25), 0 18px 40px rgb(0 0 0 / 0.45);
+  /* shape: inner 6px, card 14px (= 6 + 8 inset) */
+  --r-in: 6px;
+  --r-card: 14px;
+  /* motion */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --press-scale: 0.96;
+  --theme-ms: 0.6s;
 
-  /* ---- Design system ------------------------------------------------
-     Type roles:  --f-title/--f-body  Pixelify Sans  (names, text)
-                  --f-label           Silkscreen     (UPPERCASE labels, letters only)
-                  --f-num             Jersey 10      (every number)
-     Rule: numbers never use --f-label; labels never carry digits.          */
-  --fs-label: 12px;
-  --fs-sm: 15px;
-  --fs-body: 18px;
-  --fs-title: 26px;
-  --fs-hero: 38px;
-  --fn-s: 20px;
-  --fn-m: 26px;
-  --fn-l: 34px;
-  --fn-xl: 52px;
-  --sp-1: 4px;
-  --sp-2: 8px;
-  --sp-3: 12px;
-  --sp-4: 16px;
-  --sp-5: 24px;
-  --bw: 3px;
-  --sh-s: 3px 3px 0 var(--ink);
-  --sh-m: 4px 4px 0 var(--ink);
-  --sh-l: 6px 6px 0 var(--ink);
-
-  font-family: var(--f-d);
-  font-size: var(--fs-body);
-  line-height: 1.3;
-  color: var(--ink);
-  color-scheme: light;
+  font-family: var(--f-text);
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--fs-paper);
+  color-scheme: dark;
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
-}
-
-/* Desktop: everything one step bigger, the page is wider (see App.css) */
-@media (min-width: 1000px) {
-  :root {
-    --fs-label: 15px;
-    --fs-sm: 18px;
-    --fs-body: 21px;
-    --fs-title: 31px;
-    --fs-hero: 46px;
-    --fn-s: 25px;
-    --fn-m: 32px;
-    --fn-l: 42px;
-    --fn-xl: 64px;
-    --sp-3: 14px;
-    --sp-4: 20px;
-    --sp-5: 30px;
-  }
 }
 
 * {
@@ -71,7 +46,8 @@
 html,
 body {
   margin: 0;
-  background: var(--night);
+  overflow-x: clip;
+  background: #0b0a14;
 }
 
 body {
@@ -82,7 +58,8 @@ body {
   min-height: 100svh;
 }
 
-button {
+button,
+input {
   font: inherit;
   color: inherit;
 }
@@ -91,94 +68,6 @@ h1,
 h2,
 p {
   margin: 0;
-}
-
-.u {
-  font-family: var(--f-u);
-  text-transform: uppercase;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none !important;
-  }
-}
-
-/* ---- Typography roles (see tokens in :root) ---- */
-.t-label {
-  font-family: var(--f-u);
-  font-size: var(--fs-label);
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.t-num {
-  font-family: var(--f-n);
-  font-weight: 400;
-  font-variant-numeric: tabular-nums;
-}
-
-/* ---- Shared components ---- */
-.pbtn {
-  font-family: var(--f-u);
-  font-size: var(--fs-label);
-  text-transform: uppercase;
-  background: var(--grass);
-  color: var(--cream);
-  border: var(--bw) solid var(--ink);
-  padding: var(--sp-4);
-  cursor: pointer;
-  box-shadow: var(--sh-m);
-  transition:
-    transform 0.08s,
-    box-shadow 0.08s;
-}
-
-.pbtn:hover:not(:disabled) {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0 var(--ink);
-}
-
-.mini {
-  font-family: var(--f-u);
-  font-size: var(--fs-label);
-  text-transform: uppercase;
-  padding: 6px 10px;
-  background: transparent;
-  color: var(--cream);
-  border: 2px solid var(--cream);
-  cursor: pointer;
-}
-
-.mini:hover {
-  background: var(--cream);
-  color: var(--ink);
-}
-
-.chev {
-  font-family: var(--f-u);
-  font-size: var(--fs-label);
-  background: var(--ink);
-  color: var(--yellow);
-  border: 2px solid var(--ink);
-  padding: 4px 8px;
-  cursor: pointer;
-}
-
-.chev:focus-visible,
-button:focus-visible {
-  outline: 3px solid var(--blue);
-  outline-offset: 2px;
-}
-
-/* digits inside running text (see <Digits>) */
-.dg {
-  font-family: var(--f-n);
-  font-weight: 400;
-  font-size: 1.2em;
-  line-height: 0;
-  font-variant-numeric: tabular-nums;
 }
 
 /* pixel figure (canvas sprite, anchored at the feet) */
@@ -224,10 +113,4 @@ button:focus-visible {
   35% { transform: scale(1.18); opacity: 1; }
   60% { transform: scale(0.94); }
   100% { transform: scale(1); }
-}
-
-/* Second, quieter start button (e.g. "Volle Karriere" under "Schnellkarriere"). */
-.pbtn.alt {
-  background: var(--cream);
-  color: var(--ink);
 }

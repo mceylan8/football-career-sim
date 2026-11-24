@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import type { Club } from '../types/club';
 import { colorsFor } from './crestUtil';
 
@@ -79,4 +80,14 @@ export function clubTheme(club: Club | null): ClubTheme {
   const ink = parse(INK);
   const onAccent = contrast(accent, ink) >= contrast(accent, [255, 255, 255]) ? INK : '#ffffff';
   return { bg: hex(bg), panel: hex(panel), accent: hex(accent), onAccent };
+}
+
+/** The theme as CSS variables for a screen root (--c-bg, --c-panel, --c-accent, --c-on). */
+export function themeVars(t: ClubTheme): CSSProperties {
+  return {
+    '--c-bg': t.bg,
+    '--c-panel': t.panel,
+    '--c-accent': t.accent,
+    '--c-on': t.onAccent,
+  } as CSSProperties;
 }

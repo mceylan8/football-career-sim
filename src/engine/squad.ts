@@ -1,3 +1,4 @@
+import clubsData from '../data/clubs.json';
 import type { Club } from '../types/club';
 import type { PlayerState, PlayerStats, Talent } from '../types/player';
 import { ovrOf } from './marketValue';
@@ -5,6 +6,15 @@ import { clamp } from './util';
 import { RESERVE_OFFSET, opponentStrength, simulateMatch } from './matchSim';
 
 export const WEEKS = 12;
+
+const clubs = clubsData as Club[];
+
+/** Opponent from the player's own league (never the own club). */
+export function randomOpponent(p: PlayerState): Club {
+  const pool = clubs.filter((c) => c.id !== p.club?.id && c.league === p.club?.league);
+  const list = pool.length ? pool : clubs;
+  return list[Math.floor(Math.random() * list.length)];
+}
 
 /** League matchdays per season (2025/26): 20-team leagues play 38, 18-team leagues 34. */
 const LEAGUES_38 = new Set(['Premier League', 'La Liga', 'Serie A']);
@@ -66,19 +76,15 @@ export interface WeekResult {
 }
 
 /**
- * Plays the non-key matchdays of the week automatically. Each matchday you
- * appear with probability = playtimeShare; if you play, the normal match sim
- * runs with small form/trust effects.
+ * Plays the matchdays of one week. Each matchday you appear with
+ * probability = playtimeShare; if you play, the match sim runs with small
+ * form/trust effects.
  */
-export function simulateAutoWeek(
-  p: PlayerState,
-  keyMatch: boolean,
-  pickOpponent: (p: PlayerState) => Club,
-): WeekResult | null {
+export function simulateAutoWeek(p: PlayerState): WeekResult | null {
   const season = seasonMatchdays(p.club);
   const total = matchdaysInWeek(p.week, season);
   const first = matchdaySpan(p.week, season).first;
-  const count = total - (keyMatch ? 1 : 0);
+  const count = total;
   if (count <= 0) return null;
 
   const share = playtimeShare(p);
@@ -88,7 +94,7 @@ export function simulateAutoWeek(
   let l = 0;
   for (let i = 0; i < count; i++) {
     if (Math.random() >= share) continue;
-    const r = simulateMatch(cur, pickOpponent(cur));
+    const r = simulateMatch(cur, randomOpponent(cur));
     if (r.outcome === 'win') w++;
     else if (r.outcome === 'draw') d++;
     else l++;
@@ -158,16 +164,6 @@ export function seasonGrowth(p: PlayerState): Partial<PlayerStats> {
     return Math.round(up - down + (Math.random() - 0.5) * 1.2);
   };
   return { tech: one('tech'), phys: one('phys'), mental: one('mental') };
-}
-
-/** Share of an event's stat bonus that sticks: shrinks towards the potential (0 at the ceiling). */
-export const EVENT_GAIN = 0.15;
-export function eventGain(p: PlayerState, stat: number, delta: number): number {
-  if (delta <= 0) return delta;
-  const headroom = Math.max(0, Math.min(1, (potentialOf(p) - stat) / 25));
-  const raw = delta * EVENT_GAIN * headroom;
-  const whole = Math.floor(raw);
-  return whole + (Math.random() < raw - whole ? 1 : 0);
 }
 
 /** Reserve player moves up when good enough (or too old for the reserves). */

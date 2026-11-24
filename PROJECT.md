@@ -181,31 +181,35 @@ npm run build   # tsc + vite build
 
 Deploy: Vercel baut automatisch jeden Push auf `main` (kein GitHub Pages mehr).
 
-### Zwei Spielmodi
+### Spielmodus: Schnellkarriere
 
-- **Schnellkarriere** (`mode: 'fast'`): pro Saison eine Entscheidung mit sichtbaren Folgen als Chips
-  (`engine/seasonEvents.ts`), danach wird die ganze Saison simuliert (`simulateSeason`), dann Transferfenster.
-  Etwa 2 Klicks pro Saison, eine Karriere hat rund 40 Klicks.
-- **Volle Karriere** (`mode: 'full'`): 12 Wochen mit Aktivität + Event, 5 Schlüsselspiele selbst spielen.
+Es gibt nur noch die **Schnellkarriere** (die volle Karriere mit Wochen und Schlüsselspielen ist seit 24.11.2026 entfernt).
+Pro Saison eine Entscheidung mit sichtbaren Folgen als Chips (`engine/seasonEvents.ts`), danach wird die ganze
+Saison simuliert (`simulateSeason`), dann Transferfenster. Etwa 2 Klicks pro Saison, eine Karriere hat rund 40 Klicks.
+Alte Spielstände aus dem Wochenmodus laufen mit der Saison-Entscheidung weiter.
+
+### Screens und Design
+
+Alle Screens im Poster-Look (Anton + Barlow, Tokens in `index.css`, Klubfarben über `clubTheme.ts`):
+Startmenü (`Menu`) → Setup in 5 Schritten (`Setup`, Position und Nation gehen per Antippen weiter,
+der Vereinstipp färbt den Screen in die Klubfarben) → Spiel und Karriereende (`FastScreen`).
 
 ### Ordnerstruktur
 
 ```
 src/
   data/          clubs.json, crestColors.ts, nations.ts, positions.ts
-  types/         club.ts, event.ts, node.ts, player.ts
+  types/         club.ts, event.ts (Log), player.ts
   engine/
     season.ts        Spieler anlegen, Woche/Saison weiterschalten, Saison am Stück simulieren
-    seasonEvents.ts  Saison-Entscheidungen der Schnellkarriere (Chips mit Wahrscheinlichkeiten)
-    eventEngine.ts   Wochen-Events der vollen Karriere
-    weekPlan.ts      3 Aktivitäten pro Woche (volle Karriere)
-    squad.ts         Einsatzzeit, Wachstum, Talente, Spieltage
+    seasonEvents.ts  Saison-Entscheidungen (Chips mit Wahrscheinlichkeiten)
+    squad.ts         Einsatzzeit, Wachstum, Talente, Spieltage, Gegnerwahl
     matchSim.ts      Match-Simulation
     transfers.ts     Transferfenster am Saisonende
     marketValue.ts, startClubs.ts, util.ts
   state/
     careerStore.ts   Zustand-Store: verbindet Engine und UI, speichert in localStorage
-  components/    PlayerCard, CareerTable, ChoicePanel, MatchBoard, Setup, …
+  components/    Menu, Setup, FastScreen, PlayerAvatar, ClubCrest, PixelFlag, Trophy, clubTheme
 ```
 
 ---
