@@ -1,0 +1,368 @@
+/* Fast mode ("Schnellkarriere"): poster look, colours from the club (--c-* set in FastScreen). */
+.fs {
+  --f-poster: 'Anton', 'Impact', sans-serif;
+  --f-cond: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --f-text: 'Barlow', system-ui, sans-serif;
+  --cream-2: #f4f1e6;
+  --mute-2: #c9c4d6;
+  flex: 1;
+  box-sizing: border-box;
+  padding: 14px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--c-bg);
+  color: var(--cream-2);
+  font-family: var(--f-text);
+  transition: background 0.4s;
+}
+
+.fs-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.fs-label,
+.fs-kicker,
+.fs-kind {
+  font-family: var(--f-cond);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--mute-2);
+}
+.fs-label b {
+  font-family: var(--f-poster);
+  font-weight: 400;
+  font-size: 18px;
+  letter-spacing: 0;
+  color: var(--c-accent);
+}
+.fs-actions {
+  display: flex;
+  gap: 6px;
+}
+.fs-mini {
+  font-family: var(--f-cond);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--cream-2);
+  border: 2px solid color-mix(in srgb, var(--cream-2) 45%, transparent);
+  padding: 6px 10px;
+  min-height: 32px;
+  cursor: pointer;
+}
+
+.fs-head {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  border-bottom: 4px solid var(--c-accent);
+  padding-bottom: 10px;
+}
+.fs-hero {
+  width: 96px;
+  flex: none;
+  display: flex;
+  justify-content: center;
+}
+.fs-id {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 4px;
+}
+.fs-name {
+  font-family: var(--f-poster);
+  font-size: 36px;
+  line-height: 0.95;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fs-club {
+  font-family: var(--f-cond);
+  font-weight: 700;
+  font-size: 17px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fs-league {
+  font-size: 13px;
+  color: var(--mute-2);
+}
+.fs-ovr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--c-accent);
+  color: var(--c-on);
+  padding: 4px 10px 6px;
+  margin-bottom: 4px;
+}
+.fs-ovr b {
+  font-family: var(--f-poster);
+  font-weight: 400;
+  font-size: 50px;
+  line-height: 0.9;
+}
+.fs-ovr span {
+  font-family: var(--f-cond);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+.fs-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.fs-chips span {
+  background: var(--c-panel);
+  font-family: var(--f-cond);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+}
+
+.fs-table {
+  background: var(--c-panel);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--f-cond);
+}
+.fs-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 34px 30px 28px 28px;
+  gap: 6px;
+  align-items: baseline;
+  font-weight: 500;
+  font-size: 18px;
+  padding: 4px 0;
+  border-top: 1px solid color-mix(in srgb, var(--cream-2) 14%, transparent);
+}
+.fs-row.fs-th {
+  border-top: 0;
+  padding-top: 0;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--mute-2);
+}
+.fs-rows-all {
+  max-height: 40svh;
+  overflow-y: auto;
+}
+.fs-cl {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fs-row .up {
+  color: var(--c-accent);
+  font-weight: 700;
+}
+.fs-more {
+  align-self: flex-end;
+  background: none;
+  border: 0;
+  color: var(--mute-2);
+  font-family: var(--f-cond);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 6px 0 0;
+  min-height: 28px;
+  cursor: pointer;
+}
+
+.fs-outcome {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.35;
+  padding: 8px 10px;
+  border-left: 0;
+  background: color-mix(in srgb, var(--c-panel) 70%, transparent);
+}
+.fs-outcome b {
+  font-family: var(--f-cond);
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.fs-outcome.win b {
+  color: #6fe07a;
+}
+.fs-outcome.loss b {
+  color: #ff8a94;
+}
+
+.fs-decide {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fs-kicker {
+  color: var(--c-accent);
+}
+.fs-title {
+  margin: 0;
+  font-family: var(--f-poster);
+  font-weight: 400;
+  font-size: 32px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.fs-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--mute-2);
+}
+
+/* Choices side by side as rectangles. */
+.fs-grid {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+.fs-grid.n1 {
+  grid-template-columns: minmax(0, 1fr);
+}
+.fs-grid.n2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.fs-grid.n3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.fs-tile {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  min-height: 118px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--cream-2);
+  color: #12102b;
+  box-shadow: 4px 4px 0 rgb(0 0 0 / 0.45);
+  transition:
+    transform 0.08s,
+    box-shadow 0.08s;
+}
+.fs-tile.main {
+  background: var(--c-accent);
+  color: var(--c-on);
+}
+.fs-tile:hover,
+.fs-tile:focus-visible {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 rgb(0 0 0 / 0.45);
+}
+.fs-tile:focus-visible {
+  outline: 3px solid var(--cream-2);
+  outline-offset: 2px;
+}
+.fs-tile:active {
+  transform: translate(4px, 4px);
+  box-shadow: none;
+}
+.fs-tile-t {
+  font-family: var(--f-poster);
+  font-size: 19px;
+  line-height: 1.05;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+.fs-tile .fs-kind {
+  color: inherit;
+  opacity: 0.7;
+  font-size: 11px;
+}
+.fs-tile.fs-offer-tile {
+  min-height: 0;
+  padding: 10px;
+  gap: 6px;
+}
+.fs-offer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fs-sub {
+  font-size: 13px;
+  opacity: 0.75;
+}
+.fs-odds {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  font-family: var(--f-cond);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.1;
+}
+.fs-odds span {
+  padding: 2px 6px;
+  background: rgb(0 0 0 / 0.1);
+}
+.fs-odds .up {
+  background: #2e7d3a;
+  color: #fff;
+}
+.fs-odds .down {
+  background: #c62835;
+  color: #fff;
+}
+
+@media (min-width: 1000px) {
+  .fs {
+    padding: 24px 28px 28px;
+  }
+}
+
+/* A bit of juice: the newest season row slides in, the OVR box pops when it changes. */
+.fs-row.fresh {
+  animation: fs-in 0.5s ease-out;
+}
+.fs-ovr.pop {
+  animation: fs-pop 0.45s ease-out;
+}
+@keyframes fs-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+    background: color-mix(in srgb, var(--c-accent) 40%, transparent);
+  }
+}
+@keyframes fs-pop {
+  40% {
+    transform: scale(1.15);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fs-row.fresh,
+  .fs-ovr.pop {
+    animation: none;
+  }
+}

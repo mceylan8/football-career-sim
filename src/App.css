@@ -129,3 +129,8 @@
   padding: 0 18px 28px;
   background: var(--red);
 }
+
+/* Fast mode: the club-coloured screen fills the frame. */
+.app.app-fast {
+  background: none;
+}

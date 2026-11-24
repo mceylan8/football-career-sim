@@ -4,6 +4,7 @@ import { Digits } from './components/Digits';
 import { CareerTable } from './components/CareerTable';
 import { ChoicePanel } from './components/ChoicePanel';
 import { Feed } from './components/Feed';
+import { FastScreen } from './components/FastScreen';
 import { MatchBoard } from './components/MatchBoard';
 import { PlayerCard } from './components/PlayerCard';
 import { Setup } from './components/Setup';
@@ -36,6 +37,15 @@ function App() {
     setNextMode(m);
     setPicking(true);
   };
+
+  // Fast mode has its own full screen (club colours, no top bar).
+  if (mode === 'fast' && started && !picking && !player.careerEnded) {
+    return (
+      <div className="app app-fast">
+        <FastScreen onNew={() => pick('fast')} onReset={clearSave} />
+      </div>
+    );
+  }
 
   return (
     <div className={`app${!showMenu && !picking && !player.careerEnded ? ' app-game' : ''}`}>

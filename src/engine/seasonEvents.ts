@@ -53,6 +53,8 @@ interface Bump {
   potential?: number;
   flag?: string;
   injured?: boolean;
+  /** Wage multiplier, e.g. 1.3 = +30 %. */
+  wage?: number;
 }
 
 /** All changes of one outcome in one place. */
@@ -74,6 +76,10 @@ function bump(p: PlayerState, b: Bump): PlayerState {
     },
     potential: b.potential ? clamp(potentialOf(p) + b.potential, 60, 96) : p.potential,
     flags,
+    contract:
+      b.wage && p.contract
+        ? { ...p.contract, wage: Math.round((p.contract.wage * b.wage) / 100) * 100 }
+        : p.contract,
   };
 }
 
@@ -339,6 +345,126 @@ export const SEASON_EVENTS: SeasonEvent[] = [
       {
         label: 'Kopf',
         outcomes: [sure('MEN +2', 'up', 'Videoanalyse und Mentaltraining.', { mental: 2 })],
+      },
+    ],
+  },
+  {
+    id: 'penalty',
+    title: 'Elfmeter in der Nachspielzeit',
+    text: () => 'Testspiel, 1:1, Elfmeter in der Nachspielzeit. Alle schauen dich an.',
+    when: (p) => p.squad === 'first' && (p.position === 'ST' || p.position === 'OM' || p.position === 'FL'),
+    weight: () => 4,
+    choices: [
+      {
+        label: 'Ich schieße',
+        outcomes: [
+          odds(70, 'Drin', 'up', 'Eiskalt verwandelt. Der Trainer nickt.', { trust: 10, rep: 4 }),
+          odds(30, 'Verschossen', 'down', 'Über das Tor. Die Fans pfeifen.', { trust: -8, rep: -3 }),
+        ],
+      },
+      {
+        label: 'Kapitän lassen',
+        outcomes: [sure('Nichts passiert', 'neutral', 'Du überlässt ihn dem Kapitän.', {})],
+      },
+    ],
+  },
+  {
+    id: 'teammate_injured',
+    title: 'Stammspieler verletzt',
+    text: () => 'Der Spieler vor dir fällt Monate aus. Deine Chance?',
+    when: (p) => role(p) < 0.75,
+    weight: () => 6,
+    choices: [
+      {
+        label: 'Zugreifen',
+        outcomes: [
+          odds(65, 'Platz erobert', 'up', 'Du nutzt die Chance und gibst den Platz nicht mehr her.', { boost: 12, trust: 8 }),
+          odds(35, 'Nervös', 'down', 'Du spielst, aber unter deinen Möglichkeiten.', { boost: 4, trust: -6 }),
+        ],
+      },
+      {
+        label: 'Ruhig bleiben',
+        outcomes: [sure('Etwas mehr Spielzeit', 'up', 'Du bekommst ein paar Minuten mehr.', { boost: 5 })],
+      },
+    ],
+  },
+  {
+    id: 'wage_dispute',
+    title: 'Gehaltspoker',
+    text: () => 'Dein Agent meint, du verdienst zu wenig.',
+    when: (p) => !!p.contract && p.squad === 'first' && p.reputation >= 25,
+    weight: () => 5,
+    choices: [
+      {
+        label: 'Mehr fordern',
+        outcomes: [
+          odds(50, '+30 % Gehalt', 'up', 'Der Klub zahlt.', { wage: 1.3 }),
+          odds(50, 'Streit', 'down', 'Der Klub ist sauer, du sitzt öfter draußen.', { trust: -15 }),
+        ],
+      },
+      {
+        label: 'Zufrieden sein',
+        outcomes: [sure('Vertrauen +', 'up', 'Der Klub merkt sich das.', { trust: 6 })],
+      },
+    ],
+  },
+  {
+    id: 'shitstorm',
+    title: 'Shitstorm',
+    text: () => 'Ein altes Video von dir geht viral. Das Internet dreht durch.',
+    when: (p) => p.reputation >= 35,
+    weight: () => 4,
+    choices: [
+      {
+        label: 'Entschuldigen',
+        outcomes: [sure('Ruf −3', 'neutral', 'Peinlich, aber schnell vergessen.', { rep: -3 })],
+      },
+      {
+        label: 'Zurückschießen',
+        outcomes: [
+          odds(40, 'Kultfigur', 'up', 'Die Fans feiern deine Antwort.', { rep: 8 }),
+          odds(60, 'Eskalation', 'down', 'Wochenlang Schlagzeilen, der Trainer ist genervt.', { rep: -10, trust: -10 }),
+        ],
+      },
+    ],
+  },
+  {
+    id: 'extra_shifts',
+    title: 'Trainingsweltmeister',
+    text: () => 'Du bist der Letzte, der den Platz verlässt. Noch mehr?',
+    when: (p) => p.age <= 24,
+    weight: () => 5,
+    choices: [
+      {
+        label: 'Doppelschichten',
+        outcomes: [
+          odds(70, 'Alle Werte +1', 'up', 'Es zahlt sich aus.', { tech: 1, phys: 1, mental: 1, trust: 5 }),
+          odds(30, 'Überlastung', 'down', 'Ermüdungsbruch. Halbe Saison weg.', { boost: -15, injured: true }),
+        ],
+      },
+      {
+        label: 'Normal trainieren',
+        outcomes: [sure('Nichts', 'neutral', 'Du hörst auf deinen Körper.', {})],
+      },
+    ],
+  },
+  {
+    id: 'national_team',
+    title: 'Ruf der Nationalmannschaft',
+    text: () => 'Der Nationaltrainer hat dich auf dem Zettel.',
+    when: (p) => ovrOf(p) >= 72,
+    weight: () => 5,
+    choices: [
+      {
+        label: 'Alles geben',
+        outcomes: [
+          odds(60, 'Debüt', 'up', 'Du läufst zum ersten Mal mit der Nationalmannschaft auf.', { rep: 12, mental: 2 }),
+          odds(40, 'Nicht nominiert', 'down', 'Diesmal reicht es nicht. Du bist frustriert.', { rep: -2, boost: -3 }),
+        ],
+      },
+      {
+        label: 'Fokus auf den Klub',
+        outcomes: [sure('Vertrauen +', 'up', 'Dein Klub dankt es dir.', { trust: 10 })],
       },
     ],
   },
